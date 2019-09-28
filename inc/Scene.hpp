@@ -2,29 +2,21 @@
 #define SCENE_H
 
 #include <ncurses.h>
-#include <map>
+#include <vector>
 #include "TWindow.hpp"
 namespace view
 {
-    enum class Orientation
-    {
-        NONE,
-        LEFT,
-        RIGHT,
-        TOP,
-        BOTTOM
-    };
     class Scene
     {
     private:
-        int m_nlines, m_ncols;
-        std::map<Orientation, TWindow> m_windows;
+        int                  m_num_lines, m_num_cols;
+        std::vector<TWindow> m_windows;
     public:
-        Scene(int nlines, int ncols);
-        TWindow& operator[](Orientation i);
+        Scene(int num_lines, int num_cols);
+        TWindow& operator[](size_t i);
         int refresh();
-        void add_window(Orientation ori, int nlines, int ncols, int begin_y, int begin_x);
-        int resize(int nlines, int ncols);
+        void add_window(float perlines, float percols, float begin_y, float begin_x, int parent_lines, int parent_cols);
+        int resize(int num_lines, int num_cols);
         int erase();
     };
 }

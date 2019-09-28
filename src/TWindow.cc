@@ -1,22 +1,31 @@
 #include "../inc/TWindow.hpp"
 #include <iostream>
+#include <sstream>
 
 namespace view
 {
-    TWindow::TWindow(int nlines, int ncols, int begin_y, int begin_x)
+    TWindow::TWindow(float per_lines, float per_cols, float begin_y,
+                     float begin_x, int parent_lines, int parent_cols)
+
         :m_window(nullptr),
-         m_ncols(ncols),
-         m_nlines(nlines),
+         m_per_cols(per_cols),
+         m_per_lines(per_lines),
          m_begin_x(begin_x),
          m_begin_y(begin_y),
-         m_horch(0),
-         m_verch(0),
+         m_parent_cols(parent_cols),
+         m_parent_lines(parent_lines),
+         m_hor_ch(0),
+         m_ver_ch(0),
          m_boxed(false),
-         m_cursorx(0),
-         m_cursory(0)
+         m_cursor_x(0),
+         m_cursor_y(0)
     {
-        std::cout << "Created" << std::endl;
-        m_window = newwin(m_nlines, m_ncols, m_begin_y, m_begin_x);
+        m_window = newwin(
+                    static_cast<int>(m_per_lines*m_parent_lines),
+                    static_cast<int>(m_per_cols*m_parent_cols),
+                    static_cast<int>(m_begin_y*m_parent_lines),
+                    static_cast<int>(m_begin_x*m_parent_cols)
+                    );
     }
 
     WINDOW* TWindow::operator*()
@@ -29,39 +38,51 @@ namespace view
         return wrefresh(m_window);;
     }
 
-    int TWindow::box(chtype verch, chtype horch)
+    int TWindow::box(chtype ver_ch, chtype hor_ch)
     {
-        m_verch = verch;
-        m_horch = horch;
+        m_ver_ch = ver_ch;
+        m_hor_ch = hor_ch;
         m_boxed = true;
-        return ::box(m_window, verch, horch);
+        return ::box(m_window, m_ver_ch, m_hor_ch);
     }
 
     int TWindow::mvwprintw(int y, int x, const std::string &text)
     {
-        m_cursory = y;
-        m_cursorx = x;
+        m_cursor_y = y;
+        m_cursor_x = x;
         return ::mvwprintw(m_window, y, x, text.c_str());
     }
 
     int TWindow::mvwprintw(int y, int x, const std::string &&text)
     {
-        m_cursory = y;
-        m_cursorx = x;
+        m_cursor_y = y;
+        m_cursor_x = x;
         return ::mvwprintw(m_window, y, x, text.c_str());
     }
 
-    int TWindow::move(int y, int x)
+    int TWindow::move(float y, float x)
     {
         m_begin_y = y;
         m_begin_x = x;
-        //wmove(m_window, 1,1);
-        return ::mvwin(m_window, y, x);
+        return ::mvwin(m_window,
+                       static_cast<int>(y*m_parent_lines),
+                       static_cast<int>(x*m_parent_cols)
+                       );
     }
 
-    int TWindow::resize(int nlines, int ncols)
+    int TWindow::move()
     {
-        return wresize(m_window, nlines, ncols);
+        return this->move(m_begin_y, m_begin_x);
+    }
+
+    int TWindow::resize(int parentlines, int parentcols)
+    {
+        m_parent_cols = parentcols;
+        m_parent_lines = parentlines;
+        return wresize(m_window,
+                       static_cast<int>(m_per_lines*m_parent_lines),
+                       static_cast<int>(m_per_cols*m_parent_cols)
+                       );
     }
 
     int TWindow::erase()
@@ -73,6 +94,6 @@ namespace view
     {
         if (!m_boxed)
             return OK;
-        return this->box(m_verch, m_horch);
+        return this->box(m_ver_ch, m_hor_ch);
     }
 }

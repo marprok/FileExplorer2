@@ -13,11 +13,10 @@ int main()
     /* Setup the scene */
     getmaxyx(stdscr, screen_lines, screen_cols);
     view::Scene scene(screen_lines, screen_cols);
-
-    scene.add_window(view::Orientation::LEFT, screen_lines, screen_cols/2, 0,0);
-    scene.add_window(view::Orientation::RIGHT, screen_lines, screen_cols/2, 0, screen_cols/2);
-    scene[view::Orientation::LEFT].box(0,0);
-    scene[view::Orientation::RIGHT].box(0, 0);
+    scene.add_window(1.0f, 0.5f, 0.0f, 0.0f, screen_lines, screen_cols);
+    scene.add_window(1.0f, 0.5f, 0.0f, 0.5f, screen_lines, screen_cols);
+    scene[0].box(0,0);
+    scene[1].box(0, 0);
 
 
 
@@ -25,10 +24,10 @@ int main()
 
     while (true)
     {
-        scene[view::Orientation::LEFT].mvwprintw(1,1, "Lovecraft");
-        scene[view::Orientation::RIGHT].mvwprintw(1,1, "Cthulhu");
+        scene[0].mvwprintw(1,1, "Lovecraft");
+        scene[1].mvwprintw(1,1, "Cthulhu");
         scene.refresh();
-        switch (wgetch(*scene[view::Orientation::LEFT]))
+        switch (wgetch(*scene[0]))
         {
         case KEY_UP:
             break;

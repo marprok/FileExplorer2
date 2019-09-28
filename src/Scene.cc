@@ -3,69 +3,59 @@
 
 namespace view
 {
-    Scene::Scene(int nlines, int ncols)
-        :m_nlines(nlines), m_ncols(ncols)
+    Scene::Scene(int num_lines, int num_cols)
+        :m_num_lines(num_lines), m_num_cols(num_cols)
     {
 
     }
 
-    TWindow& Scene::operator[](Orientation i)
+    TWindow& Scene::operator[](size_t i)
     {
-        return m_windows.find(i)->second;
+        return m_windows[i];
     }
 
     int Scene::refresh()
     {
         int ret = OK;
-        for (auto& pair : m_windows)
+        for (auto& window : m_windows)
         {
-            if ((ret = pair.second.refresh()) != OK)
+            if ((ret = window.refresh()) != OK)
                 return ret;
         }
         return ret;
     }
 
-    void Scene::add_window(Orientation ori, int nlines, int ncols, int begin_y, int begin_x)
+    void Scene::add_window(float perlines, float percols, float begin_y,
+                           float begin_x, int parent_lines, int parent_cols)
     {
-        m_windows.emplace(ori, TWindow{nlines, ncols, begin_y, begin_x});
+        m_windows.emplace_back(perlines,
+                               percols,
+                               begin_y,
+                               begin_x,
+                               parent_lines,
+                               parent_cols
+                               );
     }
 
-    int Scene::resize(int nlines, int ncols)
+    int Scene::resize(int num_lines, int num_cols)
     {
         int ret = OK;
-        for (auto& pair : m_windows)
+        m_num_cols = num_cols;
+        m_num_lines = num_lines;
+        for (auto& window : m_windows)
         {
-            switch (pair.first)
-            {
-            case Orientation::LEFT:
-                ret = pair.second.resize(nlines, ncols/2);
+                ret = window.resize(num_lines, num_cols);
                 if (ret != OK)
                     return ret;
-                ret = pair.second.move(0, 0);
+                ret = window.move();
                 if (ret != OK)
                     return ret;
-                ret = pair.second.erase();
+                ret = window.erase();
                 if (ret != OK)
                     return ret;
-                ret = pair.second.rebox();
+                ret = window.rebox();
                 if (ret != OK)
                     return ret;
-                break;
-            case Orientation::RIGHT:
-                ret = pair.second.resize(nlines, ncols/2);
-                if (ret != OK)
-                    return ret;
-                ret = pair.second.move(0, ncols/2);
-                if (ret != OK)
-                    return ret;
-                ret = pair.second.erase();
-                if (ret != OK)
-                    return ret;
-                ret = pair.second.rebox();
-                if (ret != OK)
-                    return ret;
-                break;
-            }
         }
         return ret;
     }
@@ -74,9 +64,9 @@ namespace view
     int Scene::erase()
     {
         int ret = OK;
-        for (auto& pair : m_windows)
+        for (auto& window : m_windows)
         {
-            if ((ret = pair.second.erase()) != OK)
+            if ((ret = window.erase()) != OK)
                 return ret;
         }
         return ret;
