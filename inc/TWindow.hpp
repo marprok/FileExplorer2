@@ -18,7 +18,8 @@ namespace view
         bool                   m_boxed;
         int                    m_cursor_x, m_cursor_y;
     public:
-        TWindow(float per_lines, float per_cols, float begin_y, float begin_x, int parent_lines, int parent_cols);
+        TWindow(float per_lines, float per_cols, float begin_y,
+                float begin_x, int parent_lines, int parent_cols);
         WINDOW* operator*();
         int refresh();
         int box(chtype verch, chtype horch);

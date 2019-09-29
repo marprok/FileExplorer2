@@ -17,5 +17,5 @@ find_package(Curses REQUIRED)
 include_directories(${CURSES_INCLUDE_DIR})
 
 #file(GLOB SOURCES "src/*.cpp")
-add_executable(${PROJECT_NAME} "main.cpp" ${SOURCES})
+add_executable(${PROJECT_NAME} "main.cc" ${SOURCES})
 target_link_libraries(${PROJECT_NAME} ${CURSES_LIBRARIES})

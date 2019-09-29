@@ -4,7 +4,9 @@
 namespace view
 {
     Scene::Scene(int num_lines, int num_cols)
-        :m_num_lines(num_lines), m_num_cols(num_cols)
+        :m_num_lines(num_lines),
+         m_num_cols(num_cols),
+         m_input_window(0)
     {
 
     }
@@ -60,7 +62,6 @@ namespace view
         return ret;
     }
 
-
     int Scene::erase()
     {
         int ret = OK;
@@ -70,5 +71,18 @@ namespace view
                 return ret;
         }
         return ret;
+    }
+
+    int Scene::set_input_window(size_t i)
+    {
+        if (i >= m_windows.size())
+            return -1;
+        m_input_window = i;
+        return 0;
+    }
+
+    TWindow& Scene::get_input_window()
+    {
+        return m_windows[m_input_window];
     }
 }

@@ -17,9 +17,8 @@ int main()
     scene.add_window(1.0f, 0.5f, 0.0f, 0.5f, screen_lines, screen_cols);
     scene[0].box(0,0);
     scene[1].box(0, 0);
-
-
-
+    /* Explicitly set the inout window. */
+    scene.set_input_window(0);
     scene.refresh();
 
     while (true)
@@ -27,7 +26,7 @@ int main()
         scene[0].mvwprintw(1,1, "Lovecraft");
         scene[1].mvwprintw(1,1, "Cthulhu");
         scene.refresh();
-        switch (wgetch(*scene[0]))
+        switch (wgetch(*scene.get_input_window()))
         {
         case KEY_UP:
             break;
