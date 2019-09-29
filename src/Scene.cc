@@ -1,5 +1,6 @@
 #include "../inc/Scene.hpp"
 #include <iostream>
+#include <sstream>
 
 namespace view
 {
@@ -41,36 +42,27 @@ namespace view
 
     int Scene::resize(int num_lines, int num_cols)
     {
-        int ret = OK;
+        int ret;
         m_num_cols = num_cols;
         m_num_lines = num_lines;
         for (auto& window : m_windows)
         {
-                ret = window.resize(num_lines, num_cols);
-                if (ret != OK)
-                    return ret;
-                ret = window.move();
-                if (ret != OK)
-                    return ret;
-                ret = window.erase();
-                if (ret != OK)
-                    return ret;
-                ret = window.rebox();
-                if (ret != OK)
-                    return ret;
+            ret = window.resize(m_num_lines, m_num_cols);
+            if (ret != OK)
+                return ret;
         }
-        return ret;
+        return OK;
     }
 
     int Scene::erase()
     {
-        int ret = OK;
+        int ret;
         for (auto& window : m_windows)
         {
             if ((ret = window.erase()) != OK)
                 return ret;
         }
-        return ret;
+        return OK;
     }
 
     int Scene::set_input_window(size_t i)
@@ -92,5 +84,70 @@ namespace view
         if (key != ERR)
             return OK;
         return key;
+    }
+
+    std::string Scene::crt_input_window(float perlines, float percols, float begin_y,
+                                        float begin_x, std::string& msg)
+    {
+        /* clear the state of the current scene */
+        this->erase();
+        this->refresh();
+        TWindow temp(perlines, percols, begin_y,
+                     begin_x, m_num_lines, m_num_cols);
+        temp.box('#','#');
+        curs_set(1); /* Make the cursor visible. */
+        keypad(*temp, true);
+
+        int x_pos = static_cast<int>((m_num_cols*percols)/2 - msg.size()/2);
+        x_pos = x_pos > 0 ? x_pos : 1;
+
+        temp.mvwprintw(1,x_pos, msg);
+        temp.move_cursor(2,1);
+        temp.refresh();
+        /* Handle the keyboard input */
+        std::string text;
+        int key;
+        while ((key = wgetch(*temp)) != '\n')
+        {
+            switch (key)
+            {
+            case KEY_BACKSPACE:
+                if (text.size() > 0 )
+                    text = text.substr(0, text.size() - 1);
+                break;
+            case KEY_RESIZE:
+                getmaxyx(stdscr, m_num_lines, m_num_cols);
+                temp.resize(m_num_lines, m_num_cols);
+                x_pos = static_cast<int>((m_num_cols*percols)/2 - msg.size()/2);
+                x_pos = x_pos > 0 ? x_pos : 1;
+                break;
+            default:
+                if (text.size() + 2 < percols*m_num_cols)
+                    text += static_cast<char>(key);
+                break;
+            }
+            temp.erase();
+            temp.refresh();
+            temp.rebox();
+            temp.mvwprintw(1,x_pos, msg);
+            temp.mvwprintw(2,1, text);
+            temp.refresh();
+        }
+        /* Bring back the state of the scene */
+        temp.erase();
+        temp.refresh();
+        delwin(*temp);
+        curs_set(0);
+        this->resize(m_num_lines, m_num_cols);
+        this->refresh();
+
+        return text;
+    }
+
+    std::string Scene::crt_input_window(float perlines, float percols, float begin_y,
+                                 float begin_x, std::string&& msg)
+    {
+        return this->crt_input_window(perlines, percols, begin_y,
+                                      begin_x, msg);
     }
 }

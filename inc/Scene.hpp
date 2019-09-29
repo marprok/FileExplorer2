@@ -24,6 +24,10 @@ namespace view
         int set_input_window(size_t i);
         TWindow& get_input_window();
         int operator>>(int &key);
+        std::string crt_input_window(float perlines, float percols, float begin_y,
+                                     float begin_x, std::string& msg);
+        std::string crt_input_window(float perlines, float percols, float begin_y,
+                                     float begin_x, std::string&& msg);
     };
 }
 #endif

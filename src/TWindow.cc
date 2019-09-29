@@ -60,6 +60,16 @@ namespace view
         return ::mvwprintw(m_window, y, x, text.c_str());
     }
 
+    int TWindow::print(const std::string& text)
+    {
+        return ::wprintw(m_window, text.c_str());
+    }
+
+    int TWindow::print(const std::string&& text)
+    {
+        return ::wprintw(m_window, text.c_str());
+    }
+
     int TWindow::move(float y, float x)
     {
         m_begin_y = y;
@@ -76,6 +86,28 @@ namespace view
     }
 
     int TWindow::resize(int parentlines, int parentcols)
+    {
+        int ret;
+        ret = this->erase();
+        if (ret != OK)
+            return ret;
+        ret = this->refresh();
+        if (ret != OK)
+            return ret;
+        ret = this->_resize(parentlines, parentcols);
+        if (ret != OK)
+            return ret;
+        ret = this->move();
+        if (ret != OK)
+            return ret;
+        ret = this->rebox();
+        if (ret != OK)
+            return ret;
+
+        return OK;
+    }
+
+    int TWindow::_resize(int parentlines, int parentcols)
     {
         m_parent_cols = parentcols;
         m_parent_lines = parentlines;
@@ -95,5 +127,10 @@ namespace view
         if (!m_boxed)
             return OK;
         return this->box(m_ver_ch, m_hor_ch);
+    }
+
+    int TWindow::move_cursor(int y, int x)
+    {
+        return wmove(m_window, y, x);
     }
 }

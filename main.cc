@@ -19,19 +19,24 @@ int main()
     scene[1].box(0, 0);
     /* Explicitly set the inout window. */
     scene.set_input_window(0);
+    keypad(*scene.get_input_window(), true);
     scene.refresh();
+
     int key;
+    std::string text("Lovecraft");
     while (true)
     {
-        scene[0].mvwprintw(1,1, "Lovecraft");
         scene[1].mvwprintw(1,1, "Cthulhu");
+        scene[0].mvwprintw(1,1, text);
         scene.refresh();
-        scene >> key;
+        if ((scene >> key) == ERR)
+            break;
         switch (key)
         {
         case KEY_UP:
             break;
         case KEY_DOWN:
+            text = scene.crt_input_window(0.5f, 0.5f, 0.25f, 0.25f, "TITLE");
             break;
         case KEY_RIGHT:
             break;
@@ -43,6 +48,7 @@ int main()
             break;
         }
     }
+
     endwin();
     return 0;
 }
