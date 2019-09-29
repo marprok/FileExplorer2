@@ -76,13 +76,21 @@ namespace view
     int Scene::set_input_window(size_t i)
     {
         if (i >= m_windows.size())
-            return -1;
+            return ERR;
         m_input_window = i;
-        return 0;
+        return OK;
     }
 
     TWindow& Scene::get_input_window()
     {
         return m_windows[m_input_window];
+    }
+
+    int Scene::operator>>(int &key)
+    {
+        key = wgetch(*get_input_window());
+        if (key != ERR)
+            return OK;
+        return key;
     }
 }

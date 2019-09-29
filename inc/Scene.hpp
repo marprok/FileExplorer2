@@ -23,6 +23,7 @@ namespace view
         int erase();
         int set_input_window(size_t i);
         TWindow& get_input_window();
+        int operator>>(int &key);
     };
 }
 #endif
