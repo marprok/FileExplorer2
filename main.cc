@@ -1,15 +1,20 @@
 #include <iostream>
 #include <ncurses.h>
 #include "inc/Scene.hpp"
+#include "inc/scroll_vector.hpp"
 
 int main()
 {
     int screen_lines, screen_cols;
+    std::size_t output_lines;
     /* Global curses initialization */
     initscr();
     cbreak();
     noecho();
     curs_set(0); /* Make the cursor invisible. */
+    start_color();
+    init_pair(1, COLOR_BLACK, COLOR_WHITE);
+
     /* Setup the scene */
     getmaxyx(stdscr, screen_lines, screen_cols);
     view::Scene scene(screen_lines, screen_cols);
@@ -22,29 +27,81 @@ int main()
     keypad(*scene.get_input_window(), true);
     scene.refresh();
 
+    std::vector<int> vec;
+    vec.clear();
+    for (int i = 0; i < 2*screen_lines; ++i)
+    {
+        vec.emplace_back(i);
+    }
+    /* -2 lines because the window is boxed */
+    output_lines = static_cast<std::size_t>(screen_lines - 2);
+
+    utils::SCRVector<int> scr(0, output_lines, vec);
     int key;
-    std::string text("Lovecraft");
+    size_t index = 0;
     while (true)
     {
-        scene[1].mvwprintw(1,1, "Cthulhu");
-        scene[0].mvwprintw(1,1, text);
+        /* Clear the windows and rebox them */
+        scene.erase();
+        scene.rebox();
+        /* Draw things on the windows */
+        if (index >= output_lines)
+            index = output_lines-1;
+        for (size_t i = 0; i < output_lines; ++i)
+        {
+            if (i == index)
+                wattron(*scene[0], A_REVERSE);
+            scene[0].mvwprintw(static_cast<int>(i+1),
+                               1,
+                               std::to_string(scr[i]));
+            if (i == index)
+                wattroff(*scene[0], A_REVERSE);
+        }
+        scene[1].mvwprintw(1,1, std::to_string(screen_lines) + " " + std::to_string(screen_cols));
+        scene[1].mvwprintw(2,1, std::to_string(vec.size()));
+        scene[1].mvwprintw(3,1, std::to_string(scr.real_index(index)));
+
+        /* Refresh the windowws and wait for an event */
         scene.refresh();
         if ((scene >> key) == ERR)
             break;
         switch (key)
         {
         case KEY_UP:
+            if (index > 0)
+                index--;
+            else
+                scr.scroll_up();
             break;
         case KEY_DOWN:
-            text = scene.crt_input_window(0.5f, 0.5f, 0.25f, 0.25f, "TITLE");
+            if (index < output_lines - 1)
+                index++;
+            else
+                scr.scroll_down();
             break;
         case KEY_RIGHT:
+            scene.crt_input_window(0.5, 0.5, 0.25, 0.25, "el fef");
+            getmaxyx(stdscr, screen_lines, screen_cols);
+            vec.clear();
+            output_lines = static_cast<std::size_t>(screen_lines - 2);
+            for (int i = 0; i < 2*screen_lines; ++i)
+            {
+                vec.emplace_back(i);
+            }
+            scr = utils::SCRVector<int>(0, output_lines, vec);
             break;
         case KEY_LEFT:
             break;
         case KEY_RESIZE:
             getmaxyx(stdscr, screen_lines, screen_cols);
             scene.resize(screen_lines, screen_cols);
+            vec.clear();
+            for (int i = 0; i < 2*screen_lines; ++i)
+            {
+                vec.emplace_back(i);
+            }
+            output_lines = static_cast<std::size_t>(screen_lines - 2);
+            scr = utils::SCRVector<int>(0, output_lines, vec);
             break;
         }
     }

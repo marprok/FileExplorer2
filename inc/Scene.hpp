@@ -21,6 +21,7 @@ namespace view
                         float begin_x, int parent_lines, int parent_cols);
         int resize(int num_lines, int num_cols);
         int erase();
+        int rebox();
         int set_input_window(size_t i);
         TWindow& get_input_window();
         int operator>>(int &key);

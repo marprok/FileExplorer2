@@ -65,6 +65,17 @@ namespace view
         return OK;
     }
 
+    int Scene::rebox()
+    {
+        int ret;
+        for (auto& window : m_windows)
+        {
+            if ((ret = window.rebox()) != OK)
+                return ret;
+        }
+        return OK;
+    }
+
     int Scene::set_input_window(size_t i)
     {
         if (i >= m_windows.size())
