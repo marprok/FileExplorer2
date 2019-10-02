@@ -11,6 +11,7 @@ include_directories(
 set(SOURCES
     src/TWindow.cc
     src/Scene.cc
+    src/File.cc
 )
 
 find_package(Curses REQUIRED)

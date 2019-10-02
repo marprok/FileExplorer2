@@ -2,6 +2,7 @@
 #include <ncurses.h>
 #include "inc/Scene.hpp"
 #include "inc/scroll_vector.hpp"
+#include "inc/File.hpp"
 
 int main()
 {
@@ -39,6 +40,9 @@ int main()
     utils::SCRVector<int> scr(0, output_lines, vec);
     int key;
     size_t index = 0;
+
+    fs::File f("main.cc", "/home/void/Src/FileExplorer2");
+
     while (true)
     {
         /* Clear the windows and rebox them */
@@ -57,9 +61,15 @@ int main()
             if (i == index)
                 wattroff(*scene[0], A_REVERSE);
         }
-        scene[1].mvwprintw(1,1, std::to_string(screen_lines) + " " + std::to_string(screen_cols));
-        scene[1].mvwprintw(2,1, std::to_string(vec.size()));
-        scene[1].mvwprintw(3,1, std::to_string(scr.real_index(index)));
+        scene[1].mvwprintw(1,1, f.name());
+        scene[1].mvwprintw(2,1, f.abs_name());
+        scene[1].mvwprintw(3,1, f.size());
+        scene[1].mvwprintw(4,1, f.rights());
+        scene[1].mvwprintw(5,1, f.last_acc());
+        scene[1].mvwprintw(6,1, f.last_mod());
+        scene[1].mvwprintw(7,1, f.inode_number());
+        scene[1].mvwprintw(8,1, f.hlinks_number());
+
 
         /* Refresh the windowws and wait for an event */
         scene.refresh();
