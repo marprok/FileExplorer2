@@ -1,23 +1,28 @@
 #include "../inc/File.hpp"
 #include <time.h>
+#include <iostream>
 
 namespace fs
 {
     File::File(const std::string &name, const std::string &parent_name)
         :m_name(name), m_parent_name(parent_name)
     {
-        _read_data();
+        if (_read_data() < 0)
+        {
+            std::cerr << "Cannot open " << abs_path() << std::endl;
+            std::exit(1);
+        }
     }
 
     int File::_read_data()
     {
         int ret = 0;
-        if ((ret = stat(abs_name().c_str(), &m_stat))< 0)
+        if ((ret = lstat(abs_path().c_str(), &m_stat))< 0)
             return ret;
         return 0;
     }
 
-    std::string File::abs_name() const
+    std::string File::abs_path() const
     {
         return m_parent_name + "/" + m_name;
     }
@@ -114,5 +119,10 @@ namespace fs
             out += "-";
 
         return out;
+    }
+
+    bool File::is_link() const
+    {
+        return S_ISLNK(m_stat.st_mode);
     }
 }

@@ -12,6 +12,7 @@ set(SOURCES
     src/TWindow.cc
     src/Scene.cc
     src/File.cc
+    src/Directory.cc
 )
 
 find_package(Curses REQUIRED)

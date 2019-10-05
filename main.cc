@@ -3,6 +3,44 @@
 #include "inc/Scene.hpp"
 #include "inc/scroll_vector.hpp"
 #include "inc/File.hpp"
+#include "inc/Directory.hpp"
+#include <algorithm>
+
+static void load_current(fs::Directory* current, std::vector<std::string> &vec)
+{
+    if (!current)
+        return;
+    /* Prepare the data structures */
+    current->load_info();
+    vec.clear();
+    if (current->empty())
+        return;
+    /* Load the vector */
+    auto comp_file = [](auto& l, auto& r) { return l.name() < r.name();};
+    auto comp_dir = [](auto& l, auto& r) { return l->name() < r->name();};
+    std::sort(current->dirs().begin(), current->dirs().end(), comp_dir);
+    std::sort(current->files().begin(), current->files().end(), comp_file);
+    for (auto& dirs : current->dirs())
+        vec.push_back(dirs->name() + "/");
+    for (auto& files : current->files())
+        vec.push_back(files.name());
+}
+
+static void display_file_info(view::TWindow& window, fs::File &file)
+{
+    window.mvwprintw(1,1, file.name());
+    window.mvwprintw(2,1, file.abs_path());
+    window.mvwprintw(3,1, file.size());
+    window.mvwprintw(4,1, file.rights());
+    window.mvwprintw(5,1, file.last_acc());
+    window.mvwprintw(6,1, file.last_mod());
+    window.mvwprintw(7,1, file.inode_number());
+    window.mvwprintw(8,1, file.hlinks_number());
+    if (file.is_link())
+    {
+        window.mvwprintw(9,1, "LINK");
+    }
+}
 
 int main()
 {
@@ -14,61 +52,81 @@ int main()
     noecho();
     curs_set(0); /* Make the cursor invisible. */
     start_color();
-    init_pair(1, COLOR_BLACK, COLOR_WHITE);
-
+    init_pair(1, COLOR_BLUE, COLOR_BLACK);
     /* Setup the scene */
     getmaxyx(stdscr, screen_lines, screen_cols);
     view::Scene scene(screen_lines, screen_cols);
-    scene.add_window(1.0f, 0.5f, 0.0f, 0.0f, screen_lines, screen_cols);
-    scene.add_window(1.0f, 0.5f, 0.0f, 0.5f, screen_lines, screen_cols);
+    scene.add_window(0.75f, 0.5f, 0.0f, 0.0f, screen_lines, screen_cols);
+    scene.add_window(0.75f, 0.5f, 0.0f, 0.5f, screen_lines, screen_cols);
+    scene.add_window(0.25f, 1.0f, 0.75f, 0.0f, screen_lines, screen_cols);
     scene[0].box(0,0);
     scene[1].box(0, 0);
-    /* Explicitly set the inout window. */
+    scene[2].box(0,0);
+    /* Explicitly set the inout window */
     scene.set_input_window(0);
     keypad(*scene.get_input_window(), true);
-    scene.refresh();
-
-    std::vector<int> vec;
-    vec.clear();
-    for (int i = 0; i < 2*screen_lines; ++i)
-    {
-        vec.emplace_back(i);
-    }
-    /* -2 lines because the window is boxed */
-    output_lines = static_cast<std::size_t>(screen_lines - 2);
-
-    utils::SCRVector<int> scr(0, output_lines, vec);
+    /* Create the nececary data structures */
+    std::vector<std::string> vec;
     int key;
     size_t index = 0;
-
-    fs::File f("main.cc", "/home/void/Src/FileExplorer2");
-
+    fs::Directory *root = new fs::Directory("/home/marios", nullptr);
+    fs::Directory *current = root;
+    load_current(current, vec);
+    /* -2 lines because the window is boxed */
+    output_lines = output_lines = std::min(static_cast<std::size_t>(scene[0].lines() - 2),
+                                            vec.size());
+    utils::SCRVector<std::string> scr(0, output_lines, vec);
+    bool reset = false;
     while (true)
     {
+        if (reset)
+        {
+            reset = false;
+            if (scene[0].lines() > 2)
+            {
+                 output_lines = std::min(
+                                          static_cast<std::size_t>(scene[0].lines() - 2),
+                                          vec.size()
+                                         );
+            }
+            else
+                output_lines = 0;
+            scr.reset(0, output_lines, vec);
+        }
+        if (output_lines > 0  && index >= output_lines)
+            index = output_lines-1;
         /* Clear the windows and rebox them */
         scene.erase();
         scene.rebox();
         /* Draw things on the windows */
-        if (index >= output_lines)
-            index = output_lines-1;
-        for (size_t i = 0; i < output_lines; ++i)
+        if (!current->empty())
         {
-            if (i == index)
-                wattron(*scene[0], A_REVERSE);
-            scene[0].mvwprintw(static_cast<int>(i+1),
-                               1,
-                               std::to_string(scr[i]));
-            if (i == index)
-                wattroff(*scene[0], A_REVERSE);
+            for (size_t i = 0; i < output_lines && i < scr.size(); ++i)
+            {
+                if (scr.real_index(i) < current->dirs().size())
+                    wattron(*scene[0], COLOR_PAIR(1));
+                if (i == index)
+                    wattron(*scene[0], A_REVERSE);
+                scene[0].mvwprintw(static_cast<int>(i+1),
+                                   1,
+                                   scr[i]);
+                if (i == index)
+                    wattroff(*scene[0], A_REVERSE);
+                if (scr.real_index(i) < current->dirs().size())
+                    wattroff(*scene[0], COLOR_PAIR(1));
+            }
+            if (scr.real_index(index) >= current->dirs().size())
+            {
+                /* Calculate the index of the file */
+                size_t fi = scr.real_index(index) - current->dirs().size();
+                display_file_info(scene[1], current->files()[fi]);
+            }
+        }else
+        {
+            scene[0].mvwprintw(scene[0].lines()/2, scene[0].cols()/2 - 2, "EMPTY");
         }
-        scene[1].mvwprintw(1,1, f.name());
-        scene[1].mvwprintw(2,1, f.abs_name());
-        scene[1].mvwprintw(3,1, f.size());
-        scene[1].mvwprintw(4,1, f.rights());
-        scene[1].mvwprintw(5,1, f.last_acc());
-        scene[1].mvwprintw(6,1, f.last_mod());
-        scene[1].mvwprintw(7,1, f.inode_number());
-        scene[1].mvwprintw(8,1, f.hlinks_number());
+
+        scene[2].mvwprintw(1,1, current->abs_path());
 
 
         /* Refresh the windowws and wait for an event */
@@ -90,32 +148,29 @@ int main()
                 scr.scroll_down();
             break;
         case KEY_RIGHT:
-            scene.crt_input_window(0.5, 0.5, 0.25, 0.25, "el fef");
-            getmaxyx(stdscr, screen_lines, screen_cols);
-            vec.clear();
-            output_lines = static_cast<std::size_t>(screen_lines - 2);
-            for (int i = 0; i < 2*screen_lines; ++i)
+            if (scr.real_index(index) < current->dirs().size())
             {
-                vec.emplace_back(i);
+                current = current->dive(scr.real_index(index));
+                load_current(current, vec);
+                reset = true;
+                index = 0;
+
             }
-            scr = utils::SCRVector<int>(0, output_lines, vec);
             break;
         case KEY_LEFT:
+            current = current->surface();
+            load_current(current, vec);
+            reset = true;
+            index = 0;
             break;
         case KEY_RESIZE:
             getmaxyx(stdscr, screen_lines, screen_cols);
             scene.resize(screen_lines, screen_cols);
-            vec.clear();
-            for (int i = 0; i < 2*screen_lines; ++i)
-            {
-                vec.emplace_back(i);
-            }
-            output_lines = static_cast<std::size_t>(screen_lines - 2);
-            scr = utils::SCRVector<int>(0, output_lines, vec);
+            reset = true;
             break;
         }
     }
-
+    delete current;
     endwin();
     return 0;
 }

@@ -17,7 +17,7 @@ namespace fs
         std::string _get_time(const struct timespec* tp) const;
     public:
         File(const std::string &name, const std::string &parent_name);
-        std::string abs_name() const;
+        std::string abs_path() const;
         const std::string& name() const;
 
         /* INode data access */
@@ -27,6 +27,7 @@ namespace fs
         std::string last_mod() const;
         std::string last_acc() const;
         std::string rights() const;
+        bool is_link() const;
     };
 }
 

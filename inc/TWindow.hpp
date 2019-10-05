@@ -34,6 +34,8 @@ namespace view
         int erase();
         int rebox();
         int move_cursor(int y, int x);
+        int cols();
+        int lines();
     };
 }
 #endif
