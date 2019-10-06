@@ -36,6 +36,7 @@ namespace view
         int move_cursor(int y, int x);
         int cols();
         int lines();
+        int delwin();
     };
 }
 #endif

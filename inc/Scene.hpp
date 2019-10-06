@@ -16,6 +16,7 @@ namespace view
     public:
         Scene(int num_lines, int num_cols);
         TWindow& operator[](size_t i);
+        ~Scene();
         int refresh();
         void add_window(float perlines, float percols, float begin_y,
                         float begin_x, int parent_lines, int parent_cols);

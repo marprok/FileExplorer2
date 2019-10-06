@@ -56,9 +56,9 @@ int main()
     /* Setup the scene */
     getmaxyx(stdscr, screen_lines, screen_cols);
     view::Scene scene(screen_lines, screen_cols);
-    scene.add_window(0.75f, 0.5f, 0.0f, 0.0f, screen_lines, screen_cols);
-    scene.add_window(0.75f, 0.5f, 0.0f, 0.5f, screen_lines, screen_cols);
-    scene.add_window(0.25f, 1.0f, 0.75f, 0.0f, screen_lines, screen_cols);
+    scene.add_window(0.8f, 0.5f, 0.0f, 0.0f, screen_lines, screen_cols);
+    scene.add_window(0.8f, 0.5f, 0.0f, 0.5f, screen_lines, screen_cols);
+    scene.add_window(0.2f, 1.0f, 0.8f, 0.0f, screen_lines, screen_cols);
     scene[0].box(0,0);
     scene[1].box(0, 0);
     scene[2].box(0,0);
@@ -73,28 +73,16 @@ int main()
     fs::Directory *current = root;
     load_current(current, vec);
     /* -2 lines because the window is boxed */
-    output_lines = output_lines = std::min(static_cast<std::size_t>(scene[0].lines() - 2),
-                                            vec.size());
+    output_lines = std::min(static_cast<std::size_t>(scene[0].lines() - 2),
+                            vec.size());
     utils::SCRVector<std::string> scr(0, output_lines, vec);
-    bool reset = false;
     while (true)
     {
-        if (reset)
-        {
-            reset = false;
-            if (scene[0].lines() > 2)
-            {
-                 output_lines = std::min(
-                                          static_cast<std::size_t>(scene[0].lines() - 2),
-                                          vec.size()
-                                         );
-            }
-            else
-                output_lines = 0;
-            scr.reset(0, output_lines, vec);
-        }
+        /* In case the window is too small */
         if (output_lines > 0  && index >= output_lines)
             index = output_lines-1;
+        else if (output_lines == 0)
+            index = 0;
         /* Clear the windows and rebox them */
         scene.erase();
         scene.rebox();
@@ -107,6 +95,7 @@ int main()
                     wattron(*scene[0], COLOR_PAIR(1));
                 if (i == index)
                     wattron(*scene[0], A_REVERSE);
+                /* +1 because it is a boxed window */
                 scene[0].mvwprintw(static_cast<int>(i+1),
                                    1,
                                    scr[i]);
@@ -125,10 +114,7 @@ int main()
         {
             scene[0].mvwprintw(scene[0].lines()/2, scene[0].cols()/2 - 2, "EMPTY");
         }
-
         scene[2].mvwprintw(1,1, current->abs_path());
-
-
         /* Refresh the windowws and wait for an event */
         scene.refresh();
         if ((scene >> key) == ERR)
@@ -152,21 +138,24 @@ int main()
             {
                 current = current->dive(scr.real_index(index));
                 load_current(current, vec);
-                reset = true;
-                index = 0;
-
+                output_lines = std::min(static_cast<std::size_t>(scene[0].lines() - 2),
+                                        vec.size());
+                scr.reset(0, output_lines, vec);
             }
             break;
         case KEY_LEFT:
             current = current->surface();
             load_current(current, vec);
-            reset = true;
-            index = 0;
+            output_lines = std::min(static_cast<std::size_t>(scene[0].lines() - 2),
+                                    vec.size());
+            scr.reset(0, output_lines, vec);
             break;
         case KEY_RESIZE:
             getmaxyx(stdscr, screen_lines, screen_cols);
             scene.resize(screen_lines, screen_cols);
-            reset = true;
+            output_lines = std::min(static_cast<std::size_t>(scene[0].lines() - 2),
+                                    vec.size());
+            scr.reset(0, output_lines, vec);
             break;
         }
     }

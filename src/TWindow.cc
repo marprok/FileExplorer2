@@ -136,4 +136,9 @@ namespace view
 
     int TWindow::cols() { return static_cast<int>(m_per_cols*m_parent_cols); }
     int TWindow::lines() { return static_cast<int>(m_per_lines*m_parent_lines); }
+
+    int TWindow::delwin()
+    {
+        return ::delwin(m_window);
+    }
 }

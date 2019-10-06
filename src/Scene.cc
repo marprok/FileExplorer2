@@ -11,7 +11,11 @@ namespace view
     {
 
     }
-
+    Scene::~Scene()
+    {
+        for (auto& window : m_windows)
+            window.delwin();
+    }
     TWindow& Scene::operator[](size_t i)
     {
         return m_windows[i];
