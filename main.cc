@@ -6,6 +6,24 @@
 #include "inc/Directory.hpp"
 #include <algorithm>
 
+enum POSITION
+{
+    LEFT,
+    RIGHT,
+    BOTTOM
+};
+
+static std::size_t calculate_lines(view::TWindow& window, std::vector<std::string> &vec)
+{
+    std::size_t output_lines = 0;
+    if (window.lines() > 2)
+        output_lines = std::min(static_cast<std::size_t>(window.lines() - 2),
+                                vec.size());
+    else
+        output_lines = 0;
+    return output_lines;
+}
+
 static void load_current(fs::Directory* current, std::vector<std::string> &vec)
 {
     if (!current)
@@ -28,18 +46,15 @@ static void load_current(fs::Directory* current, std::vector<std::string> &vec)
 
 static void display_file_info(view::TWindow& window, fs::File &file)
 {
-    window.mvwprintw(1,1, file.name());
-    window.mvwprintw(2,1, file.abs_path());
-    window.mvwprintw(3,1, file.size());
-    window.mvwprintw(4,1, file.rights());
-    window.mvwprintw(5,1, file.last_acc());
-    window.mvwprintw(6,1, file.last_mod());
-    window.mvwprintw(7,1, file.inode_number());
-    window.mvwprintw(8,1, file.hlinks_number());
+    window.mvwprintw(1,1, "NAME: " + file.name());
+    window.mvwprintw(2,1, "SIZE: " + file.size() + "[Bytes]");
+    window.mvwprintw(3,1, "RIGHTS: " + file.rights());
+    window.mvwprintw(4,1, "LAST ACCESSED: " + file.last_acc());
+    window.mvwprintw(5,1, "LAST MODIFIED: " + file.last_mod());
+    window.mvwprintw(6,1, "INODE: " + file.inode_number());
+    window.mvwprintw(7,1, "HARD LINKS: " + file.hlinks_number());
     if (file.is_link())
-    {
-        window.mvwprintw(9,1, "LINK");
-    }
+        window.mvwprintw(8,1, "[LINK]");
 }
 
 int main()
@@ -59,11 +74,11 @@ int main()
     scene.add_window(0.8f, 0.5f, 0.0f, 0.0f, screen_lines, screen_cols);
     scene.add_window(0.8f, 0.5f, 0.0f, 0.5f, screen_lines, screen_cols);
     scene.add_window(0.2f, 1.0f, 0.8f, 0.0f, screen_lines, screen_cols);
-    scene[0].box(0,0);
-    scene[1].box(0, 0);
-    scene[2].box(0,0);
+    scene[LEFT].box(0,0);
+    scene[RIGHT].box(0, 0);
+    scene[BOTTOM].box(0,0);
     /* Explicitly set the inout window */
-    scene.set_input_window(0);
+    scene.set_input_window(LEFT);
     keypad(*scene.get_input_window(), true);
     /* Create the nececary data structures */
     std::vector<std::string> vec;
@@ -73,7 +88,7 @@ int main()
     fs::Directory *current = root;
     load_current(current, vec);
     /* -2 lines because the window is boxed */
-    output_lines = std::min(static_cast<std::size_t>(scene[0].lines() - 2),
+    output_lines = std::min(static_cast<std::size_t>(scene[LEFT].lines() - 2),
                             vec.size());
     utils::SCRVector<std::string> scr(0, output_lines, vec);
     while (true)
@@ -92,29 +107,29 @@ int main()
             for (size_t i = 0; i < output_lines && i < scr.size(); ++i)
             {
                 if (scr.real_index(i) < current->dirs().size())
-                    wattron(*scene[0], COLOR_PAIR(1));
+                    wattron(*scene[LEFT], COLOR_PAIR(1));
                 if (i == index)
-                    wattron(*scene[0], A_REVERSE);
+                    wattron(*scene[LEFT], A_REVERSE);
                 /* +1 because it is a boxed window */
-                scene[0].mvwprintw(static_cast<int>(i+1),
+                scene[LEFT].mvwprintw(static_cast<int>(i+1),
                                    1,
                                    scr[i]);
                 if (i == index)
-                    wattroff(*scene[0], A_REVERSE);
+                    wattroff(*scene[LEFT], A_REVERSE);
                 if (scr.real_index(i) < current->dirs().size())
-                    wattroff(*scene[0], COLOR_PAIR(1));
+                    wattroff(*scene[LEFT], COLOR_PAIR(1));
             }
             if (scr.real_index(index) >= current->dirs().size())
             {
                 /* Calculate the index of the file */
                 size_t fi = scr.real_index(index) - current->dirs().size();
-                display_file_info(scene[1], current->files()[fi]);
+                display_file_info(scene[RIGHT], current->files()[fi]);
             }
         }else
         {
-            scene[0].mvwprintw(scene[0].lines()/2, scene[0].cols()/2 - 2, "EMPTY");
+            scene[LEFT].mvwprintw(scene[LEFT].lines()/2, scene[LEFT].cols()/2 - 2, "EMPTY");
         }
-        scene[2].mvwprintw(1,1, current->abs_path());
+        scene[BOTTOM].mvwprintw(1,1, current->abs_path());
         /* Refresh the windowws and wait for an event */
         scene.refresh();
         if ((scene >> key) == ERR)
@@ -138,23 +153,20 @@ int main()
             {
                 current = current->dive(scr.real_index(index));
                 load_current(current, vec);
-                output_lines = std::min(static_cast<std::size_t>(scene[0].lines() - 2),
-                                        vec.size());
+                output_lines = calculate_lines(scene[LEFT], vec);
                 scr.reset(0, output_lines, vec);
             }
             break;
         case KEY_LEFT:
             current = current->surface();
             load_current(current, vec);
-            output_lines = std::min(static_cast<std::size_t>(scene[0].lines() - 2),
-                                    vec.size());
+            output_lines = calculate_lines(scene[LEFT], vec);
             scr.reset(0, output_lines, vec);
             break;
         case KEY_RESIZE:
             getmaxyx(stdscr, screen_lines, screen_cols);
             scene.resize(screen_lines, screen_cols);
-            output_lines = std::min(static_cast<std::size_t>(scene[0].lines() - 2),
-                                    vec.size());
+            output_lines = calculate_lines(scene[LEFT], vec);
             scr.reset(0, output_lines, vec);
             break;
         }
