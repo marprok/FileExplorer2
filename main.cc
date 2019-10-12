@@ -84,7 +84,7 @@ int main()
     keypad(*scene.get_input_window(), true);
     /* Create the nececary data structures */
     std::vector<std::string> vec;
-    int key;
+    int key = 0;
     size_t index = 0;
     fs::Directory *root = new fs::Directory("/home/void", nullptr);
     fs::Directory *current = root;
@@ -93,7 +93,7 @@ int main()
     output_lines = std::min(static_cast<std::size_t>(scene[LEFT].lines() - 2),
                             vec.size());
     utils::SCRVector<std::string> scr(0, output_lines, vec);
-    while (true)
+    while (key != KEY_END)
     {
         /* In case the window is too small */
         if (output_lines > 0  && index >= output_lines)
@@ -173,7 +173,7 @@ int main()
             break;
         }
     }
-    delete current;
+    delete root;
     endwin();
     return 0;
 }
