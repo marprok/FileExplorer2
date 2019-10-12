@@ -24,7 +24,7 @@ namespace fs
 
         if (!dir)
         {
-            std::cerr << "ERROR: opendir\nDirectory name:%s\n" << m_name;
+            std::cerr << "ERROR: opendir" << std::endl << "Directory name: "<< m_name << std::endl;
             return 0;
         }
 

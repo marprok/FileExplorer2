@@ -15,6 +15,8 @@ enum POSITION
 
 static std::size_t calculate_lines(view::TWindow& window, std::vector<std::string> &vec)
 {
+    if (vec.empty())
+        return 0;
     std::size_t output_lines = 0;
     if (window.lines() > 2)
         output_lines = std::min(static_cast<std::size_t>(window.lines() - 2),
@@ -47,14 +49,14 @@ static void load_current(fs::Directory* current, std::vector<std::string> &vec)
 static void display_file_info(view::TWindow& window, fs::File &file)
 {
     window.mvwprintw(1,1, "NAME: " + file.name());
-    window.mvwprintw(2,1, "SIZE: " + file.size() + "[Bytes]");
-    window.mvwprintw(3,1, "RIGHTS: " + file.rights());
-    window.mvwprintw(4,1, "LAST ACCESSED: " + file.last_acc());
-    window.mvwprintw(5,1, "LAST MODIFIED: " + file.last_mod());
-    window.mvwprintw(6,1, "INODE: " + file.inode_number());
-    window.mvwprintw(7,1, "HARD LINKS: " + file.hlinks_number());
+    window.mvwprintw(3,1, "SIZE: " + file.size() + "[Bytes]");
+    window.mvwprintw(5,1, "RIGHTS: " + file.rights());
+    window.mvwprintw(7,1, "LAST ACCESSED: " + file.last_acc());
+    window.mvwprintw(9,1, "LAST MODIFIED: " + file.last_mod());
+    window.mvwprintw(11,1, "INODE: " + file.inode_number());
+    window.mvwprintw(13,1, "HARD LINKS: " + file.hlinks_number());
     if (file.is_link())
-        window.mvwprintw(8,1, "[LINK]");
+        window.mvwprintw(15,1, "[LINK]->" + file.real_file());
 }
 
 int main()
@@ -73,7 +75,7 @@ int main()
     view::Scene scene(screen_lines, screen_cols);
     scene.add_window(0.8f, 0.5f, 0.0f, 0.0f, screen_lines, screen_cols);
     scene.add_window(0.8f, 0.5f, 0.0f, 0.5f, screen_lines, screen_cols);
-    scene.add_window(0.2f, 1.0f, 0.8f, 0.0f, screen_lines, screen_cols);
+    scene.add_window(0.22f, 1.0f, 0.8f, 0.0f, screen_lines, screen_cols);
     scene[LEFT].box(0,0);
     scene[RIGHT].box(0, 0);
     scene[BOTTOM].box(0,0);
@@ -84,7 +86,7 @@ int main()
     std::vector<std::string> vec;
     int key;
     size_t index = 0;
-    fs::Directory *root = new fs::Directory("/home/marios", nullptr);
+    fs::Directory *root = new fs::Directory("/home/void", nullptr);
     fs::Directory *current = root;
     load_current(current, vec);
     /* -2 lines because the window is boxed */

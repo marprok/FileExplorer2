@@ -12,6 +12,7 @@ namespace fs
         struct stat m_stat;
         std::string m_name;
         std::string m_parent_name;
+        bool m_loaded;
 
         int _read_data();
         std::string _get_time(const struct timespec* tp) const;
@@ -19,6 +20,7 @@ namespace fs
         File(const std::string &name, const std::string &parent_name);
         std::string abs_path() const;
         const std::string& name() const;
+        bool loaded() const;
 
         /* INode data access */
         std::string inode_number() const;
@@ -28,6 +30,7 @@ namespace fs
         std::string last_acc() const;
         std::string rights() const;
         bool is_link() const;
+        std::string real_file() const;
     };
 }
 

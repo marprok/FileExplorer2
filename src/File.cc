@@ -1,11 +1,14 @@
 #include "../inc/File.hpp"
 #include <time.h>
 #include <iostream>
+#include <linux/limits.h> /* PATH_MAX */
+#include <unistd.h> /* readlink */
+#include <cstring>
 
 namespace fs
 {
     File::File(const std::string &name, const std::string &parent_name)
-        :m_name(name), m_parent_name(parent_name)
+        :m_name(name), m_parent_name(parent_name), m_loaded(false)
     {
         if (_read_data() < 0)
         {
@@ -16,9 +19,12 @@ namespace fs
 
     int File::_read_data()
     {
+        if (m_loaded)
+            return 0;
         int ret = 0;
         if ((ret = lstat(abs_path().c_str(), &m_stat))< 0)
             return ret;
+        m_loaded = true;
         return 0;
     }
 
@@ -30,6 +36,11 @@ namespace fs
     const std::string& File::name() const
     {
         return m_name;
+    }
+
+    bool File::loaded() const
+    {
+        return m_loaded;
     }
 
     std::string File::inode_number() const
@@ -124,5 +135,33 @@ namespace fs
     bool File::is_link() const
     {
         return S_ISLNK(m_stat.st_mode);
+    }
+
+    std::string File::real_file() const
+    {
+        std::string out = "";
+        if (!loaded())
+            return out;
+        if (!is_link())
+            return out;
+        /* The following code is taken from the realink man page. */
+        size_t size = m_stat.st_size;
+
+        if (size == 0)
+        {
+            size = PATH_MAX;
+        }
+        size++;
+        char *buf = new char[size];
+        memset(buf, 0, size);
+
+        if (readlink(abs_path().c_str(), buf, size) < 0)
+        {
+            std::cerr << "Cannot readlink:" << name() << std::endl;
+            return "";
+        }
+        out = buf; /* Deep copy */
+        delete[] buf;
+        return out;
     }
 }
