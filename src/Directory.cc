@@ -105,11 +105,14 @@ namespace fs
         if (i > m_files.size())
             return 0;
         std::string abs_path= m_files[i].abs_path();
-        int ret = unlink(abs_path.c_str());
+        int ret = 0;
         auto comp = [abs_path](File const& file){ return file.abs_path() == abs_path;};
         auto file = std::find_if(m_files.begin(), m_files.end(),[abs_path](const File & file){ return file.abs_path() == abs_path;});
         if (file != m_files.end())
+        {
+            ret = unlink(abs_path.c_str());
             m_files.erase(file);
+        }
         return ret;
     }
 
