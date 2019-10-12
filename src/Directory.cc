@@ -1,6 +1,7 @@
 #include <dirent.h>
 #include <iostream>
 #include <cstring>
+#include <fcntl.h> /* creat */
 #include "../inc/Directory.hpp"
 
 namespace fs
@@ -54,6 +55,12 @@ namespace fs
         return m_size;
     }
 
+    std::size_t Directory::reload_info()
+    {
+        m_loaded = false;
+        return load_info();
+    }
+
     Directory::~Directory()
     {
         for (auto& d : m_dirs)
@@ -82,5 +89,13 @@ namespace fs
     std::vector<File>& Directory::files()      { return m_files; }
     std::vector<Directory*>& Directory::dirs() { return m_dirs; }
     bool Directory::empty() const { return m_dirs.empty() && m_files.empty(); }
+
+    int Directory::create_file(const std::string& name)
+    {
+        int ret;
+        ret = creat((abs_path() + "/" + name).c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+        m_files.emplace_back(name, abs_path());
+        return ret;
+    }
 
 }

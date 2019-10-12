@@ -21,6 +21,7 @@ namespace fs
     public:
         Directory(const std::string& name, Directory* parent);
         std::size_t load_info();
+        std::size_t reload_info();
         ~Directory();
         Directory* dive(std::size_t i);
         Directory* surface();
@@ -31,6 +32,7 @@ namespace fs
         std::vector<File>& files();
         std::vector<Directory*>& dirs();
         bool empty() const;
+        int create_file(const std::string& name);
     };
 }
 #endif // DIRECTORY_H

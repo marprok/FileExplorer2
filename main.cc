@@ -138,6 +138,15 @@ int main()
             break;
         switch (key)
         {
+        case 'c':
+
+            current->create_file(scene.crt_input_window(0.5f, 0.5f,
+                                                        0.5f, 0.25f,
+                                                        "Create File"));
+            load_current(current, vec);
+            output_lines = calculate_lines(scene[LEFT], vec);
+            scr.reset(0, output_lines, vec);
+            break;
         case KEY_UP:
             if (index > 0)
                 index--;
