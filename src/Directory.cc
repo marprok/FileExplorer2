@@ -2,6 +2,8 @@
 #include <iostream>
 #include <cstring>
 #include <fcntl.h> /* creat */
+#include <unistd.h> /* unlink */
+#include <algorithm>
 #include "../inc/Directory.hpp"
 
 namespace fs
@@ -95,6 +97,19 @@ namespace fs
         int ret;
         ret = creat((abs_path() + "/" + name).c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
         m_files.emplace_back(name, abs_path());
+        return ret;
+    }
+
+    int Directory::unlink_file(std::size_t i)
+    {
+        if (i > m_files.size())
+            return 0;
+        std::string abs_path= m_files[i].abs_path();
+        int ret = unlink(abs_path.c_str());
+        auto comp = [abs_path](File const& file){ return file.abs_path() == abs_path;};
+        auto file = std::find_if(m_files.begin(), m_files.end(),[abs_path](const File & file){ return file.abs_path() == abs_path;});
+        if (file != m_files.end())
+            m_files.erase(file);
         return ret;
     }
 

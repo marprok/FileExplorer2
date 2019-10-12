@@ -140,12 +140,22 @@ int main()
         {
         case 'c':
 
-            current->create_file(scene.crt_input_window(0.5f, 0.5f,
+            current->create_file(scene.crt_input_window(0.25f, 0.5f,
                                                         0.5f, 0.25f,
                                                         "Create File"));
             load_current(current, vec);
             output_lines = calculate_lines(scene[LEFT], vec);
             scr.reset(0, output_lines, vec);
+            break;
+        case 'd':
+            if (!current->empty() &&
+                scr.real_index(index) >= current->dirs().size())
+            {
+                current->unlink_file(scr.real_index(index) - current->dirs().size());
+                load_current(current, vec);
+                output_lines = calculate_lines(scene[LEFT], vec);
+                scr.reset(0, output_lines, vec);
+            }
             break;
         case KEY_UP:
             if (index > 0)

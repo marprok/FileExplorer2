@@ -33,6 +33,7 @@ namespace fs
         std::vector<Directory*>& dirs();
         bool empty() const;
         int create_file(const std::string& name);
+        int unlink_file(std::size_t i);
     };
 }
 #endif // DIRECTORY_H
