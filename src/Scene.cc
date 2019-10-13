@@ -16,6 +16,7 @@ namespace view
         for (auto& window : m_windows)
             window.delwin();
     }
+
     TWindow& Scene::operator[](size_t i)
     {
         return m_windows[i];
@@ -102,7 +103,7 @@ namespace view
     }
 
     std::string Scene::crt_input_window(float perlines, float percols, float begin_y,
-                                        float begin_x, std::string& msg)
+                                        float begin_x, const std::string& msg)
     {
         /* clear the state of the current scene */
         this->erase();
@@ -160,9 +161,66 @@ namespace view
     }
 
     std::string Scene::crt_input_window(float perlines, float percols, float begin_y,
-                                 float begin_x, std::string&& msg)
+                                 float begin_x,const std::string&& msg)
     {
         return this->crt_input_window(perlines, percols, begin_y,
                                       begin_x, msg);
+    }
+
+    int Scene::crt_yn_window(float begin_y, float begin_x,
+                             const std::string& msg)
+    {
+        /* clear the state of the current scene */
+        this->erase();
+        this->refresh();
+        TWindow temp(0.2f, 0.3f, begin_y,
+                     begin_x, m_num_lines, m_num_cols);
+        temp.box('#','#');
+        curs_set(1); /* Make the cursor visible. */
+        keypad(*temp, true);
+        int x_pos = static_cast<int>((m_num_cols*0.3f - msg.size())/2.0f);
+        x_pos = x_pos > 0 ? x_pos : 1;
+        int choice = 0;
+        /* Handle the keyboard input */
+        int key;
+        bool choice_made = false;
+        while (!choice_made)
+        {
+            temp.erase();
+            temp.refresh();
+            temp.rebox();
+            temp.mvwprintw(1,x_pos, msg);
+            temp.mvwprintw(2,1, "[Y]ES  [N]O");
+            temp.refresh();
+            key = wgetch(*temp);
+            switch (key)
+            {
+            case 'y':
+                choice_made = true;
+                choice = 1;
+                break;
+            case 'n':
+                choice_made = true;
+                choice = 0;
+                break;
+            case KEY_RESIZE:
+                getmaxyx(stdscr, m_num_lines, m_num_cols);
+                temp.resize(m_num_lines, m_num_cols);
+                x_pos = static_cast<int>((m_num_cols*0.3f - msg.size())/2.0f);
+                x_pos = x_pos > 0 ? x_pos : 1;
+                break;
+            default:
+                break;
+            }
+
+        }
+        /* Bring back the state of the scene */
+        temp.erase();
+        temp.refresh();
+        delwin(*temp);
+        curs_set(0);
+        this->resize(m_num_lines, m_num_cols);
+        this->refresh();
+        return choice;
     }
 }

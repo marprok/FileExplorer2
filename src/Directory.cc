@@ -94,9 +94,17 @@ namespace fs
 
     int Directory::create_file(const std::string& name)
     {
-        int ret;
-        ret = creat((abs_path() + "/" + name).c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-        m_files.emplace_back(name, abs_path());
+        std::string file_name = name;
+        int ret = 0;
+        if (name == "")
+            file_name = "New_File";
+        auto file = std::find_if(m_files.begin(), m_files.end(),[file_name](const File & file){ return file.name() == file_name;});
+        if (file == m_files.end())
+        {
+            ret = creat((abs_path() + "/" + file_name).c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            m_files.emplace_back(file_name, abs_path());
+            return ret;
+        }
         return ret;
     }
 
@@ -106,7 +114,6 @@ namespace fs
             return 0;
         std::string abs_path= m_files[i].abs_path();
         int ret = 0;
-        auto comp = [abs_path](File const& file){ return file.abs_path() == abs_path;};
         auto file = std::find_if(m_files.begin(), m_files.end(),[abs_path](const File & file){ return file.abs_path() == abs_path;});
         if (file != m_files.end())
         {

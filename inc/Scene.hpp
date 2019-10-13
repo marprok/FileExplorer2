@@ -27,9 +27,11 @@ namespace view
         TWindow& get_input_window();
         int operator>>(int &key);
         std::string crt_input_window(float perlines, float percols, float begin_y,
-                                     float begin_x, std::string& msg);
+                                     float begin_x, const std::string& msg);
         std::string crt_input_window(float perlines, float percols, float begin_y,
-                                     float begin_x, std::string&& msg);
+                                     float begin_x, const std::string&& msg);
+        int crt_yn_window(float begin_y, float begin_x,
+                          const std::string& msg);
     };
 }
 #endif

@@ -92,7 +92,7 @@ int main()
     /* -2 lines because the window is boxed */
     output_lines = std::min(static_cast<std::size_t>(scene[LEFT].lines() - 2),
                             vec.size());
-    utils::SCRVector<std::string> scr(0, output_lines, vec);
+    utils::SCRVector<std::string> scroller(0, output_lines, vec);
     while (key != KEY_END)
     {
         /* In case the window is too small */
@@ -106,25 +106,25 @@ int main()
         /* Draw things on the windows */
         if (!current->empty())
         {
-            for (size_t i = 0; i < output_lines && i < scr.size(); ++i)
+            for (size_t i = 0; i < output_lines && i < scroller.size(); ++i)
             {
-                if (scr.real_index(i) < current->dirs().size())
+                if (scroller.real_index(i) < current->dirs().size())
                     wattron(*scene[LEFT], COLOR_PAIR(1));
                 if (i == index)
                     wattron(*scene[LEFT], A_REVERSE);
                 /* +1 because it is a boxed window */
                 scene[LEFT].mvwprintw(static_cast<int>(i+1),
                                    1,
-                                   scr[i]);
+                                   scroller[i]);
                 if (i == index)
                     wattroff(*scene[LEFT], A_REVERSE);
-                if (scr.real_index(i) < current->dirs().size())
+                if (scroller.real_index(i) < current->dirs().size())
                     wattroff(*scene[LEFT], COLOR_PAIR(1));
             }
-            if (scr.real_index(index) >= current->dirs().size())
+            if (scroller.real_index(index) >= current->dirs().size())
             {
                 /* Calculate the index of the file */
-                size_t fi = scr.real_index(index) - current->dirs().size();
+                size_t fi = scroller.real_index(index) - current->dirs().size();
                 display_file_info(scene[RIGHT], current->files()[fi]);
             }
         }else
@@ -145,50 +145,56 @@ int main()
                                                         "Create File"));
             load_current(current, vec);
             output_lines = calculate_lines(scene[LEFT], vec);
-            scr.reset(0, output_lines, vec);
+            scroller.reset(0, output_lines, vec);
             break;
         case 'd':
             if (!current->empty() &&
-                scr.real_index(index) >= current->dirs().size())
+                scroller.real_index(index) >= current->dirs().size())
             {
-                current->unlink_file(scr.real_index(index) - current->dirs().size());
-                load_current(current, vec);
-                output_lines = calculate_lines(scene[LEFT], vec);
-                scr.reset(0, output_lines, vec);
+                std::size_t file_i = scroller.real_index(index) - current->dirs().size();
+                int choice = scene.crt_yn_window(0.5f, 0.25f,
+                                                 "Delete " + current->files()[file_i].name() + "?");
+                if (choice)
+                {
+                    current->unlink_file(file_i);
+                    load_current(current, vec);
+                    output_lines = calculate_lines(scene[LEFT], vec);
+                    scroller.reset(0, output_lines, vec);
+                }
             }
             break;
         case KEY_UP:
             if (index > 0)
                 index--;
             else
-                scr.scroll_up();
+                scroller.scroll_up();
             break;
         case KEY_DOWN:
             if (index < output_lines - 1)
                 index++;
             else
-                scr.scroll_down();
+                scroller.scroll_down();
             break;
         case KEY_RIGHT:
-            if (scr.real_index(index) < current->dirs().size())
+            if (scroller.real_index(index) < current->dirs().size())
             {
-                current = current->dive(scr.real_index(index));
+                current = current->dive(scroller.real_index(index));
                 load_current(current, vec);
                 output_lines = calculate_lines(scene[LEFT], vec);
-                scr.reset(0, output_lines, vec);
+                scroller.reset(0, output_lines, vec);
             }
             break;
         case KEY_LEFT:
             current = current->surface();
             load_current(current, vec);
             output_lines = calculate_lines(scene[LEFT], vec);
-            scr.reset(0, output_lines, vec);
+            scroller.reset(0, output_lines, vec);
             break;
         case KEY_RESIZE:
             getmaxyx(stdscr, screen_lines, screen_cols);
             scene.resize(screen_lines, screen_cols);
             output_lines = calculate_lines(scene[LEFT], vec);
-            scr.reset(0, output_lines, vec);
+            scroller.reset(0, output_lines, vec);
             break;
         }
     }
