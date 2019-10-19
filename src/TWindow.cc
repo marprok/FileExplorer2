@@ -4,16 +4,14 @@
 
 namespace view
 {
-    TWindow::TWindow(float per_lines, float per_cols, float begin_y,
-                     float begin_x, int parent_lines, int parent_cols)
+    TWindow::TWindow(int lines, int cols, int begin_y,
+                     int begin_x)
 
         :m_window(nullptr),
-         m_per_cols(per_cols),
-         m_per_lines(per_lines),
+         m_lines(lines),
+         m_cols(cols),
          m_begin_x(begin_x),
          m_begin_y(begin_y),
-         m_parent_cols(parent_cols),
-         m_parent_lines(parent_lines),
          m_hor_ch(0),
          m_ver_ch(0),
          m_boxed(false),
@@ -21,11 +19,26 @@ namespace view
          m_cursor_y(0)
     {
         m_window = newwin(
-                    static_cast<int>(m_per_lines*m_parent_lines),
-                    static_cast<int>(m_per_cols*m_parent_cols),
-                    static_cast<int>(m_begin_y*m_parent_lines),
-                    static_cast<int>(m_begin_x*m_parent_cols)
+                    m_lines,
+                    m_cols,
+                    m_begin_y,
+                    m_begin_x
                     );
+    }
+
+    TWindow::TWindow()
+        :m_window(nullptr),
+          m_lines(0),
+          m_cols(0),
+          m_begin_x(0),
+          m_begin_y(0),
+          m_hor_ch(0),
+          m_ver_ch(0),
+          m_boxed(false),
+          m_cursor_x(0),
+          m_cursor_y(0)
+    {
+
     }
 
     WINDOW* TWindow::operator*()
@@ -70,50 +83,13 @@ namespace view
         return ::wprintw(m_window, text.c_str());
     }
 
-    int TWindow::move(float y, float x)
+    int TWindow::move(int y, int x)
     {
         m_begin_y = y;
         m_begin_x = x;
         return ::mvwin(m_window,
-                       static_cast<int>(y*m_parent_lines),
-                       static_cast<int>(x*m_parent_cols)
-                       );
-    }
-
-    int TWindow::move()
-    {
-        return this->move(m_begin_y, m_begin_x);
-    }
-
-    int TWindow::resize(int parentlines, int parentcols)
-    {
-        int ret;
-        ret = this->erase();
-        if (ret != OK)
-            return ret;
-        ret = this->refresh();
-        if (ret != OK)
-            return ret;
-        ret = this->_resize(parentlines, parentcols);
-        if (ret != OK)
-            return ret;
-        ret = this->move();
-        if (ret != OK)
-            return ret;
-        ret = this->rebox();
-        if (ret != OK)
-            return ret;
-
-        return OK;
-    }
-
-    int TWindow::_resize(int parentlines, int parentcols)
-    {
-        m_parent_cols = parentcols;
-        m_parent_lines = parentlines;
-        return wresize(m_window,
-                       static_cast<int>(m_per_lines*m_parent_lines),
-                       static_cast<int>(m_per_cols*m_parent_cols)
+                       m_begin_y,
+                       m_begin_x
                        );
     }
 
@@ -134,11 +110,31 @@ namespace view
         return wmove(m_window, y, x);
     }
 
-    int TWindow::cols() { return static_cast<int>(m_per_cols*m_parent_cols); }
-    int TWindow::lines() { return static_cast<int>(m_per_lines*m_parent_lines); }
+    int TWindow::cols() { return m_cols; }
+    int TWindow::lines() { return m_lines; }
 
     int TWindow::delwin()
     {
         return ::delwin(m_window);
+    }
+
+    void TWindow::reset(int lines, int cols, int begin_y,
+                        int begin_x)
+    {
+        m_lines = lines;
+        m_cols= cols;
+        m_begin_x = begin_x;
+        m_begin_y = begin_y;
+        m_hor_ch = 0;
+        m_ver_ch = 0;
+        m_boxed = false;
+        m_cursor_x = 0;
+        m_cursor_y = 0;
+        m_window = newwin(
+                    m_lines,
+                    m_cols,
+                    m_begin_y,
+                    m_begin_x
+                    );
     }
 }

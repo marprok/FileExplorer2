@@ -17,7 +17,7 @@ namespace view
             window.delwin();
     }
 
-    TWindow& Scene::operator[](size_t i)
+    RWindow& Scene::operator[](size_t i)
     {
         return m_windows[i];
     }
@@ -89,7 +89,7 @@ namespace view
         return OK;
     }
 
-    TWindow& Scene::get_input_window()
+    RWindow& Scene::get_input_window()
     {
         return m_windows[m_input_window];
     }
@@ -108,7 +108,7 @@ namespace view
         /* clear the state of the current scene */
         this->erase();
         this->refresh();
-        TWindow temp(perlines, percols, begin_y,
+        RWindow temp(perlines, percols, begin_y,
                      begin_x, m_num_lines, m_num_cols);
         temp.box('#','#');
         curs_set(1); /* Make the cursor visible. */
@@ -173,7 +173,7 @@ namespace view
         /* clear the state of the current scene */
         this->erase();
         this->refresh();
-        TWindow temp(0.2f, 0.3f, begin_y,
+        RWindow temp(0.2f, 0.3f, begin_y,
                      begin_x, m_num_lines, m_num_cols);
         temp.box('#','#');
         curs_set(1); /* Make the cursor visible. */
