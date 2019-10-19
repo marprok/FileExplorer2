@@ -4,9 +4,8 @@
 
 namespace view
 {
-    TWindow::TWindow(int lines, int cols, int begin_y,
-                     int begin_x)
-
+    TWindow::TWindow(int lines, int cols, float begin_y,
+                     float begin_x)
         :m_window(nullptr),
          m_lines(lines),
          m_cols(cols),
@@ -18,11 +17,13 @@ namespace view
          m_cursor_x(0),
          m_cursor_y(0)
     {
+        int scene_lines, scene_cols;
+        getmaxyx(stdscr, scene_lines, scene_cols);
         m_window = newwin(
                     m_lines,
                     m_cols,
-                    m_begin_y,
-                    m_begin_x
+                    static_cast<int>(m_begin_y*scene_lines),
+                    static_cast<int>(m_begin_x*scene_cols)
                     );
     }
 
@@ -30,8 +31,8 @@ namespace view
         :m_window(nullptr),
           m_lines(0),
           m_cols(0),
-          m_begin_x(0),
-          m_begin_y(0),
+          m_begin_x(0.0f),
+          m_begin_y(0.0f),
           m_hor_ch(0),
           m_ver_ch(0),
           m_boxed(false),
@@ -83,14 +84,34 @@ namespace view
         return ::wprintw(m_window, text.c_str());
     }
 
-    int TWindow::move(int y, int x)
+    int TWindow::move(float y, float x)
     {
         m_begin_y = y;
         m_begin_x = x;
-        return ::mvwin(m_window,
-                       m_begin_y,
-                       m_begin_x
-                       );
+        int scene_lines, scene_cols;
+        getmaxyx(stdscr, scene_lines, scene_cols);
+        if (scene_lines <= 1)
+        {
+            return ::mvwin(m_window, 1, scene_cols);
+        }else if (scene_cols <= 1)
+        {
+            return ::mvwin(m_window, scene_lines, 1);
+        }else
+        {
+            return ::mvwin(m_window,
+                           static_cast<int>(m_begin_y*scene_lines),
+                           static_cast<int>(m_begin_x*scene_cols)
+                           );
+        }
+
+    }
+
+    int TWindow::move()
+    {
+        return TWindow::move(
+                    m_begin_y,
+                    m_begin_x
+                    );
     }
 
     int TWindow::erase()
@@ -118,8 +139,8 @@ namespace view
         return ::delwin(m_window);
     }
 
-    void TWindow::reset(int lines, int cols, int begin_y,
-                        int begin_x)
+    void TWindow::reset(int lines, int cols, float begin_y,
+                        float begin_x)
     {
         m_lines = lines;
         m_cols= cols;
@@ -130,11 +151,17 @@ namespace view
         m_boxed = false;
         m_cursor_x = 0;
         m_cursor_y = 0;
+        int scene_lines, scene_cols;
+        getmaxyx(stdscr, scene_lines, scene_cols);
+        if (m_window)
+        {
+            this->delwin();
+        }
         m_window = newwin(
-                    m_lines,
-                    m_cols,
-                    m_begin_y,
-                    m_begin_x
+                        m_lines,
+                        m_cols,
+                        static_cast<int>(m_begin_y*scene_lines),
+                        static_cast<int>(m_begin_x*scene_cols)
                     );
     }
 }

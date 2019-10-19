@@ -5,6 +5,7 @@
 #include "inc/File.hpp"
 #include "inc/Directory.hpp"
 #include <algorithm>
+#include <string>
 
 enum POSITION
 {
@@ -13,7 +14,7 @@ enum POSITION
     BOTTOM
 };
 
-static std::size_t calculate_lines(view::TWindow& window, std::vector<std::string> &vec)
+static std::size_t calculate_lines(view::RWindow& window, std::vector<std::string> &vec)
 {
     if (vec.empty())
         return 0;
@@ -46,7 +47,7 @@ static void load_current(fs::Directory* current, std::vector<std::string> &vec)
         vec.push_back(files.name());
 }
 
-static void display_file_info(view::TWindow& window, fs::File &file)
+static void display_file_info(view::RWindow& window, fs::File &file)
 {
     window.mvwprintw(1,1, "NAME: " + file.name());
     window.mvwprintw(3,1, "SIZE: " + file.size() + "[Bytes]");
@@ -61,7 +62,6 @@ static void display_file_info(view::TWindow& window, fs::File &file)
 
 int main()
 {
-    int screen_lines, screen_cols;
     std::size_t output_lines;
     /* Global curses initialization */
     initscr();
@@ -71,11 +71,10 @@ int main()
     start_color();
     init_pair(1, COLOR_BLUE, COLOR_BLACK);
     /* Setup the scene */
-    getmaxyx(stdscr, screen_lines, screen_cols);
-    view::Scene scene(screen_lines, screen_cols);
-    scene.add_window(0.8f, 0.5f, 0.0f, 0.0f, screen_lines, screen_cols);
-    scene.add_window(0.8f, 0.5f, 0.0f, 0.5f, screen_lines, screen_cols);
-    scene.add_window(0.22f, 1.0f, 0.8f, 0.0f, screen_lines, screen_cols);
+    view::Scene scene;
+    scene.add_window(0.8f, 0.5f, 0.0f, 0.0f);
+    scene.add_window(0.8f, 0.5f, 0.0f, 0.5f);
+    scene.add_window(0.22f, 1.0f, 0.8f, 0.0f);
     scene[LEFT].box(0,0);
     scene[RIGHT].box(0, 0);
     scene[BOTTOM].box(0,0);
@@ -140,8 +139,10 @@ int main()
         {
         case 'c':
 
-            current->create_file(scene.crt_input_window(0.25f, 0.5f,
-                                                        0.5f, 0.25f,
+            current->create_file(scene.crt_input_window(4,
+                                                        20,
+                                                        0.5f,
+                                                        0.45f,
                                                         "Create File"));
             load_current(current, vec);
             output_lines = calculate_lines(scene[LEFT], vec);
@@ -152,8 +153,11 @@ int main()
                 scroller.real_index(index) >= current->dirs().size())
             {
                 std::size_t file_i = scroller.real_index(index) - current->dirs().size();
-                int choice = scene.crt_yn_window(0.5f, 0.25f,
-                                                 "Delete " + current->files()[file_i].name() + "?");
+                bool choice = scene.ask(4,
+                                       40,
+                                       0.5f,
+                                       0.45f,
+                                       "Delete " + current->files()[file_i].name() + "?");
                 if (choice)
                 {
                     current->unlink_file(file_i);
@@ -191,8 +195,7 @@ int main()
             scroller.reset(0, output_lines, vec);
             break;
         case KEY_RESIZE:
-            getmaxyx(stdscr, screen_lines, screen_cols);
-            scene.resize(screen_lines, screen_cols);
+            scene.resize();
             output_lines = calculate_lines(scene[LEFT], vec);
             scroller.reset(0, output_lines, vec);
             break;

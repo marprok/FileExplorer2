@@ -1,15 +1,13 @@
 #include "../inc/Scene.hpp"
 #include <iostream>
 #include <sstream>
+#include "../inc/DWindow.hpp"
 
 namespace view
 {
-    Scene::Scene(int num_lines, int num_cols)
-        :m_num_lines(num_lines),
-         m_num_cols(num_cols),
-         m_input_window(0)
+    Scene::Scene()
+         :m_input_window(0)
     {
-
     }
     Scene::~Scene()
     {
@@ -34,25 +32,24 @@ namespace view
     }
 
     void Scene::add_window(float perlines, float percols, float begin_y,
-                           float begin_x, int parent_lines, int parent_cols)
+                           float begin_x)
     {
-        m_windows.emplace_back(perlines,
-                               percols,
-                               begin_y,
-                               begin_x,
-                               parent_lines,
-                               parent_cols
-                               );
+        int scene_lines, scene_cols;
+        getmaxyx(stdscr, scene_lines, scene_cols);
+        m_windows.push_back(RWindow{
+                                perlines,
+                                percols,
+                                begin_y,
+                                begin_x
+                               });
     }
 
-    int Scene::resize(int num_lines, int num_cols)
+    int Scene::resize()
     {
         int ret;
-        m_num_cols = num_cols;
-        m_num_lines = num_lines;
         for (auto& window : m_windows)
         {
-            ret = window.resize(m_num_lines, m_num_cols);
+            ret = window.resize();
             if (ret != OK)
                 return ret;
         }
@@ -102,125 +99,51 @@ namespace view
         return key;
     }
 
-    std::string Scene::crt_input_window(float perlines, float percols, float begin_y,
-                                        float begin_x, const std::string& msg)
+    std::string Scene::crt_input_window(int lines, int cols, float begin_y,
+                                        float begin_x, const std::string& prompt)
     {
         /* clear the state of the current scene */
         this->erase();
         this->refresh();
-        RWindow temp(perlines, percols, begin_y,
-                     begin_x, m_num_lines, m_num_cols);
-        temp.box('#','#');
-        curs_set(1); /* Make the cursor visible. */
-        keypad(*temp, true);
-
-        int x_pos = static_cast<int>((m_num_cols*percols)/2 - msg.size()/2);
-        x_pos = x_pos > 0 ? x_pos : 1;
-
-        temp.mvwprintw(1,x_pos, msg);
-        temp.move_cursor(2,1);
-        temp.refresh();
-        /* Handle the keyboard input */
-        std::string text;
-        int key;
-        while ((key = wgetch(*temp)) != '\n')
-        {
-            switch (key)
-            {
-            case KEY_BACKSPACE:
-                if (text.size() > 0 )
-                    text = text.substr(0, text.size() - 1);
-                break;
-            case KEY_RESIZE:
-                getmaxyx(stdscr, m_num_lines, m_num_cols);
-                temp.resize(m_num_lines, m_num_cols);
-                x_pos = static_cast<int>((m_num_cols*percols)/2 - msg.size()/2);
-                x_pos = x_pos > 0 ? x_pos : 1;
-                break;
-            default:
-                if (text.size() + 2 < percols*m_num_cols)
-                    text += static_cast<char>(key);
-                break;
-            }
-            temp.erase();
-            temp.refresh();
-            temp.rebox();
-            temp.mvwprintw(1,x_pos, msg);
-            temp.mvwprintw(2,1, text);
-            temp.refresh();
-        }
-        /* Bring back the state of the scene */
-        temp.erase();
-        temp.refresh();
-        delwin(*temp);
+        curs_set(1);
+        int scene_lines, scene_cols;
+        getmaxyx(stdscr, scene_lines, scene_cols);
+        DWindow win(lines, cols, begin_y, begin_x);
+        std::string out = win.take_input(prompt);
+        delwin(*win);
+        /* reset the state of the current scene */
         curs_set(0);
-        this->resize(m_num_lines, m_num_cols);
+        this->resize();
         this->refresh();
 
-        return text;
+        return out;
     }
 
-    std::string Scene::crt_input_window(float perlines, float percols, float begin_y,
-                                 float begin_x,const std::string&& msg)
+    std::string Scene::crt_input_window(int lines, int cols, float begin_y,
+                                        float begin_x,  std::string&& prompt)
     {
-        return this->crt_input_window(perlines, percols, begin_y,
-                                      begin_x, msg);
+        return this->crt_input_window(lines, cols, begin_y,
+                                      begin_x, prompt);
     }
 
-    int Scene::crt_yn_window(float begin_y, float begin_x,
-                             const std::string& msg)
+    bool Scene::ask(int lines, int cols, float begin_y,
+                    float begin_x,  std::string& prompt)
     {
         /* clear the state of the current scene */
         this->erase();
         this->refresh();
-        RWindow temp(0.2f, 0.3f, begin_y,
-                     begin_x, m_num_lines, m_num_cols);
-        temp.box('#','#');
-        curs_set(1); /* Make the cursor visible. */
-        keypad(*temp, true);
-        int x_pos = static_cast<int>((m_num_cols*0.3f - msg.size())/2.0f);
-        x_pos = x_pos > 0 ? x_pos : 1;
-        int choice = 0;
-        /* Handle the keyboard input */
-        int key;
-        bool choice_made = false;
-        while (!choice_made)
-        {
-            temp.erase();
-            temp.refresh();
-            temp.rebox();
-            temp.mvwprintw(1,x_pos, msg);
-            temp.mvwprintw(2,1, "[Y]ES  [N]O");
-            temp.refresh();
-            key = wgetch(*temp);
-            switch (key)
-            {
-            case 'y':
-                choice_made = true;
-                choice = 1;
-                break;
-            case 'n':
-                choice_made = true;
-                choice = 0;
-                break;
-            case KEY_RESIZE:
-                getmaxyx(stdscr, m_num_lines, m_num_cols);
-                temp.resize(m_num_lines, m_num_cols);
-                x_pos = static_cast<int>((m_num_cols*0.3f - msg.size())/2.0f);
-                x_pos = x_pos > 0 ? x_pos : 1;
-                break;
-            default:
-                break;
-            }
-
-        }
-        /* Bring back the state of the scene */
-        temp.erase();
-        temp.refresh();
-        delwin(*temp);
-        curs_set(0);
-        this->resize(m_num_lines, m_num_cols);
+        DWindow win(lines, cols,
+                    begin_y, begin_x);
+        bool choice = win.ask(prompt);
+        this->resize();
         this->refresh();
         return choice;
+    }
+
+    bool Scene::ask(int lines, int cols, float begin_y,
+                    float begin_x,  std::string&& prompt)
+    {
+        return this->ask(lines, cols, begin_y,
+                         begin_x, prompt);
     }
 }

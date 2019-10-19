@@ -11,15 +11,17 @@ namespace view
     {
     private:
         float   m_per_cols, m_per_lines;
-        float   m_begin_x, m_begin_y;
-        int     m_scene_lines, m_scene_cols;
-        int     m_parent_lines, m_parent_cols;
-        int _resize(int parentlines, int parentcols);
-    public:
+        int _resize();
         RWindow(float per_lines, float per_cols, float begin_y,
-                float begin_x, int scene_lines, int scene_cols);
-        int resize(int scene_lines, int scene_cols);
-        int move();
+                float begin_x);
+    public:
+        RWindow(const RWindow& other);
+        RWindow& operator=(const RWindow& other);
+        RWindow(RWindow&& other);
+        RWindow& operator=(RWindow&& other);
+
+        int resize() override;
+        friend class Scene;
     };
 }
 #endif
