@@ -1,14 +1,14 @@
-#include "../inc/DWindow.hpp"
+#include "../inc/DialogWindow.hpp"
 #include <iostream>
 #include <sstream>
 
 namespace view
 {
-    DWindow::DWindow(int lines, int cols, float y, float x)
-        :TWindow(lines, cols, y, x)
+    DialogWindow::DialogWindow(int lines, int cols, float y, float x)
+        :TerminalWindow(lines, cols, y, x)
     {}
 
-    int DWindow::resize()
+    int DialogWindow::resize()
     {
         int ret;
         ret = this->erase();
@@ -26,7 +26,7 @@ namespace view
         return OK;
     }
 
-    std::string DWindow::take_input(const std::string &prompt)
+    std::string DialogWindow::take_input(const std::string &prompt)
     {
         this->box('#','#');
         keypad(**this, true);
@@ -73,7 +73,7 @@ namespace view
         return text;
     }
 
-    bool DWindow::ask(const std::string &question)
+    bool DialogWindow::ask(const std::string &question)
     {
         bool choice = false;
         this->box('#','#');
@@ -122,8 +122,9 @@ namespace view
         return choice;
     }
 
-    std::size_t DWindow::choose(const std::vector<std::string> &choices)
+    std::size_t DialogWindow::choose(const std::vector<std::string> &choices)
     {
+        (void)choices;
         return 0;
     }
 }

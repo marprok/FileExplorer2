@@ -1,7 +1,7 @@
 #include "../inc/Scene.hpp"
 #include <iostream>
 #include <sstream>
-#include "../inc/DWindow.hpp"
+#include "../inc/DialogWindow.hpp"
 
 namespace view
 {
@@ -15,7 +15,7 @@ namespace view
             window.delwin();
     }
 
-    RWindow& Scene::operator[](size_t i)
+    ResizableWindow& Scene::operator[](size_t i)
     {
         return m_windows[i];
     }
@@ -36,7 +36,7 @@ namespace view
     {
         int scene_lines, scene_cols;
         getmaxyx(stdscr, scene_lines, scene_cols);
-        m_windows.push_back(RWindow{
+        m_windows.push_back(ResizableWindow{
                                 perlines,
                                 percols,
                                 begin_y,
@@ -86,7 +86,7 @@ namespace view
         return OK;
     }
 
-    RWindow& Scene::get_input_window()
+    ResizableWindow& Scene::get_input_window()
     {
         return m_windows[m_input_window];
     }
@@ -108,7 +108,7 @@ namespace view
         curs_set(1);
         int scene_lines, scene_cols;
         getmaxyx(stdscr, scene_lines, scene_cols);
-        DWindow win(lines, cols, begin_y, begin_x);
+        DialogWindow win(lines, cols, begin_y, begin_x);
         std::string out = win.take_input(prompt);
         delwin(*win);
         /* reset the state of the current scene */
@@ -132,7 +132,7 @@ namespace view
         /* clear the state of the current scene */
         this->erase();
         this->refresh();
-        DWindow win(lines, cols,
+        DialogWindow win(lines, cols,
                     begin_y, begin_x);
         bool choice = win.ask(prompt);
         this->resize();

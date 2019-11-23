@@ -1,7 +1,7 @@
 #include <iostream>
 #include <ncurses.h>
 #include "inc/Scene.hpp"
-#include "inc/scroll_vector.hpp"
+#include "inc/ScrollableVector.hpp"
 #include "inc/File.hpp"
 #include "inc/Directory.hpp"
 #include <algorithm>
@@ -14,7 +14,7 @@ enum POSITION
     BOTTOM
 };
 
-static std::size_t calculate_lines(view::RWindow& window, std::vector<std::string> &vec)
+static std::size_t calculate_lines(view::ResizableWindow& window, std::vector<std::string> &vec)
 {
     if (vec.empty())
         return 0;
@@ -47,7 +47,7 @@ static void load_current(fs::Directory* current, std::vector<std::string> &vec)
         vec.push_back(files.name());
 }
 
-static void display_file_info(view::RWindow& window, fs::File &file)
+static void display_file_info(view::ResizableWindow& window, fs::File &file)
 {
     window.mvwprintw(1,1, "NAME: " + file.name());
     window.mvwprintw(3,1, "SIZE: " + file.size() + "[Bytes]");
@@ -85,13 +85,13 @@ int main()
     std::vector<std::string> vec;
     int key = 0;
     size_t index = 0;
-    fs::Directory *root = new fs::Directory("/home/void", nullptr);
+    fs::Directory *root = new fs::Directory("/home", nullptr);
     fs::Directory *current = root;
     load_current(current, vec);
     /* -2 lines because the window is boxed */
     output_lines = std::min(static_cast<std::size_t>(scene[LEFT].lines() - 2),
                             vec.size());
-    utils::SCRVector<std::string> scroller(0, output_lines, vec);
+    utils::ScrollableVector<std::string> scroller(0, output_lines, vec);
     while (key != KEY_END)
     {
         /* In case the window is too small */

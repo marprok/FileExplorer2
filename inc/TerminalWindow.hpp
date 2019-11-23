@@ -6,7 +6,7 @@
 
 namespace view
 {
-    class TWindow
+    class TerminalWindow
     {
     protected:
         WINDOW* m_window;
@@ -34,14 +34,14 @@ namespace view
         int delwin();
         virtual int resize() = 0;
     protected:
-        TWindow(const TWindow& other) = default;
-        TWindow& operator=(const TWindow& other) = default;
-        TWindow(TWindow&& other) = default;
-        TWindow& operator=(TWindow&& other) = default;
+        TerminalWindow(const TerminalWindow& other) = default;
+        TerminalWindow& operator=(const TerminalWindow& other) = default;
+        TerminalWindow(TerminalWindow&& other) = default;
+        TerminalWindow& operator=(TerminalWindow&& other) = default;
 
-        TWindow(int lines, int cols, float begin_y,
+        TerminalWindow(int lines, int cols, float begin_y,
                 float begin_x);
-        TWindow();
+        TerminalWindow();
         void reset(int lines, int cols, float begin_y,
                    float begin_x);
     };

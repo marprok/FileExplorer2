@@ -3,22 +3,22 @@
 
 #include <ncurses.h>
 #include <string>
-#include "TWindow.hpp"
+#include "TerminalWindow.hpp"
 
 namespace view
 {
-    class RWindow : public TWindow
+    class ResizableWindow : public TerminalWindow
     {
     private:
         float   m_per_cols, m_per_lines;
         int _resize();
-        RWindow(float per_lines, float per_cols, float begin_y,
+        ResizableWindow(float per_lines, float per_cols, float begin_y,
                 float begin_x);
     public:
-        RWindow(const RWindow& other);
-        RWindow& operator=(const RWindow& other);
-        RWindow(RWindow&& other);
-        RWindow& operator=(RWindow&& other);
+        ResizableWindow(const ResizableWindow& other);
+        ResizableWindow& operator=(const ResizableWindow& other);
+        ResizableWindow(ResizableWindow&& other);
+        ResizableWindow& operator=(ResizableWindow&& other);
 
         int resize() override;
         friend class Scene;

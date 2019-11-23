@@ -9,12 +9,12 @@ include_directories(
     inc
 )
 set(SOURCES
-    src/TWindow.cc
+    src/TerminalWindow.cc
     src/Scene.cc
     src/File.cc
     src/Directory.cc
-    src/DWindow.cc
-    src/RWindow.cc
+    src/DialogWindow.cc
+    src/ResizableWindow.cc
 )
 
 find_package(Curses REQUIRED)

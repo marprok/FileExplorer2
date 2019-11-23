@@ -1,27 +1,27 @@
-#include "../inc/RWindow.hpp"
+#include "../inc/ResizableWindow.hpp"
 #include <iostream>
 #include <sstream>
 
 namespace view
 {
-    RWindow::RWindow(float per_lines, float per_cols, float begin_y,
+    ResizableWindow::ResizableWindow(float per_lines, float per_cols, float begin_y,
                      float begin_x)
 
-        :TWindow(),
+        :TerminalWindow(),
          m_per_cols(per_cols),
          m_per_lines(per_lines)
     {
         int scene_lines, scene_cols;
         getmaxyx(stdscr, scene_lines, scene_cols);
-        TWindow::reset(
-              static_cast<int>(m_per_lines*scene_lines),
-              static_cast<int>(m_per_cols*scene_cols),
-              begin_y,
-              begin_x
-             );
+        TerminalWindow::reset(
+                              static_cast<int>(m_per_lines*scene_lines),
+                              static_cast<int>(m_per_cols*scene_cols),
+                              begin_y,
+                              begin_x
+                             );
     }
 
-    int RWindow::resize()
+    int ResizableWindow::resize()
     {
         int ret;
         ret = this->erase();
@@ -43,7 +43,7 @@ namespace view
         return OK;
     }
 
-    int RWindow::_resize()
+    int ResizableWindow::_resize()
     {
 
         int scene_lines, scene_cols;
@@ -58,8 +58,8 @@ namespace view
 
 
 
-    RWindow::RWindow(const RWindow& other)
-        :TWindow(other)
+    ResizableWindow::ResizableWindow(const ResizableWindow& other)
+        :TerminalWindow(other)
     {
         m_per_cols = other.m_per_cols;
         m_per_lines = other.m_per_lines;
@@ -67,9 +67,9 @@ namespace view
         m_begin_y = other.m_begin_y;
         m_window = other.m_window;
     }
-    RWindow& RWindow::operator=(const RWindow& other)
+    ResizableWindow& ResizableWindow::operator=(const ResizableWindow& other)
     {
-        TWindow::operator=(other);
+        TerminalWindow::operator=(other);
         m_per_cols = other.m_per_cols;
         m_per_lines = other.m_per_lines;
         m_begin_x = other.m_begin_x;
@@ -78,8 +78,8 @@ namespace view
 
         return *this;
     }
-    RWindow::RWindow(RWindow&& other)
-        :TWindow(other)
+    ResizableWindow::ResizableWindow(ResizableWindow&& other)
+        :TerminalWindow(other)
     {
         m_per_cols = std::move(other.m_per_cols);
         m_per_lines = std::move(other.m_per_lines);
@@ -87,9 +87,9 @@ namespace view
         m_begin_y = std::move(other.m_begin_y);
         m_window = std::move(other.m_window);
     }
-    RWindow& RWindow::operator=(RWindow&& other)
+    ResizableWindow& ResizableWindow::operator=(ResizableWindow&& other)
     {
-        TWindow::operator=(other);
+        TerminalWindow::operator=(other);
         m_per_cols = std::move(other.m_per_cols);
         m_per_lines = std::move(other.m_per_lines);
         m_begin_x = std::move(other.m_begin_x);

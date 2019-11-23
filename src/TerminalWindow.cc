@@ -1,10 +1,10 @@
-#include "../inc/TWindow.hpp"
+#include "../inc/TerminalWindow.hpp"
 #include <iostream>
 #include <sstream>
 
 namespace view
 {
-    TWindow::TWindow(int lines, int cols, float begin_y,
+    TerminalWindow::TerminalWindow(int lines, int cols, float begin_y,
                      float begin_x)
         :m_window(nullptr),
          m_lines(lines),
@@ -27,7 +27,7 @@ namespace view
                     );
     }
 
-    TWindow::TWindow()
+    TerminalWindow::TerminalWindow()
         :m_window(nullptr),
           m_lines(0),
           m_cols(0),
@@ -42,17 +42,17 @@ namespace view
 
     }
 
-    WINDOW* TWindow::operator*()
+    WINDOW* TerminalWindow::operator*()
     {
         return m_window;
     }
 
-    int TWindow::refresh()
+    int TerminalWindow::refresh()
     {
         return wrefresh(m_window);;
     }
 
-    int TWindow::box(chtype ver_ch, chtype hor_ch)
+    int TerminalWindow::box(chtype ver_ch, chtype hor_ch)
     {
         m_ver_ch = ver_ch;
         m_hor_ch = hor_ch;
@@ -60,31 +60,31 @@ namespace view
         return ::box(m_window, m_ver_ch, m_hor_ch);
     }
 
-    int TWindow::mvwprintw(int y, int x, const std::string &text)
+    int TerminalWindow::mvwprintw(int y, int x, const std::string &text)
     {
         m_cursor_y = y;
         m_cursor_x = x;
         return ::mvwprintw(m_window, y, x, text.c_str());
     }
 
-    int TWindow::mvwprintw(int y, int x, const std::string &&text)
+    int TerminalWindow::mvwprintw(int y, int x, const std::string &&text)
     {
         m_cursor_y = y;
         m_cursor_x = x;
         return ::mvwprintw(m_window, y, x, text.c_str());
     }
 
-    int TWindow::print(const std::string& text)
+    int TerminalWindow::print(const std::string& text)
     {
         return ::wprintw(m_window, text.c_str());
     }
 
-    int TWindow::print(const std::string&& text)
+    int TerminalWindow::print(const std::string&& text)
     {
         return ::wprintw(m_window, text.c_str());
     }
 
-    int TWindow::move(float y, float x)
+    int TerminalWindow::move(float y, float x)
     {
         m_begin_y = y;
         m_begin_x = x;
@@ -106,40 +106,40 @@ namespace view
 
     }
 
-    int TWindow::move()
+    int TerminalWindow::move()
     {
-        return TWindow::move(
+        return TerminalWindow::move(
                     m_begin_y,
                     m_begin_x
                     );
     }
 
-    int TWindow::erase()
+    int TerminalWindow::erase()
     {
         return ::werase(m_window);
     }
 
-    int TWindow::rebox()
+    int TerminalWindow::rebox()
     {
         if (!m_boxed)
             return OK;
         return this->box(m_ver_ch, m_hor_ch);
     }
 
-    int TWindow::move_cursor(int y, int x)
+    int TerminalWindow::move_cursor(int y, int x)
     {
         return wmove(m_window, y, x);
     }
 
-    int TWindow::cols() { return m_cols; }
-    int TWindow::lines() { return m_lines; }
+    int TerminalWindow::cols() { return m_cols; }
+    int TerminalWindow::lines() { return m_lines; }
 
-    int TWindow::delwin()
+    int TerminalWindow::delwin()
     {
         return ::delwin(m_window);
     }
 
-    void TWindow::reset(int lines, int cols, float begin_y,
+    void TerminalWindow::reset(int lines, int cols, float begin_y,
                         float begin_x)
     {
         m_lines = lines;
