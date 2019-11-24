@@ -14,7 +14,7 @@ namespace view
     public:
         std::string take_input(const std::string &prompt);
         bool ask(const std::string &question);
-        std::size_t choose(const std::vector<std::string> &choices);
+        std::size_t choose(const std::vector<std::string> &choices, std::size_t scroll_size, std::string& msg);
         DialogWindow(const DialogWindow& other) = delete;
         DialogWindow& operator=(const DialogWindow& other) = delete;
         DialogWindow(DialogWindow&& other) = delete;

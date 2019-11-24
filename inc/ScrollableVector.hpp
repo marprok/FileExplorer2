@@ -15,7 +15,7 @@ namespace utils
         std::size_t m_limit;
     public:
         ScrollableVector(std::size_t base, std::size_t window_size,
-                  std::vector<T> & data);
+                         const std::vector<T> & data);
         ScrollableVector(const ScrollableVector& other) = default;
         ScrollableVector& operator=(const ScrollableVector& other) = default;
         T& operator[](size_t index);
@@ -31,7 +31,7 @@ namespace utils
 
     template<typename T>
     ScrollableVector<T>::ScrollableVector(std::size_t base, std::size_t window_size,
-                            std::vector<T> & data)
+                                          const std::vector<T> & data)
         :m_data(data),
          m_base(base),
          m_window_size(window_size),

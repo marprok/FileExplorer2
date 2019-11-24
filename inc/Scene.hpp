@@ -33,6 +33,13 @@ namespace view
                  float begin_x,  std::string& prompt);
         bool ask(int lines, int cols, float begin_y,
                  float begin_x,  std::string&& prompt);
+
+        std::size_t choose(const std::vector<std::string> &choices,
+                           std::size_t scroll_size,
+                           std::string& prompt);
+        std::size_t choose(const std::vector<std::string> &choices,
+                           std::size_t scroll_size,
+                           std::string&& prompt);
     };
 }
 #endif

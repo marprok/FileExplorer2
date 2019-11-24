@@ -146,4 +146,26 @@ namespace view
         return this->ask(lines, cols, begin_y,
                          begin_x, prompt);
     }
+
+    std::size_t Scene::choose(const std::vector<std::string> &choices,
+                       std::size_t scroll_size,
+                       std::string& prompt)
+    {
+        /* clear the state of the current scene */
+        this->erase();
+        this->refresh();
+        DialogWindow win(scroll_size + 2 + 1, 30,
+                    0.4f, 0.35f);
+        std::size_t choice = win.choose(choices, scroll_size, prompt);
+        this->resize();
+        this->refresh();
+        return choice;
+    }
+
+    std::size_t Scene::choose(const std::vector<std::string> &choices,
+                       std::size_t scroll_size,
+                       std::string&& prompt)
+    {
+        return this->choose(choices, scroll_size, prompt);
+    }
 }

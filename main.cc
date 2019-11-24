@@ -167,6 +167,13 @@ int main()
                 }
             }
             break;
+        case 'h':
+
+            scene.choose(vec, 10, "Choose one");
+            load_current(current, vec);
+            output_lines = calculate_lines(scene[LEFT], vec);
+            scroller.reset(0, output_lines, vec);
+            break;
         case KEY_UP:
             if (index > 0)
                 index--;
