@@ -99,7 +99,7 @@ namespace view
         return key;
     }
 
-    std::string Scene::crt_input_window(int lines, int cols, float begin_y,
+    std::string Scene::take_input(int lines, int cols, float begin_y,
                                         float begin_x, const std::string& prompt)
     {
         /* clear the state of the current scene */
@@ -119,10 +119,10 @@ namespace view
         return out;
     }
 
-    std::string Scene::crt_input_window(int lines, int cols, float begin_y,
+    std::string Scene::take_input(int lines, int cols, float begin_y,
                                         float begin_x,  std::string&& prompt)
     {
-        return this->crt_input_window(lines, cols, begin_y,
+        return this->take_input(lines, cols, begin_y,
                                       begin_x, prompt);
     }
 

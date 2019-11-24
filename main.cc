@@ -139,7 +139,7 @@ int main()
         {
         case 'c':
 
-            current->create_file(scene.crt_input_window(4,
+            current->create_file(scene.take_input(4,
                                                         20,
                                                         0.5f,
                                                         0.45f,

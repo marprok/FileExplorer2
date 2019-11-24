@@ -25,9 +25,9 @@ namespace view
         int set_input_window(size_t i);
         ResizableWindow& get_input_window();
         int operator>>(int &key);
-        std::string crt_input_window(int lines, int cols, float begin_y,
+        std::string take_input(int lines, int cols, float begin_y,
                                      float begin_x, const std::string& prompt);
-        std::string crt_input_window(int lines, int cols, float begin_y,
+        std::string take_input(int lines, int cols, float begin_y,
                                      float begin_x, std::string&& prompt);
         bool ask(int lines, int cols, float begin_y,
                  float begin_x,  std::string& prompt);
