@@ -168,7 +168,7 @@ int main()
             }
             break;
         case 'h':
-
+            /* demo of the choose functionality */
             scene.choose(vec, 10, "Choose one");
             load_current(current, vec);
             output_lines = calculate_lines(scene[LEFT], vec);
