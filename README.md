@@ -1,7 +1,7 @@
 # FileExplorer2
 A better version of FileExplorer.
 
-## Ever thought that **ls** is useless? No? Neither did I!
+## Have you ever thought that **ls** is useless? No? Neither have I!
 
 This project was not created as a replacement of the ls command. It was built as a way to improve the architecure of the first
 FileExplorer. For the most part it works the same way, but this time more information about a file is displayed onto the screen
