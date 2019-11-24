@@ -91,7 +91,7 @@ int main()
     /* -2 lines because the window is boxed */
     output_lines = std::min(static_cast<std::size_t>(scene[LEFT].lines() - 2),
                             vec.size());
-    utils::ScrollableVector<std::string> scroller(0, output_lines, vec);
+    utils::ScrollableVector<std::string> sv(0, output_lines, vec);
     while (key != KEY_END)
     {
         /* In case the window is too small */
@@ -105,25 +105,25 @@ int main()
         /* Draw things on the windows */
         if (!current->empty())
         {
-            for (size_t i = 0; i < output_lines && i < scroller.size(); ++i)
+            for (size_t i = 0; i < output_lines && i < sv.size(); ++i)
             {
-                if (scroller.real_index(i) < current->dirs().size())
+                if (sv.real_index(i) < current->dirs().size())
                     wattron(*scene[LEFT], COLOR_PAIR(1));
                 if (i == index)
                     wattron(*scene[LEFT], A_REVERSE);
                 /* +1 because it is a boxed window */
                 scene[LEFT].mvwprintw(static_cast<int>(i+1),
                                    1,
-                                   scroller[i]);
+                                   sv[i]);
                 if (i == index)
                     wattroff(*scene[LEFT], A_REVERSE);
-                if (scroller.real_index(i) < current->dirs().size())
+                if (sv.real_index(i) < current->dirs().size())
                     wattroff(*scene[LEFT], COLOR_PAIR(1));
             }
-            if (scroller.real_index(index) >= current->dirs().size())
+            if (sv.real_index(index) >= current->dirs().size())
             {
                 /* Calculate the index of the file */
-                size_t fi = scroller.real_index(index) - current->dirs().size();
+                size_t fi = sv.real_index(index) - current->dirs().size();
                 display_file_info(scene[RIGHT], current->files()[fi]);
             }
         }else
@@ -146,13 +146,13 @@ int main()
                                                         "Create File"));
             load_current(current, vec);
             output_lines = calculate_lines(scene[LEFT], vec);
-            scroller.reset(0, output_lines, vec);
+            sv.reset(0, output_lines, vec);
             break;
         case 'd':
             if (!current->empty() &&
-                scroller.real_index(index) >= current->dirs().size())
+                sv.real_index(index) >= current->dirs().size())
             {
-                std::size_t file_i = scroller.real_index(index) - current->dirs().size();
+                std::size_t file_i = sv.real_index(index) - current->dirs().size();
                 bool choice = scene.ask(4,
                                        40,
                                        0.5f,
@@ -163,7 +163,7 @@ int main()
                     current->unlink_file(file_i);
                     load_current(current, vec);
                     output_lines = calculate_lines(scene[LEFT], vec);
-                    scroller.reset(0, output_lines, vec);
+                    sv.reset(0, output_lines, vec);
                 }
             }
             break;
@@ -172,39 +172,39 @@ int main()
             scene.choose(vec, 10, "Choose one");
             load_current(current, vec);
             output_lines = calculate_lines(scene[LEFT], vec);
-            scroller.reset(0, output_lines, vec);
+            sv.reset(0, output_lines, vec);
             break;
         case KEY_UP:
             if (index > 0)
                 index--;
             else
-                scroller.scroll_up();
+                sv.scroll_up();
             break;
         case KEY_DOWN:
             if (index < output_lines - 1)
                 index++;
             else
-                scroller.scroll_down();
+                sv.scroll_down();
             break;
         case KEY_RIGHT:
-            if (scroller.real_index(index) < current->dirs().size())
+            if (sv.real_index(index) < current->dirs().size())
             {
-                current = current->dive(scroller.real_index(index));
+                current = current->dive(sv.real_index(index));
                 load_current(current, vec);
                 output_lines = calculate_lines(scene[LEFT], vec);
-                scroller.reset(0, output_lines, vec);
+                sv.reset(0, output_lines, vec);
             }
             break;
         case KEY_LEFT:
             current = current->surface();
             load_current(current, vec);
             output_lines = calculate_lines(scene[LEFT], vec);
-            scroller.reset(0, output_lines, vec);
+            sv.reset(0, output_lines, vec);
             break;
         case KEY_RESIZE:
             scene.resize();
             output_lines = calculate_lines(scene[LEFT], vec);
-            scroller.reset(0, output_lines, vec);
+            sv.reset(0, output_lines, vec);
             break;
         }
     }
