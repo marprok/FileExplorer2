@@ -113,8 +113,8 @@ int main()
                     wattron(*scene[LEFT], A_REVERSE);
                 /* +1 because it is a boxed window */
                 scene[LEFT].mvwprintw(static_cast<int>(i+1),
-                                   1,
-                                   sv[i]);
+                                      1,
+                                      sv[i]);
                 if (i == index)
                     wattroff(*scene[LEFT], A_REVERSE);
                 if (sv.real_index(i) < current->dirs().size())
@@ -140,24 +140,24 @@ int main()
         case 'c':
 
             current->create_file(scene.take_input(4,
-                                                        20,
-                                                        0.5f,
-                                                        0.45f,
-                                                        "Create File"));
+                                                  20,
+                                                  0.5f,
+                                                  0.45f,
+                                                  "Create File"));
             load_current(current, vec);
             output_lines = calculate_lines(scene[LEFT], vec);
             sv.reset(0, output_lines, vec);
             break;
         case 'd':
             if (!current->empty() &&
-                sv.real_index(index) >= current->dirs().size())
+                    sv.real_index(index) >= current->dirs().size())
             {
                 std::size_t file_i = sv.real_index(index) - current->dirs().size();
                 bool choice = scene.ask(4,
-                                       40,
-                                       0.5f,
-                                       0.45f,
-                                       "Delete " + current->files()[file_i].name() + "?");
+                                        40,
+                                        0.5f,
+                                        0.45f,
+                                        "Delete " + current->files()[file_i].name() + "?");
                 if (choice)
                 {
                     current->unlink_file(file_i);
