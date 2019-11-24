@@ -110,7 +110,7 @@ namespace view
         getmaxyx(stdscr, scene_lines, scene_cols);
         DialogWindow win(lines, cols, begin_y, begin_x);
         std::string out = win.take_input(prompt);
-        delwin(*win);
+        win.delwin();
         /* reset the state of the current scene */
         curs_set(0);
         this->resize();
@@ -135,6 +135,7 @@ namespace view
         DialogWindow win(lines, cols,
                     begin_y, begin_x);
         bool choice = win.ask(prompt);
+        win.delwin();
         this->resize();
         this->refresh();
         return choice;
@@ -157,6 +158,7 @@ namespace view
         DialogWindow win(scroll_size + 2 + 1, 30,
                     0.4f, 0.35f);
         std::size_t choice = win.choose(choices, scroll_size, prompt);
+        win.delwin();
         this->resize();
         this->refresh();
         return choice;
