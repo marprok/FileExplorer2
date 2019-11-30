@@ -153,11 +153,12 @@ int main()
                     sv.real_index(index) >= current->dirs().size())
             {
                 std::size_t file_i = sv.real_index(index) - current->dirs().size();
+                std::string prompt = "Delete " + current->files()[file_i].name() + "?";
                 bool choice = scene.ask(4,
-                                        40,
+                                        static_cast<int>(prompt.size()) + 2,
                                         0.5f,
                                         0.45f,
-                                        "Delete " + current->files()[file_i].name() + "?");
+                                        prompt);
                 if (choice)
                 {
                     current->unlink_file(file_i);

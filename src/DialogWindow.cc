@@ -5,19 +5,35 @@
 
 namespace view
 {
-    DialogWindow::DialogWindow(int lines, int cols, float y, float x)
-        :TerminalWindow(lines, cols, y, x)
-    {}
+    DialogWindow::DialogWindow(int lines, int cols, float y, float x, bool centered)
+        :TerminalWindow(lines, cols, y, x), m_centered(centered)
+    {
+        if (m_centered)
+        {
+            int scene_lines, scene_cols;
+            getmaxyx(stdscr, scene_lines, scene_cols);
+            float width_ratio = static_cast<float>(m_cols)/scene_cols;
+            m_begin_x = 0.5f - width_ratio/2;
+            this->move();
+
+        }
+    }
 
     int DialogWindow::resize()
     {
-        int ret;
+        int ret, scene_lines, scene_cols;
+        getmaxyx(stdscr, scene_lines, scene_cols);
         ret = this->erase();
         if (ret != OK)
             return ret;
         ret = this->refresh();
         if (ret != OK)
             return ret;
+        if (m_centered)
+        {
+            float width_ratio = static_cast<float>(m_cols)/scene_cols;
+            m_begin_x = 0.5f - width_ratio/2;
+        }
         ret = this->move();
         if (ret != OK)
             return ret;
@@ -38,15 +54,10 @@ namespace view
         int scene_lines, scene_cols;
         while (!end)
         {
-            getmaxyx(stdscr, scene_lines, scene_cols);
-            if (scene_lines < m_lines || scene_cols < m_cols)
-                break;
             this->erase();
             this->rebox();
-            this->mvwprintw(1,
-                            (m_cols - static_cast<int>(prompt.size()))/2,
-                            prompt);
-            this->mvwprintw(2,1, text);
+            this->mvwprintw(1, 1, prompt);
+            this->mvwprintw(2, 1, text);
             this->refresh();
             key = wgetch(**this);
             switch (key)
@@ -56,7 +67,11 @@ namespace view
                     text = text.substr(0, text.size() - 1);
                 break;
             case KEY_RESIZE:
-                this->resize();
+                getmaxyx(stdscr, scene_lines, scene_cols);
+                if (scene_lines < m_lines || scene_cols < m_cols)
+                    end = true;
+                else
+                    this->resize();
                 break;
             case '\n':
                 end = true;
@@ -88,10 +103,8 @@ namespace view
             this->erase();
             this->refresh();
             this->rebox();
-            this->mvwprintw(1,
-                            (m_cols - static_cast<int>(question.size()))/2,
-                            question);
-            this->mvwprintw(2, m_cols/2 - 7, "[Y]ES  [N]O");
+            this->mvwprintw(1, 1, question);
+            this->mvwprintw(2, 1, "[Y]ES  [N]O");
             key = wgetch(**this);
             switch (key)
             {

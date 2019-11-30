@@ -47,7 +47,16 @@ public:
     int resize() override;
     friend class Scene;
 private:
-    DialogWindow(int lines, int cols, float y, float x);
+    bool m_centered;
+    /**
+     * @brief DialogWindow
+     * @param lines
+     * @param cols
+     * @param y
+     * @param x
+     * @param centered true if the window must be centered(x is ignored)
+     */
+    DialogWindow(int lines, int cols, float y, float x, bool centered = false);
 };
 }
 #endif
