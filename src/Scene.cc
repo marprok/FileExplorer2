@@ -1,17 +1,30 @@
 #include "../inc/Scene.h"
-#include <iostream>
-#include <sstream>
+#include <ncurses.h>
 
 namespace view
 {
     Scene::Scene()
          :m_input_window(0)
     {
+        init_ncureses();
     }
+
     Scene::~Scene()
     {
         for (auto& window : m_windows)
             window.delwin();
+        endwin();
+    }
+
+    void Scene::init_ncureses()
+    {
+        /* Global curses initialization */
+        initscr();
+        cbreak();
+        noecho();
+        curs_set(0); /* Make the cursor invisible. */
+        start_color();
+        init_pair(1, COLOR_BLUE, COLOR_BLACK);
     }
 
     TerminalWindow& Scene::operator[](size_t i)

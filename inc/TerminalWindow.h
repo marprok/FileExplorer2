@@ -9,8 +9,8 @@ namespace view
 /**
  *  @brief The terminal window class.
  *  Every ncurses window that gets displayed in the screen.
- *  The position of the window is given relative to the window(0-1.0f)
- *  on both axis.
+ *  The position and size of the window are relative
+ *  to the terminal window(0-1.0f).
  */
 class TerminalWindow
 {
@@ -121,14 +121,16 @@ public:
      * @return OK in case of success
      */
      int resize();
-
+     /**
+     * TODO: ensure that the WINDOW pointers are moved and
+     * not copied.
+     */
+     /* Default copy constructors/assignment operators */
+     TerminalWindow(const TerminalWindow& other) = default;
      TerminalWindow& operator=(const TerminalWindow& other) = default;
      TerminalWindow(TerminalWindow&& other) = default;
      TerminalWindow& operator=(TerminalWindow&& other) = default;
 protected:
-    /* Default copy constructors/assignment operators */
-    TerminalWindow(const TerminalWindow& other) = default;
-
     TerminalWindow(float lines, float cols, float begin_y,
                    float begin_x);
     TerminalWindow();

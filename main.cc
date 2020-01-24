@@ -1,5 +1,3 @@
-#include <iostream>
-#include <ncurses.h>
 #include "inc/Scene.h"
 #include "inc/ScrollableVector.hpp"
 #include "inc/File.h"
@@ -63,15 +61,8 @@ static void display_file_info(view::TerminalWindow& window, fs::File &file)
 int main()
 {
     std::size_t output_lines;
-    /* Global curses initialization */
-    initscr();
-    cbreak();
-    noecho();
-    curs_set(0); /* Make the cursor invisible. */
-    start_color();
-    init_pair(1, COLOR_BLUE, COLOR_BLACK);
     /* Setup the scene */
-    view::Scene scene;
+    view::Scene &scene = view::Scene::the();
     scene.add_window(0.8f, 0.5f, 0.0f, 0.0f);
     scene.add_window(0.8f, 0.5f, 0.0f, 0.5f);
     scene.add_window(0.22f, 1.0f, 0.8f, 0.0f);
@@ -172,6 +163,5 @@ int main()
         }
     }
     delete root;
-    endwin();
     return 0;
 }

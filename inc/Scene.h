@@ -14,26 +14,37 @@ namespace view
  *  and destroy windows. Every fucntionality of the
  *  windows can be accessed by this class such as
  *  asking the user for input, resizing, refreshing etc.
- *  All the windows that are permanent to the scene
- *  are ResizableWindows.
  */
 class Scene
 {
 private:
     std::vector<TerminalWindow> m_windows;
     size_t               m_input_window;
-public:
+
+    /**
+     * @brief Scene constructor
+     */
     Scene();
+    /**
+     * @brief Deallocate all the windows
+     */
+    ~Scene();
+
+    void init_ncureses();
+public:
+
+    static Scene& the()
+    {
+        static Scene    instance;
+        return instance;
+    }
     /**
      * @brief operator []
      * @param i
      * @return the window coresponding to the index i
      */
     TerminalWindow& operator[](size_t i);
-    /**
-     * @brief Deallocate all the windows
-     */
-    ~Scene();
+
     /**
      * @brief refresh all the windows
      * @return OK in case of success
