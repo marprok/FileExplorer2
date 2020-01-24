@@ -4,7 +4,7 @@
 #include <fcntl.h> /* creat */
 #include <unistd.h> /* unlink */
 #include <algorithm>
-#include "../inc/Directory.hpp"
+#include "../inc/Directory.h"
 
 namespace fs
 {

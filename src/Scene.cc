@@ -1,7 +1,6 @@
-#include "../inc/Scene.hpp"
+#include "../inc/Scene.h"
 #include <iostream>
 #include <sstream>
-#include "../inc/DialogWindow.hpp"
 
 namespace view
 {
@@ -15,7 +14,7 @@ namespace view
             window.delwin();
     }
 
-    ResizableWindow& Scene::operator[](size_t i)
+    TerminalWindow& Scene::operator[](size_t i)
     {
         return m_windows[i];
     }
@@ -34,9 +33,7 @@ namespace view
     void Scene::add_window(float perlines, float percols, float begin_y,
                            float begin_x)
     {
-        int scene_lines, scene_cols;
-        getmaxyx(stdscr, scene_lines, scene_cols);
-        m_windows.push_back(ResizableWindow{
+        m_windows.push_back(TerminalWindow{
                                 perlines,
                                 percols,
                                 begin_y,
@@ -86,7 +83,7 @@ namespace view
         return OK;
     }
 
-    ResizableWindow& Scene::get_input_window()
+    TerminalWindow& Scene::get_input_window()
     {
         return m_windows[m_input_window];
     }
@@ -97,77 +94,5 @@ namespace view
         if (key != ERR)
             return OK;
         return key;
-    }
-
-    std::string Scene::take_input(int lines, int cols, float begin_y,
-                                        float begin_x, const std::string& prompt)
-    {
-        /* clear the state of the current scene */
-        this->erase();
-        this->refresh();
-        curs_set(1);
-        int scene_lines, scene_cols;
-        getmaxyx(stdscr, scene_lines, scene_cols);
-        DialogWindow win(lines, cols, begin_y, begin_x, true);
-        std::string out = win.take_input(prompt);
-        win.delwin();
-        /* reset the state of the current scene */
-        curs_set(0);
-        this->resize();
-        this->refresh();
-
-        return out;
-    }
-
-    std::string Scene::take_input(int lines, int cols, float begin_y,
-                                        float begin_x,  std::string&& prompt)
-    {
-        return this->take_input(lines, cols, begin_y,
-                                      begin_x, prompt);
-    }
-
-    bool Scene::ask(int lines, int cols, float begin_y,
-                    float begin_x,  std::string& prompt)
-    {
-        /* clear the state of the current scene */
-        this->erase();
-        this->refresh();
-        DialogWindow win(lines, cols,
-                    begin_y, begin_x, true);
-        bool choice = win.ask(prompt);
-        win.delwin();
-        this->resize();
-        this->refresh();
-        return choice;
-    }
-
-    bool Scene::ask(int lines, int cols, float begin_y,
-                    float begin_x,  std::string&& prompt)
-    {
-        return this->ask(lines, cols, begin_y,
-                         begin_x, prompt);
-    }
-
-    std::size_t Scene::choose(const std::vector<std::string> &choices,
-                       std::size_t scroll_size,
-                       std::string& prompt)
-    {
-        /* clear the state of the current scene */
-        this->erase();
-        this->refresh();
-        DialogWindow win(static_cast<int>(scroll_size) + 2 + 1, 30,
-                         0.4f, 0.35f, true);
-        std::size_t choice = win.choose(choices, scroll_size, prompt);
-        win.delwin();
-        this->resize();
-        this->refresh();
-        return choice;
-    }
-
-    std::size_t Scene::choose(const std::vector<std::string> &choices,
-                       std::size_t scroll_size,
-                       std::string&& prompt)
-    {
-        return this->choose(choices, scroll_size, prompt);
     }
 }

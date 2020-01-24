@@ -1,9 +1,9 @@
 #include <iostream>
 #include <ncurses.h>
-#include "inc/Scene.hpp"
+#include "inc/Scene.h"
 #include "inc/ScrollableVector.hpp"
-#include "inc/File.hpp"
-#include "inc/Directory.hpp"
+#include "inc/File.h"
+#include "inc/Directory.h"
 #include <algorithm>
 #include <string>
 
@@ -14,7 +14,7 @@ enum POSITION
     BOTTOM
 };
 
-static std::size_t calculate_lines(view::ResizableWindow& window, std::vector<std::string> &vec)
+static std::size_t calculate_lines(view::TerminalWindow& window, std::vector<std::string> &vec)
 {
     if (vec.empty())
         return 0;
@@ -47,7 +47,7 @@ static void load_current(fs::Directory* current, std::vector<std::string> &vec)
         vec.push_back(files.name());
 }
 
-static void display_file_info(view::ResizableWindow& window, fs::File &file)
+static void display_file_info(view::TerminalWindow& window, fs::File &file)
 {
     window.mvwprintw(1,1, "NAME: " + file.name());
     window.mvwprintw(3,1, "SIZE: " + file.size() + "[Bytes]");
@@ -137,44 +137,6 @@ int main()
             break;
         switch (key)
         {
-        case 'c':
-
-            current->create_file(scene.take_input(4,
-                                                  20,
-                                                  0.5f,
-                                                  0.45f,
-                                                  "Create File"));
-            load_current(current, vec);
-            output_lines = calculate_lines(scene[LEFT], vec);
-            sv.reset(0, output_lines, vec);
-            break;
-        case 'd':
-            if (!current->empty() &&
-                    sv.real_index(index) >= current->dirs().size())
-            {
-                std::size_t file_i = sv.real_index(index) - current->dirs().size();
-                std::string prompt = "Delete " + current->files()[file_i].name() + "?";
-                bool choice = scene.ask(4,
-                                        static_cast<int>(prompt.size()) + 2,
-                                        0.5f,
-                                        0.45f,
-                                        prompt);
-                if (choice)
-                {
-                    current->unlink_file(file_i);
-                    load_current(current, vec);
-                    output_lines = calculate_lines(scene[LEFT], vec);
-                    sv.reset(0, output_lines, vec);
-                }
-            }
-            break;
-        case 'h':
-            /* demo of the choose functionality */
-            scene.choose(vec, 10, "Choose one");
-            load_current(current, vec);
-            output_lines = calculate_lines(scene[LEFT], vec);
-            sv.reset(0, output_lines, vec);
-            break;
         case KEY_UP:
             if (index > 0)
                 index--;

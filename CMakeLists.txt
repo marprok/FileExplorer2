@@ -13,8 +13,6 @@ set(SOURCES
     src/Scene.cc
     src/File.cc
     src/Directory.cc
-    src/DialogWindow.cc
-    src/ResizableWindow.cc
 )
 
 find_package(Curses REQUIRED)

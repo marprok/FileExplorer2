@@ -1,14 +1,14 @@
-#include "../inc/TerminalWindow.hpp"
+#include "../inc/TerminalWindow.h"
 #include <iostream>
 #include <sstream>
 
 namespace view
 {
-    TerminalWindow::TerminalWindow(int lines, int cols, float begin_y,
+    TerminalWindow::TerminalWindow(float lines, float cols, float begin_y,
                      float begin_x)
         :m_window(nullptr),
-         m_lines(lines),
-         m_cols(cols),
+          m_per_cols(cols),
+          m_per_lines(lines),
          m_begin_x(begin_x),
          m_begin_y(begin_y),
          m_hor_ch(0),
@@ -20,8 +20,8 @@ namespace view
         int scene_lines, scene_cols;
         getmaxyx(stdscr, scene_lines, scene_cols);
         m_window = newwin(
-                    m_lines,
-                    m_cols,
+                    static_cast<int>(m_per_lines*scene_lines),
+                    static_cast<int>(m_per_cols*scene_cols),
                     static_cast<int>(m_begin_y*scene_lines),
                     static_cast<int>(m_begin_x*scene_cols)
                     );
@@ -29,8 +29,8 @@ namespace view
 
     TerminalWindow::TerminalWindow()
         :m_window(nullptr),
-          m_lines(0),
-          m_cols(0),
+          m_per_cols(0.0f),
+          m_per_lines(0.0f),
           m_begin_x(0.0f),
           m_begin_y(0.0f),
           m_hor_ch(0),
@@ -40,6 +40,39 @@ namespace view
           m_cursor_y(0)
     {
 
+    }
+
+    int TerminalWindow::resize()
+    {
+        int ret;
+        ret = this->erase();
+        if (ret != OK)
+            return ret;
+        ret = this->refresh();
+        if (ret != OK)
+            return ret;
+        ret = this->_resize();
+        if (ret != OK)
+            return ret;
+        ret = this->move();
+        if (ret != OK)
+            return ret;
+        ret = this->rebox();
+        if (ret != OK)
+            return ret;
+
+        return OK;
+    }
+
+    int TerminalWindow::_resize()
+    {
+
+        int scene_lines, scene_cols;
+        getmaxyx(stdscr, scene_lines, scene_cols);
+        return wresize(operator*(),
+                       static_cast<int>(m_per_lines*scene_lines),
+                       static_cast<int>(m_per_cols*scene_cols)
+                       );
     }
 
     WINDOW* TerminalWindow::operator*()
@@ -131,19 +164,29 @@ namespace view
         return wmove(m_window, y, x);
     }
 
-    int TerminalWindow::cols() { return m_cols; }
-    int TerminalWindow::lines() { return m_lines; }
+    int TerminalWindow::cols()
+    {
+        int scene_lines, scene_cols;
+        getmaxyx(stdscr, scene_lines, scene_cols);
+        return static_cast<int>(m_per_cols*scene_cols);
+    }
+    int TerminalWindow::lines()
+    {
+        int scene_lines, scene_cols;
+        getmaxyx(stdscr, scene_lines, scene_cols);
+        return static_cast<int>(m_per_lines*scene_lines);
+    }
 
     int TerminalWindow::delwin()
     {
         return ::delwin(m_window);
     }
 
-    void TerminalWindow::reset(int lines, int cols, float begin_y,
+    void TerminalWindow::reset(float lines, float cols, float begin_y,
                         float begin_x)
     {
-        m_lines = lines;
-        m_cols= cols;
+        m_per_lines = lines;
+        m_per_cols= cols;
         m_begin_x = begin_x;
         m_begin_y = begin_y;
         m_hor_ch = 0;
@@ -158,8 +201,8 @@ namespace view
             this->delwin();
         }
         m_window = newwin(
-                        m_lines,
-                        m_cols,
+                        static_cast<int>(m_per_lines*scene_lines),
+                        static_cast<int>(m_per_cols*scene_cols),
                         static_cast<int>(m_begin_y*scene_lines),
                         static_cast<int>(m_begin_x*scene_cols)
                     );

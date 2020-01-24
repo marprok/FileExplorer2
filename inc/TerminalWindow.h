@@ -7,23 +7,27 @@
 namespace view
 {
 /**
- *  @brief The terminal window superclass.
+ *  @brief The terminal window class.
  *  Every ncurses window that gets displayed in the screen.
  *  The position of the window is given relative to the window(0-1.0f)
- *  on both axis. The size of the window is fixed and it is up to the
- *  subclass to implement a resize method that should be called when
- *  the resize event is received.
+ *  on both axis.
  */
 class TerminalWindow
 {
 protected:
     WINDOW* m_window;
-    int     m_lines,m_cols;
+    float   m_per_cols, m_per_lines;
     float   m_begin_x, m_begin_y;
     chtype  m_hor_ch;
     chtype  m_ver_ch;
     bool    m_boxed;
     int     m_cursor_x, m_cursor_y;
+
+    /**
+     * @brief _resize This is the actual resize method
+     * @return returns the value of the internal function
+     */
+    int _resize();
 public:
     /**
      * @brief operator *
@@ -116,15 +120,16 @@ public:
      * @brief resize callback for the resize event
      * @return OK in case of success
      */
-    virtual int resize() = 0;
+     int resize();
+
+     TerminalWindow& operator=(const TerminalWindow& other) = default;
+     TerminalWindow(TerminalWindow&& other) = default;
+     TerminalWindow& operator=(TerminalWindow&& other) = default;
 protected:
     /* Default copy constructors/assignment operators */
     TerminalWindow(const TerminalWindow& other) = default;
-    TerminalWindow& operator=(const TerminalWindow& other) = default;
-    TerminalWindow(TerminalWindow&& other) = default;
-    TerminalWindow& operator=(TerminalWindow&& other) = default;
 
-    TerminalWindow(int lines, int cols, float begin_y,
+    TerminalWindow(float lines, float cols, float begin_y,
                    float begin_x);
     TerminalWindow();
     /**
@@ -134,8 +139,10 @@ protected:
      * @param begin_y
      * @param begin_x
      */
-    void reset(int lines, int cols, float begin_y,
+    void reset(float lines, float cols, float begin_y,
                float begin_x);
+
+    friend class Scene;
 };
 }
 #endif

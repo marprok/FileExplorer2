@@ -1,4 +1,4 @@
-#include "../inc/File.hpp"
+#include "../inc/File.h"
 #include <time.h>
 #include <iostream>
 #include <linux/limits.h> /* PATH_MAX */
