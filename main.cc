@@ -65,7 +65,7 @@ int main()
     view::Scene &scene = view::Scene::the();
     scene.add_window(0.8f, 0.5f, 0.0f, 0.0f);
     scene.add_window(0.8f, 0.5f, 0.0f, 0.5f);
-    scene.add_window(0.22f, 1.0f, 0.8f, 0.0f);
+    scene.add_window(0.2f, 1.0f, 0.8f, 0.0f);
     scene[LEFT].box(0,0);
     scene[RIGHT].box(0, 0);
     scene[BOTTOM].box(0,0);
@@ -75,7 +75,7 @@ int main()
     /* Create the nececary data structures */
     std::vector<std::string> vec;
     int key = 0;
-    size_t index = 0;
+    std::size_t index = 0;
     fs::Directory *root = new fs::Directory("/home", nullptr);
     fs::Directory *current = root;
     load_current(current, vec);
@@ -96,7 +96,7 @@ int main()
         /* Draw things on the windows */
         if (!current->empty())
         {
-            for (size_t i = 0; i < output_lines && i < sv.size(); ++i)
+            for (std::size_t i = 0; i < output_lines && i < sv.size(); ++i)
             {
                 if (sv.real_index(i) < current->dirs().size())
                     wattron(*scene[LEFT], COLOR_PAIR(1));
@@ -114,14 +114,44 @@ int main()
             if (sv.real_index(index) >= current->dirs().size())
             {
                 /* Calculate the index of the file */
-                size_t fi = sv.real_index(index) - current->dirs().size();
+                std::size_t fi = sv.real_index(index) - current->dirs().size();
                 display_file_info(scene[RIGHT], current->files()[fi]);
+            }else if (!current->dirs().empty())
+            {
+                auto dir = current->dirs()[sv.real_index(index)];
+                std::size_t dir_size = dir->load_info();
+                if (!dir->empty())
+                {
+                    std::size_t right_lines = std::min(static_cast<std::size_t>(scene[RIGHT].lines() - 2),
+                                                                                dir_size);
+                    for (std::size_t i = 0; i < right_lines; ++i)
+                    {
+                        if (i < dir->dirs().size())
+                        {
+                            wattron(*scene[RIGHT], COLOR_PAIR(1));
+                            scene[RIGHT].mvwprintw(static_cast<int>(i+1),
+                                                  1,
+                                                  dir->dirs()[i]->name());
+                            wattroff(*scene[RIGHT], COLOR_PAIR(1));
+                        }else if (!dir->files().empty())
+                        {
+                            std::size_t fi = i - dir->dirs().size();
+                            scene[RIGHT].mvwprintw(static_cast<int>(i+1),
+                                                  1,
+                                                  dir->files()[fi].name());
+                        }
+                    }
+                }else
+                {
+                    scene[RIGHT].mvwprintw(scene[RIGHT].lines()/2, scene[RIGHT].cols()/2 - 2, "EMPTY");
+                }
             }
         }else
         {
             scene[LEFT].mvwprintw(scene[LEFT].lines()/2, scene[LEFT].cols()/2 - 2, "EMPTY");
         }
         scene[BOTTOM].mvwprintw(1,1, current->abs_path());
+        scene[BOTTOM].mvwprintw(2,1, "Files: " + std::to_string(current->files().size()) + " Directories: " + std::to_string(current->dirs().size()));
         /* Refresh the windowws and wait for an event */
         scene.refresh();
         if ((scene >> key) == ERR)
@@ -188,7 +218,6 @@ int main()
                 }
             }
             break;
-
         }
     }
     delete root;

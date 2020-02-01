@@ -120,6 +120,7 @@ namespace view
         win.delwin();
         /* reset the state of the current scene */
         curs_set(0);
+        keypad(*get_input_window(), true);
         this->resize();
         this->refresh();
 
@@ -142,8 +143,10 @@ namespace view
                          begin_y, begin_x);
         bool choice = m_query_manager.ask(win, question);
         win.delwin();
+        keypad(*get_input_window(), true);
         this->resize();
         this->refresh();
+
         return choice;
     }
 

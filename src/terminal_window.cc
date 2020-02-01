@@ -9,13 +9,13 @@ namespace view
         :m_window(nullptr),
           m_per_cols(cols),
           m_per_lines(lines),
-         m_begin_x(begin_x),
-         m_begin_y(begin_y),
-         m_hor_ch(0),
-         m_ver_ch(0),
-         m_boxed(false),
-         m_cursor_x(0),
-         m_cursor_y(0)
+          m_begin_x(begin_x),
+          m_begin_y(begin_y),
+          m_hor_ch(0),
+          m_ver_ch(0),
+          m_boxed(false),
+          m_cursor_x(0),
+          m_cursor_y(0)
     {
         int scene_lines, scene_cols;
         getmaxyx(stdscr, scene_lines, scene_cols);
@@ -66,13 +66,12 @@ namespace view
 
     int Terminal_window::_resize()
     {
-
         int scene_lines, scene_cols;
         getmaxyx(stdscr, scene_lines, scene_cols);
         return wresize(operator*(),
                        static_cast<int>(m_per_lines*scene_lines),
                        static_cast<int>(m_per_cols*scene_cols)
-                       );
+);
     }
 
     WINDOW* Terminal_window::operator*()
