@@ -108,4 +108,48 @@ namespace view
             return OK;
         return key;
     }
+
+    std::string Scene::take_input(float lines, float cols, float begin_y,
+                                  float begin_x, const std::string& prompt)
+    {
+        this->erase();
+        this->refresh();
+        curs_set(1);
+        TerminalWindow win(lines, cols, begin_y, begin_x);
+        std::string out = m_query_manager.take_input(win, prompt);
+        win.delwin();
+        /* reset the state of the current scene */
+        curs_set(0);
+        this->resize();
+        this->refresh();
+
+        return out;
+    }
+
+    std::string Scene::take_input(float lines, float cols, float begin_y,
+                                  float begin_x, const std::string&& prompt)
+    {
+        return take_input(lines, cols, begin_y, begin_x, prompt);
+    }
+
+    bool Scene::ask(float lines, float cols, float begin_y,
+             float begin_x, const std::string &question)
+    {
+        /* clear the state of the current scene */
+        this->erase();
+        this->refresh();
+        TerminalWindow win(lines, cols,
+                         begin_y, begin_x);
+        bool choice = m_query_manager.ask(win, question);
+        win.delwin();
+        this->resize();
+        this->refresh();
+        return choice;
+    }
+
+    bool Scene::ask(float lines, float cols, float begin_y,
+             float begin_x, const std::string &&question)
+    {
+        return ask(lines, cols, begin_y, begin_x, question);
+    }
 }

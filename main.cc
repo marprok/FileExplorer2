@@ -160,6 +160,35 @@ int main()
             output_lines = calculate_lines(scene[LEFT], vec);
             sv.reset(0, output_lines, vec);
             break;
+        case 'c':
+        {
+            std::string file_name = scene.take_input(0.2f, 0.30f, 0.45f, 0.35f, "Create file");
+            if (file_name.size() != 0)
+            {
+                current->create_file(file_name);
+                load_current(current, vec);
+                output_lines = calculate_lines(scene[LEFT], vec);
+                sv.reset(0, output_lines, vec);
+            }
+            break;
+        }
+        case 'd':
+            if (!current->empty() &&
+                    sv.real_index(index) >= current->dirs().size())
+            {
+                std::size_t file_i = sv.real_index(index) - current->dirs().size();
+                std::string prompt = "Delete " + current->files()[file_i].name() + "?";
+                bool choice = scene.ask(0.2f, 0.30f, 0.45f, 0.35f, prompt);
+                if (choice)
+                {
+                    current->unlink_file(file_i);
+                    load_current(current, vec);
+                    output_lines = calculate_lines(scene[LEFT], vec);
+                    sv.reset(0, output_lines, vec);
+                }
+            }
+            break;
+
         }
     }
     delete root;

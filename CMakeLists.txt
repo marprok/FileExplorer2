@@ -13,6 +13,7 @@ set(SOURCES
     src/Scene.cc
     src/File.cc
     src/Directory.cc
+    src/query_manager.cc
 )
 
 find_package(Curses REQUIRED)

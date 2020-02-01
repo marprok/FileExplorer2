@@ -4,6 +4,7 @@
 #include <ncurses.h>
 #include <vector>
 #include "TerminalWindow.h"
+#include "query_manager.h"
 
 namespace view
 {
@@ -20,7 +21,7 @@ class Scene
 private:
     std::vector<TerminalWindow> m_windows;
     size_t               m_input_window;
-
+    query_manager        m_query_manager;
     /**
      * @brief Scene constructor
      */
@@ -91,6 +92,19 @@ public:
      * @return OK in case of success
      */
     int operator>>(int &key);
+
+    std::string take_input(float lines, float cols, float begin_y,
+                           float begin_x, const std::string& prompt);
+
+    std::string take_input(float lines, float cols, float begin_y,
+                           float begin_x, const std::string&& prompt);
+
+
+    bool ask(float lines, float cols, float begin_y,
+             float begin_x, const std::string &question);
+
+    bool ask(float lines, float cols, float begin_y,
+             float begin_x, const std::string &&question);
 };
 }
 #endif

@@ -106,11 +106,15 @@ public:
     /**
      * @return the columns of the window
      */
-    int cols();
+    int cols() const;
     /**
      * @return the lines of the window
      */
-    int lines();
+    int lines() const;
+
+    void set_cols(float cols);
+
+    void set_lines(float lines);
     /**
      * @brief delwin deletes the window pointer
      * @return returns the value of the internal function

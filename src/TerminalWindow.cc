@@ -164,17 +164,27 @@ namespace view
         return wmove(m_window, y, x);
     }
 
-    int TerminalWindow::cols()
+    int TerminalWindow::cols() const
     {
         int scene_lines, scene_cols;
         getmaxyx(stdscr, scene_lines, scene_cols);
         return static_cast<int>(m_per_cols*scene_cols);
     }
-    int TerminalWindow::lines()
+    int TerminalWindow::lines() const
     {
         int scene_lines, scene_cols;
         getmaxyx(stdscr, scene_lines, scene_cols);
         return static_cast<int>(m_per_lines*scene_lines);
+    }
+
+    void TerminalWindow::set_cols(float cols)
+    {
+        this->m_per_cols = cols;
+    }
+
+    void TerminalWindow::set_lines(float lines)
+    {
+        this->m_per_lines = lines;
     }
 
     int TerminalWindow::delwin()
