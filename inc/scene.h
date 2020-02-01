@@ -3,7 +3,7 @@
 
 #include <ncurses.h>
 #include <vector>
-#include "TerminalWindow.h"
+#include "terminal_window.h"
 #include "query_manager.h"
 
 namespace view
@@ -19,7 +19,7 @@ namespace view
 class Scene
 {
 private:
-    std::vector<TerminalWindow> m_windows;
+    std::vector<Terminal_window> m_windows;
     size_t               m_input_window;
     query_manager        m_query_manager;
     /**
@@ -44,7 +44,7 @@ public:
      * @param i
      * @return the window coresponding to the index i
      */
-    TerminalWindow& operator[](size_t i);
+    Terminal_window& operator[](size_t i);
 
     /**
      * @brief refresh all the windows
@@ -85,7 +85,7 @@ public:
      * @brief get_input_window returns the input window
      * @return The input window
      */
-    TerminalWindow& get_input_window();
+    Terminal_window& get_input_window();
     /**
      * @brief operator >>
      * @param key ouputs the key pressed

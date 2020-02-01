@@ -12,7 +12,7 @@ namespace utils
  *  visible to the current window.
  */
 template<typename T>
-class ScrollableVector
+class scrollable_vector
 {
 private:
     std::vector<T> m_data;
@@ -26,10 +26,10 @@ public:
      * @param window_size the sliding window size
      * @param data the vecotor that contains the data
      */
-    ScrollableVector(std::size_t base, std::size_t window_size,
+    scrollable_vector(std::size_t base, std::size_t window_size,
                      const std::vector<T> & data);
-    ScrollableVector(const ScrollableVector& other) = default;
-    ScrollableVector& operator=(const ScrollableVector& other) = default;
+    scrollable_vector(const scrollable_vector& other) = default;
+    scrollable_vector& operator=(const scrollable_vector& other) = default;
     /**
      * @brief operator []
      * @param index the index of the element to be accessed(0, m_window_size)
@@ -76,7 +76,7 @@ public:
 };
 
 template<typename T>
-ScrollableVector<T>::ScrollableVector(std::size_t base, std::size_t window_size,
+scrollable_vector<T>::scrollable_vector(std::size_t base, std::size_t window_size,
                                       const std::vector<T> & data)
     :m_data(data),
       m_base(base),
@@ -91,26 +91,26 @@ ScrollableVector<T>::ScrollableVector(std::size_t base, std::size_t window_size,
 }
 
 template<typename T>
-T& ScrollableVector<T>::operator[](size_t index)
+T& scrollable_vector<T>::operator[](size_t index)
 {
     /* No bounds checking */
     return m_data[m_base + index];
 }
 
 template<typename T>
-bool ScrollableVector<T>::can_scroll_down()
+bool scrollable_vector<T>::can_scroll_down()
 {
     return m_limit < m_data.size();
 }
 
 template<typename T>
-bool ScrollableVector<T>::can_scroll_up()
+bool scrollable_vector<T>::can_scroll_up()
 {
     return m_base > 0;
 }
 
 template<typename T>
-void ScrollableVector<T>::scroll_up()
+void scrollable_vector<T>::scroll_up()
 {
     if (can_scroll_up())
     {
@@ -120,7 +120,7 @@ void ScrollableVector<T>::scroll_up()
 }
 
 template<typename T>
-void ScrollableVector<T>::scroll_down()
+void scrollable_vector<T>::scroll_down()
 {
     if (can_scroll_down())
     {
@@ -130,19 +130,19 @@ void ScrollableVector<T>::scroll_down()
 }
 
 template<typename T>
-std::size_t ScrollableVector<T>::real_index(std::size_t index)
+std::size_t scrollable_vector<T>::real_index(std::size_t index)
 {
     return m_base + index;
 }
 
 template<typename T>
-std::size_t ScrollableVector<T>::size() const
+std::size_t scrollable_vector<T>::size() const
 {
     return m_data.size();
 }
 
 template<typename T>
-void ScrollableVector<T>::reset(std::size_t base, std::size_t window_size,
+void scrollable_vector<T>::reset(std::size_t base, std::size_t window_size,
                                 std::vector<T> &data)
 {
     m_data = data;

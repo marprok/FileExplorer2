@@ -1,6 +1,6 @@
 #ifndef QUERY_MANAGER_H
 
-#include "TerminalWindow.h"
+#include "terminal_window.h"
 #include <string>
 #include <vector>
 
@@ -11,10 +11,10 @@ namespace view
     public:
         query_manager();
 
-        std::string take_input(TerminalWindow &win,
+        std::string take_input(Terminal_window &win,
                                const std::string &prompt);
 
-        bool ask(TerminalWindow &win,
+        bool ask(Terminal_window &win,
                  const std::string &question);
     };
 }

@@ -1,5 +1,5 @@
-#include "inc/Scene.h"
-#include "inc/ScrollableVector.hpp"
+#include "inc/scene.h"
+#include "inc/scroll_vector.hpp"
 #include "inc/File.h"
 #include "inc/Directory.h"
 #include <algorithm>
@@ -12,7 +12,7 @@ enum POSITION
     BOTTOM
 };
 
-static std::size_t calculate_lines(view::TerminalWindow& window, std::vector<std::string> &vec)
+static std::size_t calculate_lines(view::Terminal_window& window, std::vector<std::string> &vec)
 {
     if (vec.empty())
         return 0;
@@ -45,7 +45,7 @@ static void load_current(fs::Directory* current, std::vector<std::string> &vec)
         vec.push_back(files.name());
 }
 
-static void display_file_info(view::TerminalWindow& window, fs::File &file)
+static void display_file_info(view::Terminal_window& window, fs::File &file)
 {
     window.mvwprintw(1,1, "NAME: " + file.name());
     window.mvwprintw(3,1, "SIZE: " + file.size() + "[Bytes]");
@@ -82,7 +82,7 @@ int main()
     /* -2 lines because the window is boxed */
     output_lines = std::min(static_cast<std::size_t>(scene[LEFT].lines() - 2),
                             vec.size());
-    utils::ScrollableVector<std::string> sv(0, output_lines, vec);
+    utils::scrollable_vector<std::string> sv(0, output_lines, vec);
     while (key != KEY_END)
     {
         /* In case the window is too small */

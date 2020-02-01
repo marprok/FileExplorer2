@@ -1,5 +1,5 @@
 #include "../inc/query_manager.h"
-#include "../inc/ScrollableVector.hpp"
+#include "../inc/scroll_vector.hpp"
 #include <string>
 
 namespace view
@@ -7,7 +7,7 @@ namespace view
 
 query_manager::query_manager() {}
 
-std::string query_manager::take_input(TerminalWindow &win,
+std::string query_manager::take_input(Terminal_window &win,
                                       const std::string &prompt)
 {
     win.box('#','#');
@@ -49,7 +49,7 @@ std::string query_manager::take_input(TerminalWindow &win,
     return text;
 }
 
-bool query_manager::ask(TerminalWindow &win,
+bool query_manager::ask(Terminal_window &win,
          const std::string &question)
 {
     bool choice = false;

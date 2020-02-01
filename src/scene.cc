@@ -1,4 +1,4 @@
-#include "../inc/Scene.h"
+#include "../inc/scene.h"
 #include <ncurses.h>
 
 namespace view
@@ -27,7 +27,7 @@ namespace view
         init_pair(1, COLOR_BLUE, COLOR_BLACK);
     }
 
-    TerminalWindow& Scene::operator[](size_t i)
+    Terminal_window& Scene::operator[](size_t i)
     {
         return m_windows[i];
     }
@@ -46,7 +46,7 @@ namespace view
     void Scene::add_window(float perlines, float percols, float begin_y,
                            float begin_x)
     {
-        m_windows.push_back(TerminalWindow{
+        m_windows.push_back(Terminal_window{
                                 perlines,
                                 percols,
                                 begin_y,
@@ -96,7 +96,7 @@ namespace view
         return OK;
     }
 
-    TerminalWindow& Scene::get_input_window()
+    Terminal_window& Scene::get_input_window()
     {
         return m_windows[m_input_window];
     }
@@ -115,7 +115,7 @@ namespace view
         this->erase();
         this->refresh();
         curs_set(1);
-        TerminalWindow win(lines, cols, begin_y, begin_x);
+        Terminal_window win(lines, cols, begin_y, begin_x);
         std::string out = m_query_manager.take_input(win, prompt);
         win.delwin();
         /* reset the state of the current scene */
@@ -138,7 +138,7 @@ namespace view
         /* clear the state of the current scene */
         this->erase();
         this->refresh();
-        TerminalWindow win(lines, cols,
+        Terminal_window win(lines, cols,
                          begin_y, begin_x);
         bool choice = m_query_manager.ask(win, question);
         win.delwin();

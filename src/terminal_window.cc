@@ -1,10 +1,10 @@
-#include "../inc/TerminalWindow.h"
+#include "../inc/terminal_window.h"
 #include <iostream>
 #include <sstream>
 
 namespace view
 {
-    TerminalWindow::TerminalWindow(float lines, float cols, float begin_y,
+    Terminal_window::Terminal_window(float lines, float cols, float begin_y,
                      float begin_x)
         :m_window(nullptr),
           m_per_cols(cols),
@@ -27,7 +27,7 @@ namespace view
                     );
     }
 
-    TerminalWindow::TerminalWindow()
+    Terminal_window::Terminal_window()
         :m_window(nullptr),
           m_per_cols(0.0f),
           m_per_lines(0.0f),
@@ -42,7 +42,7 @@ namespace view
 
     }
 
-    int TerminalWindow::resize()
+    int Terminal_window::resize()
     {
         int ret;
         ret = this->erase();
@@ -64,7 +64,7 @@ namespace view
         return OK;
     }
 
-    int TerminalWindow::_resize()
+    int Terminal_window::_resize()
     {
 
         int scene_lines, scene_cols;
@@ -75,17 +75,17 @@ namespace view
                        );
     }
 
-    WINDOW* TerminalWindow::operator*()
+    WINDOW* Terminal_window::operator*()
     {
         return m_window;
     }
 
-    int TerminalWindow::refresh()
+    int Terminal_window::refresh()
     {
         return wrefresh(m_window);;
     }
 
-    int TerminalWindow::box(chtype ver_ch, chtype hor_ch)
+    int Terminal_window::box(chtype ver_ch, chtype hor_ch)
     {
         m_ver_ch = ver_ch;
         m_hor_ch = hor_ch;
@@ -93,31 +93,31 @@ namespace view
         return ::box(m_window, m_ver_ch, m_hor_ch);
     }
 
-    int TerminalWindow::mvwprintw(int y, int x, const std::string &text)
+    int Terminal_window::mvwprintw(int y, int x, const std::string &text)
     {
         m_cursor_y = y;
         m_cursor_x = x;
         return ::mvwprintw(m_window, y, x, text.c_str());
     }
 
-    int TerminalWindow::mvwprintw(int y, int x, const std::string &&text)
+    int Terminal_window::mvwprintw(int y, int x, const std::string &&text)
     {
         m_cursor_y = y;
         m_cursor_x = x;
         return ::mvwprintw(m_window, y, x, text.c_str());
     }
 
-    int TerminalWindow::print(const std::string& text)
+    int Terminal_window::print(const std::string& text)
     {
         return ::wprintw(m_window, text.c_str());
     }
 
-    int TerminalWindow::print(const std::string&& text)
+    int Terminal_window::print(const std::string&& text)
     {
         return ::wprintw(m_window, text.c_str());
     }
 
-    int TerminalWindow::move(float y, float x)
+    int Terminal_window::move(float y, float x)
     {
         m_begin_y = y;
         m_begin_x = x;
@@ -139,60 +139,60 @@ namespace view
 
     }
 
-    int TerminalWindow::move()
+    int Terminal_window::move()
     {
-        return TerminalWindow::move(
+        return Terminal_window::move(
                     m_begin_y,
                     m_begin_x
                     );
     }
 
-    int TerminalWindow::erase()
+    int Terminal_window::erase()
     {
         return ::werase(m_window);
     }
 
-    int TerminalWindow::rebox()
+    int Terminal_window::rebox()
     {
         if (!m_boxed)
             return OK;
         return this->box(m_ver_ch, m_hor_ch);
     }
 
-    int TerminalWindow::move_cursor(int y, int x)
+    int Terminal_window::move_cursor(int y, int x)
     {
         return wmove(m_window, y, x);
     }
 
-    int TerminalWindow::cols() const
+    int Terminal_window::cols() const
     {
         int scene_lines, scene_cols;
         getmaxyx(stdscr, scene_lines, scene_cols);
         return static_cast<int>(m_per_cols*scene_cols);
     }
-    int TerminalWindow::lines() const
+    int Terminal_window::lines() const
     {
         int scene_lines, scene_cols;
         getmaxyx(stdscr, scene_lines, scene_cols);
         return static_cast<int>(m_per_lines*scene_lines);
     }
 
-    void TerminalWindow::set_cols(float cols)
+    void Terminal_window::set_cols(float cols)
     {
         this->m_per_cols = cols;
     }
 
-    void TerminalWindow::set_lines(float lines)
+    void Terminal_window::set_lines(float lines)
     {
         this->m_per_lines = lines;
     }
 
-    int TerminalWindow::delwin()
+    int Terminal_window::delwin()
     {
         return ::delwin(m_window);
     }
 
-    void TerminalWindow::reset(float lines, float cols, float begin_y,
+    void Terminal_window::reset(float lines, float cols, float begin_y,
                         float begin_x)
     {
         m_per_lines = lines;

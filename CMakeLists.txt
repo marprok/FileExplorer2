@@ -9,8 +9,8 @@ include_directories(
     inc
 )
 set(SOURCES
-    src/TerminalWindow.cc
-    src/Scene.cc
+    src/terminal_window.cc
+    src/scene.cc
     src/File.cc
     src/Directory.cc
     src/query_manager.cc
