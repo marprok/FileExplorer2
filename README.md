@@ -4,6 +4,7 @@ A better version of FileExplorer.
 ## Have you ever thought that **ls** is useless? No? Neither have I!
 
 This project was not created as a replacement of the ls command. It was built as a way to improve the architecure of the first
+
 FileExplorer. For the most part it works the same way, as it's predecessor.
 
 # Features
