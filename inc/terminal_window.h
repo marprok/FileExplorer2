@@ -115,6 +115,8 @@ public:
     void set_cols(float cols);
 
     void set_lines(float lines);
+
+    bool boxed() const;
     /**
      * @brief delwin deletes the window pointer
      * @return returns the value of the internal function

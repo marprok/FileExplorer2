@@ -186,6 +186,11 @@ namespace view
         this->m_per_lines = lines;
     }
 
+    bool Terminal_window::boxed() const
+    {
+        return m_boxed;
+    }
+
     int Terminal_window::delwin()
     {
         return ::delwin(m_window);

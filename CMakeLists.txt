@@ -14,6 +14,9 @@ set(SOURCES
     src/File.cc
     src/Directory.cc
     src/query_manager.cc
+    src/constraint_left.cc
+    src/constraint_center.cc
+    src/constraint_right.cc
 )
 
 find_package(Curses REQUIRED)
