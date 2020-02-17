@@ -75,6 +75,47 @@ public:
      */
     int print(const std::string&& text);
     /**
+     * @brief print text, left variant
+     * @param text text to be printed
+     * @return returns the value of the internal function
+     */
+    int print_left(int line, const std::string& text);
+    /**
+     * @brief print text, left variant
+     * @param line the line index
+     * @param text text to be printed
+     * @return returns the value of the internal function
+     */
+    int print_left(int line, const std::string&& text);
+    /**
+     * @brief print text, right variant
+     * @param line the line index
+     * @param text text to be printed
+     * @return returns the value of the internal function
+     */
+    int print_right(int line, const std::string& text);
+    /**
+     * @brief print text, right variant
+     * @param line the line index
+     * @param text text to be printed
+     * @return returns the value of the internal function
+     */
+    int print_right(int line, const std::string&& text);
+    /**
+     * @brief print text, center variant
+     * @param line the line index
+     * @param text text to be printed
+     * @return returns the value of the internal function
+     */
+    int print_center(int line, const std::string& text);
+    /**
+     * @brief print text, center variant
+     * @param line the line index
+     * @param text text to be printed
+     * @return returns the value of the internal function
+     */
+    int print_center(int line, const std::string&& text);
+    /**
      * @brief move the window
      * @param y relative y coordinate
      * @param x relative x coordinate

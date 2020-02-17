@@ -116,6 +116,85 @@ namespace view
         return ::wprintw(m_window, text.c_str());
     }
 
+
+    int Terminal_window::print_left(int line, const std::string& text)
+    {
+        int  col = 0;
+        int text_len = static_cast<int>(text.size());
+        int win_cols = cols();
+        int win_lines = lines();
+
+        if (boxed())
+        {
+            col++;
+            win_lines--;
+            win_cols--;
+        }
+
+        if (win_lines < line ||
+             win_cols < text_len)
+            return ERR;
+
+        return mvwprintw(line, col, text.c_str());
+    }
+
+    int Terminal_window::print_left(int line, const std::string&& text)
+    {
+        return print_left(line, text);
+    }
+
+    int Terminal_window::print_right(int line, const std::string& text)
+    {
+        int  col = 0;
+        int text_len = static_cast<int>(text.size());
+        int win_cols = cols();
+        int win_lines = lines();
+
+        if (boxed())
+        {
+            col++;
+            win_lines--;
+            win_cols--;
+        }
+
+        if (win_lines < line ||
+            win_cols < text_len)
+            return ERR;
+
+        return mvwprintw(line, win_cols - text_len, text.c_str());
+    }
+
+    int Terminal_window::print_right(int line, const std::string&& text)
+    {
+        return print_right(line, text);
+    }
+
+    int Terminal_window::print_center(int line, const std::string& text)
+    {
+        int  col = 0;
+        int text_len = static_cast<int>(text.size());
+        int win_cols = cols();
+        int win_lines = lines();
+
+        if (boxed())
+        {
+            col++;
+            win_lines--;
+            win_cols--;
+        }
+
+        if (win_lines < line ||
+            win_cols < text_len)
+            return ERR;
+
+        return mvwprintw(line, (win_cols - text_len)/2, text.c_str());
+    }
+
+    int Terminal_window::print_center(int line, const std::string&& text)
+    {
+        return print_center(line, text);
+    }
+
     int Terminal_window::move(float y, float x)
     {
         m_begin_y = y;

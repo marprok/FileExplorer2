@@ -47,15 +47,15 @@ static void load_current(fs::Directory* current, std::vector<std::string> &vec)
 
 static void display_file_info(view::Terminal_window& window, fs::File &file)
 {
-    window.mvwprintw(1,1, "NAME: " + file.name());
-    window.mvwprintw(3,1, "SIZE: " + file.size() + "[Bytes]");
-    window.mvwprintw(5,1, "RIGHTS: " + file.rights());
-    window.mvwprintw(7,1, "LAST ACCESSED: " + file.last_acc());
-    window.mvwprintw(9,1, "LAST MODIFIED: " + file.last_mod());
-    window.mvwprintw(11,1, "INODE: " + file.inode_number());
-    window.mvwprintw(13,1, "HARD LINKS: " + file.hlinks_number());
+    window.print_left(1, "NAME: " + file.name());
+    window.print_left(3, "SIZE: " + file.size() + "[Bytes]");
+    window.print_left(5, "RIGHTS: " + file.rights());
+    window.print_left(7, "LAST ACCESSED: " + file.last_acc());
+    window.print_left(9, "LAST MODIFIED: " + file.last_mod());
+    window.print_left(11, "INODE: " + file.inode_number());
+    window.print_left(13, "HARD LINKS: " + file.hlinks_number());
     if (file.is_link())
-        window.mvwprintw(15,1, "[LINK]->" + file.real_file());
+        window.print_left(15, "[LINK]->" + file.real_file());
 }
 
 int main()
@@ -103,9 +103,7 @@ int main()
                 if (i == index)
                     wattron(*scene[LEFT], A_REVERSE);
                 /* +1 because it is a boxed window */
-                scene[LEFT].mvwprintw(static_cast<int>(i+1),
-                                      1,
-                                      sv[i]);
+                scene[LEFT].print_left(static_cast<int>(i+1), sv[i]);
                 if (i == index)
                     wattroff(*scene[LEFT], A_REVERSE);
                 if (sv.real_index(i) < current->dirs().size())
@@ -129,29 +127,27 @@ int main()
                         if (i < dir->dirs().size())
                         {
                             wattron(*scene[RIGHT], COLOR_PAIR(1));
-                            scene[RIGHT].mvwprintw(static_cast<int>(i+1),
-                                                  1,
-                                                  dir->dirs()[i]->name());
+                            scene[RIGHT].print_left(static_cast<int>(i+1),
+                                                   dir->dirs()[i]->name());
                             wattroff(*scene[RIGHT], COLOR_PAIR(1));
                         }else if (!dir->files().empty())
                         {
                             std::size_t fi = i - dir->dirs().size();
-                            scene[RIGHT].mvwprintw(static_cast<int>(i+1),
-                                                  1,
-                                                  dir->files()[fi].name());
+                            scene[RIGHT].print_left(static_cast<int>(i+1),
+                                                    dir->files()[fi].name());
                         }
                     }
                 }else
                 {
-                    scene[RIGHT].mvwprintw(scene[RIGHT].lines()/2, scene[RIGHT].cols()/2 - 2, "EMPTY");
+                    scene[RIGHT].print_center(scene[RIGHT].lines()/2, "EMPTY");
                 }
             }
         }else
         {
-            scene[LEFT].mvwprintw(scene[LEFT].lines()/2, scene[LEFT].cols()/2 - 2, "EMPTY");
+            scene[LEFT].print_center(scene[LEFT].lines()/2, "EMPTY");
         }
-        scene[BOTTOM].mvwprintw(1,1, current->abs_path());
-        scene[BOTTOM].mvwprintw(2,1, "Files: " + std::to_string(current->files().size()) + " Directories: " + std::to_string(current->dirs().size()));
+        scene[BOTTOM].print_left(1, current->abs_path());
+        scene[BOTTOM].print_left(2, "Files: " + std::to_string(current->files().size()) + " Directories: " + std::to_string(current->dirs().size()));
         /* Refresh the windowws and wait for an event */
         scene.refresh();
         if ((scene >> key) == ERR)
