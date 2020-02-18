@@ -65,15 +65,20 @@ namespace fs
 
     void Directory::unload_info()
     {
+        if (!loaded())
+            return;
+
         if (!m_dirs.empty())
         {
             for (auto& d : m_dirs)
                 delete d;
             m_dirs.clear();
         }
+
         if (!m_files.empty())
             m_files.clear();
 
+        m_size = 0;
         m_loaded = false;
     }
 
@@ -85,6 +90,9 @@ namespace fs
     Directory* Directory::dive(std::size_t i)
     {
         m_index = i;
+        for (std::size_t j = 0; j < m_dirs.size(); ++j)
+            if (i != j && m_dirs[j]->loaded())
+               m_dirs[j]->unload_info();
         return m_dirs[i];
     }
 
