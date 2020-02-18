@@ -96,15 +96,8 @@ public:
     std::string take_input(float lines, float cols, float begin_y,
                            float begin_x, const std::string& prompt);
 
-    std::string take_input(float lines, float cols, float begin_y,
-                           float begin_x, const std::string&& prompt);
-
-
     bool ask(float lines, float cols, float begin_y,
              float begin_x, const std::string &question);
-
-    bool ask(float lines, float cols, float begin_y,
-             float begin_x, const std::string &&question);
 };
 }
 #endif

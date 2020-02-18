@@ -99,23 +99,10 @@ namespace view
         return ::mvwprintw(m_window, y, x, text.c_str());
     }
 
-    int Terminal_window::mvwprintw(int y, int x, const std::string &&text)
-    {
-        m_cursor_y = y;
-        m_cursor_x = x;
-        return ::mvwprintw(m_window, y, x, text.c_str());
-    }
-
     int Terminal_window::print(const std::string& text)
     {
         return ::wprintw(m_window, text.c_str());
     }
-
-    int Terminal_window::print(const std::string&& text)
-    {
-        return ::wprintw(m_window, text.c_str());
-    }
-
 
     int Terminal_window::print_left(int line, const std::string& text)
     {
@@ -136,11 +123,6 @@ namespace view
             return ERR;
 
         return mvwprintw(line, col, text.c_str());
-    }
-
-    int Terminal_window::print_left(int line, const std::string&& text)
-    {
-        return print_left(line, text);
     }
 
     int Terminal_window::print_right(int line, const std::string& text)
@@ -164,11 +146,6 @@ namespace view
         return mvwprintw(line, win_cols - text_len, text.c_str());
     }
 
-    int Terminal_window::print_right(int line, const std::string&& text)
-    {
-        return print_right(line, text);
-    }
-
     int Terminal_window::print_center(int line, const std::string& text)
     {
         int  col = 0;
@@ -188,11 +165,6 @@ namespace view
             return ERR;
 
         return mvwprintw(line, (win_cols - text_len)/2, text.c_str());
-    }
-
-    int Terminal_window::print_center(int line, const std::string&& text)
-    {
-        return print_center(line, text);
     }
 
     int Terminal_window::move(float y, float x)

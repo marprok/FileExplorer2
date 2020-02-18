@@ -127,12 +127,6 @@ namespace view
         return out;
     }
 
-    std::string Scene::take_input(float lines, float cols, float begin_y,
-                                  float begin_x, const std::string&& prompt)
-    {
-        return take_input(lines, cols, begin_y, begin_x, prompt);
-    }
-
     bool Scene::ask(float lines, float cols, float begin_y,
              float begin_x, const std::string &question)
     {
@@ -148,11 +142,5 @@ namespace view
         this->refresh();
 
         return choice;
-    }
-
-    bool Scene::ask(float lines, float cols, float begin_y,
-             float begin_x, const std::string &&question)
-    {
-        return ask(lines, cols, begin_y, begin_x, question);
     }
 }
