@@ -59,14 +59,27 @@ namespace fs
 
     std::size_t Directory::reload_info()
     {
-        m_loaded = false;
+        unload_info();
         return load_info();
+    }
+
+    void Directory::unload_info()
+    {
+        if (!m_dirs.empty())
+        {
+            for (auto& d : m_dirs)
+                delete d;
+            m_dirs.clear();
+        }
+        if (!m_files.empty())
+            m_files.clear();
+
+        m_loaded = false;
     }
 
     Directory::~Directory()
     {
-        for (auto& d : m_dirs)
-            delete d;
+        unload_info();
     }
 
     Directory* Directory::dive(std::size_t i)

@@ -35,6 +35,13 @@ public:
      * @return the size of the directory
      */
     std::size_t reload_info();
+    /**
+     * @brief unload_info deallocates all resources of the Directory object
+     */
+    void unload_info();
+    /**
+     * @brief The destructor deletes all the Directory pointers.
+     */
     ~Directory();
     /**
      * @brief dive access a child directory
