@@ -12,7 +12,7 @@ enum POSITION
     BOTTOM
 };
 
-static std::size_t calculate_lines(view::Terminal_window& window, std::vector<std::string> &vec)
+static std::size_t calculate_lines(const view::Terminal_window& window, const std::vector<std::string> &vec)
 {
     if (vec.empty())
         return 0;
@@ -45,7 +45,7 @@ static void load_current(fs::Directory* current, std::vector<std::string> &vec)
         vec.push_back(files.name());
 }
 
-static void display_file_info(view::Terminal_window& window, fs::File &file)
+static void display_file_info(view::Terminal_window& window, const fs::File &file)
 {
     window.print_left(1, "NAME: " + file.name());
     window.print_left(3, "SIZE: " + file.size() + "[Bytes]");
