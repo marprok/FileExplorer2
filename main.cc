@@ -4,6 +4,11 @@
 #include "inc/Directory.h"
 #include <algorithm>
 #include <string>
+#include <stack>
+#include <utility>
+
+
+typedef std::pair<std::size_t, utils::scrollable_vector<fs::FS_Entry*>> scroll_pair;
 
 enum POSITION
 {
@@ -12,7 +17,7 @@ enum POSITION
     BOTTOM
 };
 
-static std::size_t calculate_lines(const view::Terminal_window& window, const std::vector<std::string> &vec)
+static std::size_t calculate_lines(const view::Terminal_window& window, const std::vector<fs::FS_Entry*> &vec)
 {
     if (vec.empty())
         return 0;
@@ -25,7 +30,7 @@ static std::size_t calculate_lines(const view::Terminal_window& window, const st
     return output_lines;
 }
 
-static void load_current(fs::Directory* current, std::vector<std::string> &vec)
+static void load_current(fs::Directory* current, std::vector<fs::FS_Entry*> &vec)
 {
     if (!current)
         return;
@@ -39,10 +44,10 @@ static void load_current(fs::Directory* current, std::vector<std::string> &vec)
     auto comp_dir = [](auto& l, auto& r) { return l->name() < r->name();};
     std::sort(current->dirs().begin(), current->dirs().end(), comp_dir);
     std::sort(current->files().begin(), current->files().end(), comp_file);
-    for (auto& dirs : current->dirs())
-        vec.push_back(dirs->name() + "/");
-    for (auto& files : current->files())
-        vec.push_back(files.name());
+    for (auto& dir : current->dirs())
+        vec.push_back(dir);
+    for (auto& file : current->files())
+        vec.push_back(&file);
 }
 
 static void display_file_info(view::Terminal_window& window, const fs::File &file)
@@ -73,7 +78,7 @@ int main()
     scene.set_input_window(LEFT);
     keypad(*scene.get_input_window(), true);
     /* Create the nececary data structures */
-    std::vector<std::string> vec;
+    std::vector<fs::FS_Entry*> vec;
     int key = 0;
     std::size_t index = 0;
     fs::Directory *root = new fs::Directory("/home", nullptr);
@@ -82,14 +87,12 @@ int main()
     /* -2 lines because the window is boxed */
     output_lines = std::min(static_cast<std::size_t>(scene[LEFT].lines() - 2),
                             vec.size());
-    utils::scrollable_vector<std::string> sv(0, output_lines, vec);
+    utils::scrollable_vector<fs::FS_Entry*> sv(0, output_lines, vec);
+    std::stack<scroll_pair> scroll_stack;
+    scroll_stack.push(scroll_pair(index, sv));
+
     while (key != KEY_END)
     {
-        /* In case the window is too small */
-        if (output_lines > 0  && index >= output_lines)
-            index = output_lines-1;
-        else if (output_lines == 0)
-            index = 0;
         /* Clear the windows and rebox them */
         scene.erase();
         scene.rebox();
@@ -103,7 +106,7 @@ int main()
                 if (i == index)
                     wattron(*scene[LEFT], A_REVERSE);
                 /* +1 because it is a boxed window */
-                scene[LEFT].print_left(static_cast<int>(i+1), sv[i]);
+                scene[LEFT].print_left(static_cast<int>(i+1), sv[i]->name());
                 if (i == index)
                     wattroff(*scene[LEFT], A_REVERSE);
                 if (sv.real_index(i) < current->dirs().size())
@@ -169,18 +172,29 @@ int main()
         case KEY_RIGHT:
             if (sv.real_index(index) < current->dirs().size())
             {
+                scroll_stack.push(scroll_pair(index, sv));
                 current = current->dive(sv.real_index(index));
                 load_current(current, vec);
                 output_lines = calculate_lines(scene[LEFT], vec);
                 sv.reset(0, output_lines, vec);
+                index = 0;
             }
             break;
         case KEY_LEFT:
+        {
+            if (!scroll_stack.empty())
+            {
+                auto sp = scroll_stack.top();
+                sv = sp.second;
+                index = sp.first;
+                scroll_stack.pop();
+            }
             current = current->surface();
             load_current(current, vec);
             output_lines = calculate_lines(scene[LEFT], vec);
-            sv.reset(0, output_lines, vec);
+            //sv.reset(0, output_lines, vec);
             break;
+        }
         case KEY_RESIZE:
             scene.resize();
             output_lines = calculate_lines(scene[LEFT], vec);
@@ -210,6 +224,7 @@ int main()
                     current->unlink_file(file_i);
                     load_current(current, vec);
                     output_lines = calculate_lines(scene[LEFT], vec);
+                    index = 0;
                     sv.reset(0, output_lines, vec);
                 }
             }
