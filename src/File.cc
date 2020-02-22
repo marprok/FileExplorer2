@@ -7,40 +7,32 @@
 
 namespace fs
 {
-    File::File(const std::string &name, const std::string &parent_name)
-        :m_name(name), m_parent_name(parent_name), m_loaded(false)
+    File::File(const std::string &name, FS_Entry* parent_name)
+        :FS_Entry(name, parent_name)
     {
-        if (_read_data() < 0)
+        load();
+        if (!loaded())
         {
             std::cerr << "Cannot open " << abs_path() << std::endl;
             std::exit(1);
         }
     }
 
-    int File::_read_data()
+    std::size_t File::load()
     {
         if (m_loaded)
             return 0;
-        int ret = 0;
-        if ((ret = lstat(abs_path().c_str(), &m_stat))< 0)
+        std::size_t ret = 0; // we have to return something
+        if ( lstat(abs_path().c_str(), &m_stat) < 0 )
             return ret;
         m_loaded = true;
         return 0;
     }
 
-    std::string File::abs_path() const
+    void File::unload()
     {
-        return m_parent_name + "/" + m_name;
-    }
-
-    const std::string& File::name() const
-    {
-        return m_name;
-    }
-
-    bool File::loaded() const
-    {
-        return m_loaded;
+        m_loaded = false;
+        // Nothing else realy needs to be done here
     }
 
     std::string File::inode_number() const

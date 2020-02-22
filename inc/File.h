@@ -3,6 +3,7 @@
 
 #include <sys/stat.h>
 #include <string>
+#include "fs_entry.h"
 
 namespace fs
 {
@@ -13,18 +14,10 @@ namespace fs
  *  most of the information that the stat
  *  system call returns.
  */
-class File
+class File : public FS_Entry
 {
 private:
     struct stat m_stat;
-    std::string m_name;
-    std::string m_parent_name;
-    bool m_loaded;
-    /**
-     * @brief _read_data reads the stat data
-     * @return zero in case of success
-     */
-    int _read_data();
     /**
      * @brief _get_time formats the time
      * @param tp
@@ -32,22 +25,12 @@ private:
      */
     std::string _get_time(const struct timespec* tp) const;
 public:
-    File(const std::string &name, const std::string &parent_name);
-    /**
-     * @brief abs_path
-     * @return the path relative to the parent
-     */
-    std::string abs_path() const;
-    /**
-     * @brief name
-     * @return name of the file
-     */
-    const std::string& name() const;
-    /**
-     * @brief loaded
-     * @return true if already loaded
-     */
-    bool loaded() const;
+    /* FS entry API */
+    virtual std::size_t load() override;
+
+    virtual void unload() override;
+
+    File(const std::string &name, FS_Entry* parent);
 
     /* INode data access */
     std::string inode_number() const;

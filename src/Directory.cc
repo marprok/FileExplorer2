@@ -8,13 +8,12 @@
 
 namespace fs
 {
-    Directory::Directory(const std::string& name, Directory *parent)
-        :m_name(name), m_parent(parent), m_size(0), m_loaded(false), m_index(0)
+    Directory::Directory(const std::string& name, FS_Entry *parent)
+        :FS_Entry(name, parent), m_index(0)
     {
-        //load_info();
     }
 
-    std::size_t Directory::load_info()
+    std::size_t Directory::load()
     {
         if (m_loaded)
         {
@@ -37,7 +36,7 @@ namespace fs
             if (drt->d_type != DT_DIR)
             {
                 /* This is not a directory. */
-                m_files.emplace_back(drt->d_name, abs_path());
+                m_files.emplace_back(drt->d_name, this);
             }else
             {
                 /* In case the m_name is . or .. */
@@ -57,13 +56,7 @@ namespace fs
         return m_size;
     }
 
-    std::size_t Directory::reload_info()
-    {
-        unload_info();
-        return load_info();
-    }
-
-    void Directory::unload_info()
+    void Directory::unload()
     {
         if (!loaded())
             return;
@@ -84,7 +77,7 @@ namespace fs
 
     Directory::~Directory()
     {
-        unload_info();
+        unload();
     }
 
     Directory* Directory::dive(std::size_t i)
@@ -92,22 +85,15 @@ namespace fs
         m_index = i;
         for (std::size_t j = 0; j < m_dirs.size(); ++j)
             if (i != j && m_dirs[j]->loaded())
-               m_dirs[j]->unload_info();
+               m_dirs[j]->unload();
         return m_dirs[i];
     }
 
     Directory* Directory::surface()
     {
-        return m_parent != nullptr ? m_parent : this;
+        return m_parent != nullptr ? static_cast<Directory*>(m_parent) : this;
     }
 
-    std::string Directory::abs_path() const
-    {
-        return m_parent == nullptr ? m_name : m_parent->abs_path() + "/" + m_name;
-    }
-
-    const std::string Directory::name() const { return m_name; }
-    bool Directory::loaded() const             { return m_loaded; }
     std::size_t Directory::index() const       { return m_index; }
     std::vector<File>& Directory::files()      { return m_files; }
     std::vector<Directory*>& Directory::dirs() { return m_dirs; }
@@ -123,7 +109,7 @@ namespace fs
         if (file == m_files.end())
         {
             ret = creat((abs_path() + "/" + file_name).c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-            m_files.emplace_back(file_name, abs_path());
+            m_files.emplace_back(file_name, this);
             return ret;
         }
         return ret;

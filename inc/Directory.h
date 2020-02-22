@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include "File.h"
+#include "fs_entry.h"
 
 namespace fs
 {
@@ -12,33 +13,19 @@ namespace fs
  *  This class represents a directory
  *  in the file system.
  */
-class Directory
+class Directory : public FS_Entry
 {
-public:
 private:
-    std::string                m_name;
-    Directory*                 m_parent;
-    std::size_t                m_size;
-    bool                       m_loaded;
     std::size_t                m_index;
     std::vector<File>          m_files;
     std::vector<Directory*>    m_dirs;
 public:
-    Directory(const std::string& name, Directory* parent);
-    /**
-     * @brief load_info loads the directory
-     * @return the number of elements contained
-     */
-    std::size_t load_info();
-    /**
-     * @brief reload_info force reloads the directory
-     * @return the size of the directory
-     */
-    std::size_t reload_info();
-    /**
-     * @brief unload_info deallocates all resources of the Directory object
-     */
-    void unload_info();
+    /* FS entry API */
+    virtual std::size_t load() override;
+
+    virtual void unload() override;
+
+    Directory(const std::string& name, FS_Entry* parent);
     /**
      * @brief The destructor deletes all the Directory pointers.
      */
@@ -54,17 +41,7 @@ public:
      * @return the parent directory
      */
     Directory* surface();
-    /**
-     * @brief abs_path
-     * @return the name relative to the parent
-     */
-    std::string abs_path() const;
-    /**
-     * @brief name
-     * @return the name if the directory
-     */
-    const std::string name() const;
-    bool loaded() const;
+
     std::size_t index() const;
     std::vector<File>& files();
     std::vector<Directory*>& dirs();

@@ -8,3 +8,4 @@ FileExplorer2.cbp
 FileExplorer.cbp
 Makefile
 cmake_install.cmake
+build/

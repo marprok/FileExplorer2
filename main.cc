@@ -30,7 +30,7 @@ static void load_current(fs::Directory* current, std::vector<std::string> &vec)
     if (!current)
         return;
     /* Prepare the data structures */
-    current->load_info();
+    current->load();
     vec.clear();
     if (current->empty())
         return;
@@ -117,7 +117,7 @@ int main()
             }else if (!current->dirs().empty())
             {
                 auto dir = current->dirs()[sv.real_index(index)];
-                std::size_t dir_size = dir->load_info();
+                std::size_t dir_size = dir->load();
                 if (!dir->empty())
                 {
                     std::size_t right_lines = std::min(static_cast<std::size_t>(scene[RIGHT].lines() - 2),
