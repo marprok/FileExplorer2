@@ -41,17 +41,17 @@ public:
      * @param index of an element inside the window
      * @return the real index of the element in the data vector
      */
-    std::size_t real_index(std::size_t index);
+    std::size_t real_index(std::size_t index) const;
     /**
      * @brief can_scroll_up
      * @return true if sroll up is allowed
      */
-    bool can_scroll_up();
+    bool can_scroll_up() const;
     /**
      * @brief can_scroll_down
      * @return true if scroll down is allowed
      */
-    bool can_scroll_down();
+    bool can_scroll_down() const;
     /**
      * @brief scroll_up scroll up the vector
      */
@@ -60,6 +60,8 @@ public:
      * @brief scroll_down scroll down the vector
      */
     void scroll_down();
+    bool needs_scroll_down(std::size_t index) const;
+    bool needs_scroll_up(std::size_t index) const;
     /**
      * @brief size
      * @return the size of the vector
@@ -98,13 +100,13 @@ T& scrollable_vector<T>::operator[](size_t index)
 }
 
 template<typename T>
-bool scrollable_vector<T>::can_scroll_down()
+bool scrollable_vector<T>::can_scroll_down() const
 {
     return m_limit < m_data.size();
 }
 
 template<typename T>
-bool scrollable_vector<T>::can_scroll_up()
+bool scrollable_vector<T>::can_scroll_up() const
 {
     return m_base > 0;
 }
@@ -130,7 +132,23 @@ void scrollable_vector<T>::scroll_down()
 }
 
 template<typename T>
-std::size_t scrollable_vector<T>::real_index(std::size_t index)
+bool scrollable_vector<T>::needs_scroll_down(std::size_t index) const
+{
+    if (m_window_size == 0)
+        return true; // I guess??
+    return index >= m_window_size - 1;
+}
+
+template<typename T>
+bool scrollable_vector<T>::needs_scroll_up(std::size_t index) const
+{
+    if (m_window_size == 0)
+        return true; // I guess??
+    return index == 0;
+}
+
+template<typename T>
+std::size_t scrollable_vector<T>::real_index(std::size_t index) const
 {
     return m_base + index;
 }

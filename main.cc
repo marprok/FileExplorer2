@@ -91,8 +91,20 @@ int main()
     std::stack<scroll_pair> scroll_stack;
     scroll_stack.push(scroll_pair(index, sv));
 
+    auto is_directory = [](std::size_t i, const utils::scrollable_vector<fs::FS_Entry*> &sv, fs::Directory *current)
+    {
+        return sv.real_index(i) < current->dirs().size();
+    };
+
+    auto is_file = [](std::size_t i, const utils::scrollable_vector<fs::FS_Entry*> &sv, fs::Directory *current)
+    {
+        return sv.real_index(i) >= current->dirs().size();
+    };
+
     while (key != KEY_END)
     {
+        if (index >= output_lines)
+            index = 0;
         /* Clear the windows and rebox them */
         scene.erase();
         scene.rebox();
@@ -101,7 +113,7 @@ int main()
         {
             for (std::size_t i = 0; i < output_lines && i < sv.size(); ++i)
             {
-                if (sv.real_index(i) < current->dirs().size())
+                if (is_directory(i, sv, current))
                     wattron(*scene[LEFT], COLOR_PAIR(1));
                 if (i == index)
                     wattron(*scene[LEFT], A_REVERSE);
@@ -109,10 +121,10 @@ int main()
                 scene[LEFT].print_left(static_cast<int>(i+1), sv[i]->name());
                 if (i == index)
                     wattroff(*scene[LEFT], A_REVERSE);
-                if (sv.real_index(i) < current->dirs().size())
+                if (is_directory(i, sv, current))
                     wattroff(*scene[LEFT], COLOR_PAIR(1));
             }
-            if (sv.real_index(index) >= current->dirs().size())
+            if (is_file(index, sv, current))
             {
                 /* Calculate the index of the file */
                 std::size_t fi = sv.real_index(index) - current->dirs().size();
@@ -158,19 +170,19 @@ int main()
         switch (key)
         {
         case KEY_UP:
-            if (index > 0)
+            if (!sv.needs_scroll_up(index))
                 index--;
             else
                 sv.scroll_up();
             break;
         case KEY_DOWN:
-            if (index < output_lines - 1)
+            if (!sv.needs_scroll_down(index))
                 index++;
             else
                 sv.scroll_down();
             break;
         case KEY_RIGHT:
-            if (sv.real_index(index) < current->dirs().size())
+            if (is_directory(index, sv, current))
             {
                 scroll_stack.push(scroll_pair(index, sv));
                 current = current->dive(sv.real_index(index));
@@ -192,7 +204,6 @@ int main()
             current = current->surface();
             load_current(current, vec);
             output_lines = calculate_lines(scene[LEFT], vec);
-            //sv.reset(0, output_lines, vec);
             break;
         }
         case KEY_RESIZE:
@@ -213,8 +224,7 @@ int main()
             break;
         }
         case 'd':
-            if (!current->empty() &&
-                    sv.real_index(index) >= current->dirs().size())
+            if (!current->empty() && is_file(index, sv, current))
             {
                 std::size_t file_i = sv.real_index(index) - current->dirs().size();
                 std::string prompt = "Delete " + current->files()[file_i].name() + "?";
