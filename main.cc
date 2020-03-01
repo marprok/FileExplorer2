@@ -5,10 +5,6 @@
 #include <algorithm>
 #include <string>
 #include <stack>
-#include <utility>
-
-
-typedef std::pair<std::size_t, utils::scrollable_vector<fs::FS_Entry*>> scroll_pair;
 
 enum POSITION
 {
@@ -25,8 +21,6 @@ static std::size_t calculate_lines(const view::Terminal_window& window, const st
     if (window.lines() > 2)
         output_lines = std::min(static_cast<std::size_t>(window.lines() - 2),
                                 vec.size());
-    else
-        output_lines = 0;
     return output_lines;
 }
 
@@ -88,8 +82,8 @@ int main()
     output_lines = std::min(static_cast<std::size_t>(scene[LEFT].lines() - 2),
                             vec.size());
     utils::scrollable_vector<fs::FS_Entry*> sv(0, output_lines, vec);
-    std::stack<scroll_pair> scroll_stack;
-    scroll_stack.push(scroll_pair(index, sv));
+    std::stack<utils::scrollable_vector<fs::FS_Entry*>> scroll_stack;
+    scroll_stack.push(sv);
 
     auto is_directory = [](std::size_t i, const utils::scrollable_vector<fs::FS_Entry*> &sv, fs::Directory *current)
     {
@@ -103,6 +97,7 @@ int main()
 
     while (key != KEY_END)
     {
+        index = sv.index();
         if (index >= output_lines)
             index = 0;
         /* Clear the windows and rebox them */
@@ -170,35 +165,26 @@ int main()
         switch (key)
         {
         case KEY_UP:
-            if (!sv.needs_scroll_up(index))
-                index--;
-            else
-                sv.scroll_up();
+            sv.move_up();
             break;
         case KEY_DOWN:
-            if (!sv.needs_scroll_down(index))
-                index++;
-            else
-                sv.scroll_down();
+            sv.move_down();
             break;
         case KEY_RIGHT:
             if (is_directory(index, sv, current))
             {
-                scroll_stack.push(scroll_pair(index, sv));
+                scroll_stack.push(sv);
                 current = current->dive(sv.real_index(index));
                 load_current(current, vec);
                 output_lines = calculate_lines(scene[LEFT], vec);
                 sv.reset(0, output_lines, vec);
-                index = 0;
             }
             break;
         case KEY_LEFT:
         {
             if (!scroll_stack.empty())
             {
-                auto sp = scroll_stack.top();
-                sv = sp.second;
-                index = sp.first;
+                sv = scroll_stack.top();
                 scroll_stack.pop();
             }
             current = current->surface();
@@ -234,7 +220,6 @@ int main()
                     current->unlink_file(file_i);
                     load_current(current, vec);
                     output_lines = calculate_lines(scene[LEFT], vec);
-                    index = 0;
                     sv.reset(0, output_lines, vec);
                 }
             }
