@@ -83,7 +83,7 @@ int main()
                             vec.size());
     utils::scrollable_vector<fs::FS_Entry*> sv(0, output_lines, vec);
     std::stack<utils::scrollable_vector<fs::FS_Entry*>> scroll_stack;
-    scroll_stack.push(sv);
+    //scroll_stack.push(sv);
 
     auto is_directory = [](std::size_t i, const utils::scrollable_vector<fs::FS_Entry*> &sv, fs::Directory *current)
     {
@@ -108,7 +108,9 @@ int main()
         {
             for (std::size_t i = 0; i < output_lines && i < sv.size(); ++i)
             {
-                if (is_directory(i, sv, current))
+                if (sv.is_selected(i))
+                    wattron(*scene[LEFT], COLOR_PAIR(2));
+                else if (is_directory(i, sv, current))
                     wattron(*scene[LEFT], COLOR_PAIR(1));
                 if (i == index)
                     wattron(*scene[LEFT], A_REVERSE);
@@ -116,7 +118,10 @@ int main()
                 scene[LEFT].print_left(static_cast<int>(i+1), sv[i]->name());
                 if (i == index)
                     wattroff(*scene[LEFT], A_REVERSE);
-                if (is_directory(i, sv, current))
+
+                if (sv.is_selected(i))
+                    wattroff(*scene[LEFT], COLOR_PAIR(2));
+                else if (is_directory(i, sv, current))
                     wattroff(*scene[LEFT], COLOR_PAIR(1));
             }
             if (is_file(index, sv, current))
@@ -166,13 +171,19 @@ int main()
         {
         case KEY_UP:
             sv.move_up();
+            if (sv.selection_in_progress())
+                sv.selection_append();
             break;
         case KEY_DOWN:
             sv.move_down();
+            if (sv.selection_in_progress())
+                sv.selection_append();
             break;
         case KEY_RIGHT:
             if (is_directory(index, sv, current))
             {
+                if (sv.selection_in_progress())
+                    sv.interupt_selection();
                 scroll_stack.push(sv);
                 current = current->dive(sv.real_index(index));
                 load_current(current, vec);
@@ -184,6 +195,8 @@ int main()
         {
             if (!scroll_stack.empty())
             {
+                if (sv.selection_in_progress())
+                    sv.interupt_selection();
                 sv = scroll_stack.top();
                 scroll_stack.pop();
             }
@@ -223,6 +236,12 @@ int main()
                     sv.reset(0, output_lines, vec);
                 }
             }
+            break;
+        case 's':
+            sv.start_selection();
+            break;
+        case 'e':
+            sv.end_selection();
             break;
         }
     }

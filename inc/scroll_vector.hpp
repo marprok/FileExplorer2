@@ -2,6 +2,7 @@
 #define SCROLL_VECTOR_H
 
 #include <vector>
+#include <cassert>
 
 namespace utils
 {
@@ -20,6 +21,9 @@ private:
     std::size_t m_window_size;
     std::size_t m_limit;
     std::size_t m_index;
+    std::size_t m_begin_selection_index;
+    std::size_t m_end_selection_index;
+    bool m_selection_in_progress;
 public:
     /**
      * @brief ScrollableVector
@@ -33,7 +37,7 @@ public:
     scrollable_vector& operator=(const scrollable_vector& other) = default;
     /**
      * @brief operator []
-     * @param index the index of the element to be accessed(0, m_window_size)
+     * @param index the index of the element to be accessed[0, m_window_size)
      * @return A reference to the element
      */
     T& operator[](std::size_t index);
@@ -70,7 +74,35 @@ public:
      */
     void move_up();
     /**
-     * @brief index returns the value of the internal window index(0, m_window_size -1)
+     * @brief selection_in_progress
+     * @return true if a selection is in progress, false otherwise
+     */
+    bool selection_in_progress() const;
+    /**
+     * @brief start_selection initiates a selection from the current index
+     */
+    void start_selection();
+    /**
+     * @brief selection_append inserts the current index in the selection
+     */
+    void selection_append();
+    /**
+     * @brief interupt_selection abruptly interupts the selection
+     */
+    void interupt_selection();
+    /**
+     * @brief is_selected
+     * @param i the query index in window coordinates[0, m_window_size)
+     * @return true if i is contained inside the selection
+     */
+    bool is_selected(std::size_t i) const;
+    /**
+     * @brief end_selection graceful termination of the selection
+     * @return a vector containing the selected items
+     */
+    std::vector<T> end_selection();
+    /**
+     * @brief index returns the value of the internal window index[0, m_window_size)
      * @return the index
      */
     std::size_t index() const;
@@ -96,7 +128,10 @@ scrollable_vector<T>::scrollable_vector(std::size_t base, std::size_t window_siz
       m_base(base),
       m_window_size(window_size),
       m_limit(m_base + m_window_size),
-      m_index(0)
+      m_index(0),
+      m_begin_selection_index(0),
+      m_end_selection_index(0),
+      m_selection_in_progress(false)
 {
     if (m_window_size > m_data.size())
     {
@@ -145,6 +180,15 @@ void scrollable_vector<T>::scroll_down()
 }
 
 template<typename T>
+void scrollable_vector<T>::move_down()
+{
+    if (m_index < m_window_size - 1)
+        m_index++;
+    else
+        scroll_down();
+}
+
+template<typename T>
 void scrollable_vector<T>::move_up()
 {
     if (m_index > 0 )
@@ -154,12 +198,76 @@ void scrollable_vector<T>::move_up()
 }
 
 template<typename T>
-void scrollable_vector<T>::move_down()
+bool scrollable_vector<T>::selection_in_progress() const
 {
-    if (m_index < m_window_size - 1)
-        m_index++;
-    else
-        scroll_down();
+    return m_selection_in_progress;
+}
+
+template<typename T>
+void scrollable_vector<T>::interupt_selection()
+{
+    m_selection_in_progress = false;
+    m_end_selection_index = 0;
+    m_begin_selection_index = 0;
+}
+
+template<typename T>
+bool scrollable_vector<T>::is_selected(std::size_t i) const
+{
+    if (!selection_in_progress())
+        return false;
+
+    std::size_t candidate = real_index(i);
+    assert(candidate < m_data.size());
+
+    return m_begin_selection_index <= candidate && candidate < m_end_selection_index;
+}
+
+template<typename T>
+void scrollable_vector<T>::start_selection()
+{
+    if (m_data.empty())
+        return;
+
+    if (selection_in_progress())
+        interupt_selection();
+
+    m_selection_in_progress = true;
+    m_begin_selection_index = real_index(index());
+    assert(m_begin_selection_index < m_data.size());
+    m_end_selection_index = m_begin_selection_index + 1;
+}
+
+template<typename T>
+void scrollable_vector<T>::selection_append()
+{
+    if (!selection_in_progress())
+        return;
+
+    std::size_t canditate = real_index(index());
+    assert(canditate < m_data.size());
+
+    if (canditate < m_begin_selection_index)
+        m_begin_selection_index = canditate;
+    else if (canditate >= m_end_selection_index)
+        m_end_selection_index++;
+}
+
+template<typename T>
+std::vector<T> scrollable_vector<T>::end_selection()
+{
+    if (!selection_in_progress())
+        return {};
+
+    assert(m_begin_selection_index < m_end_selection_index);
+
+    std::vector<T> selection;
+    for (; m_begin_selection_index < m_end_selection_index; ++m_begin_selection_index)
+        selection.push_back(m_data[m_begin_selection_index]);
+
+    interupt_selection();
+
+    return selection;
 }
 
 template<typename T>
@@ -194,6 +302,7 @@ void scrollable_vector<T>::reset(std::size_t base, std::size_t window_size,
         m_window_size = m_data.size();
         m_limit = m_base + m_window_size;
     }
+    interupt_selection();
 }
 }
 

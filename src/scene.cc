@@ -25,6 +25,7 @@ namespace view
         curs_set(0); /* Make the cursor invisible. */
         start_color();
         init_pair(1, COLOR_BLUE, COLOR_BLACK);
+        init_pair(2, COLOR_GREEN, COLOR_BLACK);
     }
 
     Terminal_window& Scene::operator[](size_t i)
