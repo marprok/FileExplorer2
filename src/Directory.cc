@@ -1,25 +1,19 @@
 #include <dirent.h>
 #include <iostream>
-#include <cstring>
-#include <fcntl.h> /* creat */
-#include <unistd.h> /* unlink */
-#include <algorithm>
+#include "../inc/File.h"
 #include "../inc/Directory.h"
+#include "../inc/fs_node.h"
 
 namespace fs
 {
-    Directory::Directory(const std::string& name, FS_Entry *parent)
-        :FS_Entry(name, parent), m_index(0)
+    Directory::Directory(const std::string& name)
+        :Inode (name)
     {
+
     }
 
-    std::size_t Directory::load()
+    std::size_t Directory::populate(FS_Node* node)
     {
-        if (m_loaded)
-        {
-            return m_size;
-        }
-
         DIR *dir = dir = opendir(abs_path().c_str());
 
         struct dirent *drt;
@@ -32,11 +26,11 @@ namespace fs
 
         while ((drt = readdir(dir)))
         {
-            ++m_size;
             if (drt->d_type != DT_DIR)
             {
                 /* This is not a directory. */
-                m_files.emplace_back(drt->d_name, this);
+                auto file = new File(drt->d_name);
+                node->files().insert_front(new FS_Node(file, node));
             }else
             {
                 /* In case the m_name is . or .. */
@@ -44,90 +38,25 @@ namespace fs
                 if ((temp == 1 && drt->d_name[0] == '.') ||
                         (temp == 2 && drt->d_name[0] == '.' && drt->d_name[1] == '.'))
                 {
-                    --m_size;
                     continue;
                 }
-                m_dirs.push_back(new Directory(drt->d_name, this));
+                auto directory = new Directory(drt->d_name);
+                node->dirs().insert_front(new FS_Node(directory, node));
             }
         }
 
         closedir(dir);
-        m_loaded = true;
-        return m_size;
+        return node->size();
     }
 
-    void Directory::unload()
+    void Directory::copy(Inode* new_parent)
     {
-        if (!loaded())
-            return;
-
-        if (!m_dirs.empty())
-        {
-            for (auto& d : m_dirs)
-                delete d;
-            m_dirs.clear();
-        }
-
-        if (!m_files.empty())
-            m_files.clear();
-
-        m_size = 0;
-        m_loaded = false;
+        (void)new_parent;
     }
 
-    Directory::~Directory()
+    void Directory::move(Inode* new_parent)
     {
-        unload();
-    }
-
-    Directory* Directory::dive(std::size_t i)
-    {
-        m_index = i;
-        for (std::size_t j = 0; j < m_dirs.size(); ++j)
-            if (i != j && m_dirs[j]->loaded())
-               m_dirs[j]->unload();
-        return m_dirs[i];
-    }
-
-    Directory* Directory::surface()
-    {
-        return m_parent != nullptr ? static_cast<Directory*>(m_parent) : this;
-    }
-
-    std::size_t Directory::index() const       { return m_index; }
-    std::vector<File>& Directory::files()      { return m_files; }
-    std::vector<Directory*>& Directory::dirs() { return m_dirs; }
-    bool Directory::empty() const { return m_dirs.empty() && m_files.empty(); }
-
-    int Directory::create_file(const std::string& name)
-    {
-        std::string file_name = name;
-        int ret = 0;
-        if (name == "")
-            file_name = "New_File";
-        auto file = std::find_if(m_files.begin(), m_files.end(),[file_name](const File & file){ return file.name() == file_name;});
-        if (file == m_files.end())
-        {
-            ret = creat((abs_path() + "/" + file_name).c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-            m_files.emplace_back(file_name, this);
-            return ret;
-        }
-        return ret;
-    }
-
-    int Directory::unlink_file(std::size_t i)
-    {
-        if (i > m_files.size())
-            return 0;
-        std::string abs_path= m_files[i].abs_path();
-        int ret = 0;
-        auto file = std::find_if(m_files.begin(), m_files.end(),[abs_path](const File & file){ return file.abs_path() == abs_path;});
-        if (file != m_files.end())
-        {
-            ret = unlink(abs_path.c_str());
-            m_files.erase(file);
-        }
-        return ret;
+        (void)new_parent;
     }
 
 }
