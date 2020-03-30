@@ -14,7 +14,7 @@ namespace fs
 
     std::size_t Directory::populate(FS_Node* node)
     {
-        DIR *dir = dir = opendir(abs_path().c_str());
+        DIR *dir = dir = opendir(node->abs_path().c_str());
 
         struct dirent *drt;
 

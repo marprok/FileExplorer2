@@ -23,15 +23,16 @@ public:
     std::size_t size() const { return m_dirs.size() + m_files.size(); }
     bool empty() { return size() == 0; }
 
-    std::string abs_path()
+    std::string abs_path() const
     {
         return m_parent == nullptr ? m_inode->name()  : m_parent->abs_path() + "/" + m_inode->name();
     }
 
     bool operator==(const FS_Node& other)
     {
-        return m_inode->abs_path() == other.m_inode->abs_path();
+        return abs_path() == other.abs_path();
     }
+
     std::size_t load();
     void copy(FS_Node* new_parent);
     void move(FS_Node* new_parent);

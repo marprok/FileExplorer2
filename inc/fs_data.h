@@ -28,7 +28,6 @@ private:
     }
 protected:
     std::string m_name;
-    std::string m_abs_path;
     std::string m_rights;
     std::string m_real_name;
     struct stat m_stat;
@@ -47,8 +46,7 @@ public:
 
     inline int stat(const std::string& abs_path)
     {
-        m_abs_path = abs_path;
-        return lstat(m_abs_path.c_str(), &m_stat);
+        return lstat(abs_path.c_str(), &m_stat);
     }
 
     //INode data access
@@ -200,7 +198,7 @@ public:
         return m_rights;
     }
 
-    std::string real_name()
+    std::string real_name(const std::string& abs_path)
     {
         if (!m_real_name.empty())
             return m_real_name;
@@ -218,7 +216,7 @@ public:
         char *buf = new char[size];
         memset(buf, 0, size);
 
-        if (readlink(m_abs_path.c_str(), buf, size) < 0)
+        if (readlink(abs_path.c_str(), buf, size) < 0)
         {
             std::cerr << "Cannot readlink:" << name() << std::endl;
             return "";
@@ -232,17 +230,6 @@ public:
     {
         return m_name;
     }
-
-    inline const std::string& abs_path() const
-    {
-        return m_abs_path;
-    }
-
-    bool operator==(const Inode& other)
-    {
-        return m_abs_path == other.m_abs_path;
-    }
-
     // Abstract API
     virtual std::size_t populate(FS_Node* node) = 0;
     virtual void copy(Inode* new_parent) = 0;
