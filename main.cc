@@ -93,6 +93,7 @@ int main()
     output_lines = std::min(static_cast<std::size_t>(scene[LEFT].lines() - 2),
                             vec.size());
     utils::scrollable_vector<fs::FS_Node*> sv(0, output_lines, vec);
+    std::vector<fs::FS_Node*> selection;
     //std::stack<utils::scrollable_vector<fs::FS_Entry*>> scroll_stack;
     //scroll_stack.push(sv);
 
@@ -240,11 +241,22 @@ int main()
 //                }
 //            }
             break;
+        case 'm':
+            if (selection.empty())
+                break;
+
+            for (auto& element : selection)
+                element->move(current);
+
+            load_current(current, vec);
+            output_lines = calculate_lines(scene[LEFT], vec);
+            sv.reset(0, output_lines, vec);
+            break;
         case 's':
             sv.start_selection();
             break;
         case 'e':
-            sv.end_selection();
+            selection = sv.end_selection();
             break;
         }
     }
