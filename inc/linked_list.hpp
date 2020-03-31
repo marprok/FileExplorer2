@@ -64,6 +64,8 @@ public:
         m_size = 0;
     }
 
+    Link* head() { return m_head; }
+
     Link* get(T* data)
     {
         auto tmp = m_head;
@@ -71,7 +73,8 @@ public:
         {
             if (*tmp->data() == *data)
                 return tmp;
-            tmp = tmp->next();        }
+            tmp = tmp->next();
+        }
         return nullptr;
     }
 
@@ -112,7 +115,6 @@ public:
         if (empty() || !data)
             return nullptr;
 
-
         if (*m_head->data() == *data)
         {
             auto tmp = m_head;
@@ -132,7 +134,6 @@ public:
 
         if (*temp->data() == *data)
         {
-            std::cout << "found it" << std::endl;
             m_size--;
             prev->set_next(temp->next());
             temp->set_next(nullptr);
@@ -140,7 +141,6 @@ public:
         }
 
         return nullptr;
-
     }
 
     void move(Inode_list& to, T* data)
@@ -157,8 +157,6 @@ public:
         return tmp;
 
     }
-
-    Link* head() { return m_head; }
 };
 }
 #endif //INODE_LIST_HPP

@@ -62,10 +62,11 @@ static void display_file_info(view::Terminal_window& window, fs::FS_Node* node)
     window.print_left(5, "RIGHTS: " + inode->rights());
     window.print_left(7, "LAST ACCESSED: " + inode->last_accessed());
     window.print_left(9, "LAST MODIFIED: " + inode->last_modified());
-    window.print_left(11, "INODE: " + inode->inode_number());
-    window.print_left(13, "HARD LINKS: " + inode->hard_link_count());
+    window.print_left(11, "LAST CHANGED: " + inode->last_status_changed());
+    window.print_left(13, "INODE: " + inode->inode_number());
+    window.print_left(15, "HARD LINKS: " + inode->hard_link_count());
     if (inode->is_symbolic_link())
-        window.print_left(15, "[LINK]->" + inode->real_name(node->abs_path()));
+        window.print_left(17, "[LINK]->" + inode->real_name(node->abs_path()));
 }
 
 int main()
@@ -94,8 +95,6 @@ int main()
                             vec.size());
     utils::scrollable_vector<fs::FS_Node*> sv(0, output_lines, vec);
     std::vector<fs::FS_Node*> selection;
-    //std::stack<utils::scrollable_vector<fs::FS_Entry*>> scroll_stack;
-    //scroll_stack.push(sv);
 
     while (key != KEY_END)
     {
