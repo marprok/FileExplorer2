@@ -1,4 +1,4 @@
-#include "../inc/File.h"
+#include "../inc/file.h"
 
 namespace fs
 {
@@ -9,7 +9,12 @@ File::File(const std::string& name)
 
 }
 
-std::size_t File::populate(FS_Node* node)
+File::~File()
+{
+
+}
+
+std::size_t File::populate(Node* node)
 {
     (void)node;
     // should not be called on a file node

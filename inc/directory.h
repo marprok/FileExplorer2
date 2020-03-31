@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include "fs_data.h"
+#include "inode.h"
 
 namespace fs
 {
@@ -16,8 +16,9 @@ class Directory : public Inode
 {
 public:
     Directory(const std::string& name);
+    ~Directory();
 
-    std::size_t populate(FS_Node* node) override;
+    std::size_t populate(Node* node) override;
     void copy(Inode* new_parent) override;
     void move(Inode* new_parent) override;
 };

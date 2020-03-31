@@ -1,11 +1,11 @@
 #ifndef INODE_LIST_HPP
 #define INODE_LIST_HPP
+#include <cstddef>
 
-#include "fs_data.h"
 namespace fs
 {
 template<typename T>
-class Inode_list
+class Linked_list
 {
 public:
     class Link
@@ -47,13 +47,13 @@ private:
     Link* m_head;
     std::size_t m_size;
 public:
-    Inode_list()
+    Linked_list()
         :m_head(nullptr), m_size(0)
     {
 
     }
 
-    ~Inode_list()
+    ~Linked_list()
     {
         while(m_head)
         {
@@ -143,7 +143,7 @@ public:
         return nullptr;
     }
 
-    void move(Inode_list& to, T* data)
+    void move(Linked_list& to, T* data)
     {
         auto tmp = unlink(data);
         if (tmp)

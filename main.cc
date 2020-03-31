@@ -1,8 +1,8 @@
 #include "inc/scene.h"
 #include "inc/scroll_vector.hpp"
-#include "inc/File.h"
-#include "inc/Directory.h"
-#include "inc/fs_node.h"
+#include "inc/file.h"
+#include "inc/directory.h"
+#include "inc/node.h"
 #include <algorithm>
 #include <string>
 #include <stack>
@@ -15,7 +15,7 @@ enum POSITION
     BOTTOM
 };
 
-static std::size_t calculate_lines(const view::Terminal_window& window, const std::vector<fs::FS_Node*> &vec)
+static std::size_t calculate_lines(const view::Terminal_window& window, const std::vector<fs::Node*> &vec)
 {
     if (vec.empty())
         return 0;
@@ -26,7 +26,7 @@ static std::size_t calculate_lines(const view::Terminal_window& window, const st
     return output_lines;
 }
 
-static void load_current(fs::FS_Node* current, std::vector<fs::FS_Node*> &vec)
+static void load_current(fs::Node* current, std::vector<fs::Node*> &vec)
 {
     if (!current)
         return;
@@ -52,7 +52,7 @@ static void load_current(fs::FS_Node* current, std::vector<fs::FS_Node*> &vec)
 
 }
 
-static void display_file_info(view::Terminal_window& window, fs::FS_Node* node)
+static void display_file_info(view::Terminal_window& window, fs::Node* node)
 {
     assert(node);
     auto inode = node->inode();
@@ -84,22 +84,22 @@ int main()
     scene.set_input_window(LEFT);
     keypad(*scene.get_input_window(), true);
     /* Create the nececary data structures */
-    std::vector<fs::FS_Node*> vec;
+    std::vector<fs::Node*> vec;
     int key = 0;
     std::size_t index = 0;
-    fs::FS_Node *root = new fs::FS_Node(new fs::Directory("/home/void"), nullptr);
-    fs::FS_Node *current = root;
+    fs::Node *root = new fs::Node(new fs::Directory("/home/void"), nullptr);
+    fs::Node *current = root;
     load_current(current, vec);
     /* -2 lines because the window is boxed */
     output_lines = std::min(static_cast<std::size_t>(scene[LEFT].lines() - 2),
                             vec.size());
-    utils::scrollable_vector<fs::FS_Node*> sv(0, output_lines, vec);
-    std::vector<fs::FS_Node*> selection;
+    utils::scrollable_vector<fs::Node*> sv(0, output_lines, vec);
+    std::vector<fs::Node*> selection;
 
     while (key != KEY_END)
     {
         index = sv.index();
-        fs::FS_Node* selected_element = sv[index];
+        fs::Node* selected_element = sv[index];
         if (index >= output_lines)
             index = 0;
         /* Clear the windows and rebox them */

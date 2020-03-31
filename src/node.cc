@@ -1,22 +1,22 @@
 #include <cstdio> // rename
-#include "../inc/fs_node.h"
+#include "../inc/node.h"
 
 namespace fs
 {
 
-FS_Node::FS_Node(Inode* inode, FS_Node* parent)
+Node::Node(Inode* inode, Node* parent)
     :m_parent(parent), m_inode(inode),m_loaded(false)
 {
     m_inode->stat(abs_path());
 }
 
-FS_Node::~FS_Node()
+Node::~Node()
 {
     if (m_inode)
         delete m_inode;
 }
 
-std::size_t FS_Node::load()
+std::size_t Node::load()
 {
     if (m_loaded)
         return size();
@@ -24,12 +24,12 @@ std::size_t FS_Node::load()
     return m_inode->populate(this);
 }
 
-void FS_Node::copy(FS_Node *new_parent)
+void Node::copy(Node *new_parent)
 {
     (void)new_parent;
 }
 
-void FS_Node::move(FS_Node *new_parent)
+void Node::move(Node *new_parent)
 {
     if (!new_parent)
         return;

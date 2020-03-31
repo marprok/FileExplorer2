@@ -1,8 +1,8 @@
 #include <dirent.h>
 #include <iostream>
-#include "../inc/File.h"
-#include "../inc/Directory.h"
-#include "../inc/fs_node.h"
+#include "../inc/file.h"
+#include "../inc/directory.h"
+#include "../inc/node.h"
 
 namespace fs
 {
@@ -12,7 +12,12 @@ namespace fs
 
     }
 
-    std::size_t Directory::populate(FS_Node* node)
+    Directory::~Directory()
+    {
+
+    }
+
+    std::size_t Directory::populate(Node* node)
     {
         DIR *dir = dir = opendir(node->abs_path().c_str());
 
@@ -30,7 +35,7 @@ namespace fs
             {
                 /* This is not a directory. */
                 auto file = new File(drt->d_name);
-                node->files().insert_front(new FS_Node(file, node));
+                node->files().insert_front(new Node(file, node));
             }else
             {
                 /* In case the m_name is . or .. */
@@ -41,7 +46,7 @@ namespace fs
                     continue;
                 }
                 auto directory = new Directory(drt->d_name);
-                node->dirs().insert_front(new FS_Node(directory, node));
+                node->dirs().insert_front(new Node(directory, node));
             }
         }
 

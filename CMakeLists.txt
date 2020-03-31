@@ -11,10 +11,11 @@ include_directories(
 set(SOURCES
     src/terminal_window.cc
     src/scene.cc
-    src/File.cc
-    src/Directory.cc
+    src/file.cc
+    src/directory.cc
     src/query_manager.cc
-    src/fs_node.cc
+    src/node.cc
+    src/inode.cc
 )
 
 find_package(Curses REQUIRED)
