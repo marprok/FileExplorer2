@@ -144,4 +144,20 @@ namespace view
 
         return choice;
     }
+
+    std::size_t Scene::select(float lines, float cols, float begin_y,
+             float begin_x, const std::vector<std::string> &choices)
+    {
+        this->erase();
+        this->refresh();
+        Terminal_window win(lines, cols,
+                         begin_y, begin_x);
+        std::size_t choice = m_query_manager.select(win, choices);
+        win.delwin();
+        keypad(*get_input_window(), true);
+        this->resize();
+        this->refresh();
+
+        return choice;
+    }
 }

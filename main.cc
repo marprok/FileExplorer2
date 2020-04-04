@@ -110,6 +110,7 @@ int main()
         {
             for (std::size_t i = 0; i < output_lines && i < sv.size(); ++i)
             {
+                // TODO: try to make this a little bit cleaner
                 if (sv.is_selected(i))
                     wattron(*scene[LEFT], COLOR_PAIR(2));
                 else if (sv[i]->inode()->is_directory())
@@ -215,6 +216,10 @@ int main()
             break;
         case 'c':
         {
+            std::vector<std::string> temp;
+            for (int i = 0; i < 10; ++i)
+                temp.push_back(std::to_string(i));
+            std::size_t choice = scene.select(0.2f, 0.30f, 0.45f, 0.35f, temp);
 //            std::string file_name = scene.take_input(0.2f, 0.30f, 0.45f, 0.35f, "Create file");
 //            if (file_name.size() != 0)
 //            {
@@ -246,7 +251,7 @@ int main()
 
             for (auto& element : selection)
                 element->move(current);
-
+            //TODO: current should update it's timestamps via stat
             load_current(current, vec);
             output_lines = calculate_lines(scene[LEFT], vec);
             sv.reset(0, output_lines, vec);

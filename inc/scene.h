@@ -21,7 +21,7 @@ class Scene
 private:
     std::vector<Terminal_window> m_windows;
     size_t               m_input_window;
-    query_manager        m_query_manager;
+    Query_manager        m_query_manager;
     /**
      * @brief Scene constructor
      */
@@ -98,6 +98,9 @@ public:
 
     bool ask(float lines, float cols, float begin_y,
              float begin_x, const std::string &question);
+
+    std::size_t select(float lines, float cols, float begin_y,
+             float begin_x, const std::vector<std::string> &choices);
 };
 }
 #endif

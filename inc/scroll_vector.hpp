@@ -118,7 +118,7 @@ public:
      * @param data
      */
     void reset(std::size_t base, std::size_t window_size,
-               std::vector<T> & data);
+               const std::vector<T> & data);
 };
 
 template<typename T>
@@ -290,7 +290,7 @@ std::size_t scrollable_vector<T>::index() const
 
 template<typename T>
 void scrollable_vector<T>::reset(std::size_t base, std::size_t window_size,
-                                std::vector<T> &data)
+                                 const std::vector<T> &data)
 {
     m_data = data;
     m_base = base;
