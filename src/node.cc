@@ -16,6 +16,19 @@ Node::~Node()
         delete m_inode;
 }
 
+bool Node::is_ancestor_of(const Node* other) const
+{
+    assert(other);
+    while (other)
+    {
+        if (*other == *this)
+            return true;
+        other = other->m_parent;
+    }
+
+    return false;
+}
+
 std::size_t Node::load()
 {
     if (m_loaded)
@@ -31,9 +44,9 @@ void Node::copy(Node *new_parent)
 
 void Node::move(Node *new_parent)
 {
-    if (!new_parent)
+    if (!new_parent || *this == *new_parent || is_ancestor_of(new_parent))
         return;
-    // TODO: check if this is a parent of the new parent
+
     std::string new_abs_path = new_parent->abs_path() + "/" + m_inode->name();
     if (rename(abs_path().c_str(), new_abs_path.c_str()) < 0 )
         return; // maybe log it
@@ -42,6 +55,7 @@ void Node::move(Node *new_parent)
         m_parent->m_dirs.move(new_parent->dirs(), this);
     else
         m_parent->m_files.move(new_parent->files(), this);
+
     m_parent = new_parent;
     m_inode->stat(abs_path());
 }

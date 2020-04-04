@@ -28,10 +28,12 @@ public:
         return m_parent == nullptr ? m_inode->name()  : m_parent->abs_path() + "/" + m_inode->name();
     }
 
-    bool operator==(const Node& other)
+    bool operator==(const Node& other) const
     {
         return abs_path() == other.abs_path();
     }
+
+    bool is_ancestor_of(const Node* other) const;
 
     std::size_t load();
     void copy(Node* new_parent);
