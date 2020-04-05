@@ -78,8 +78,7 @@ public:
     std::string name() const;
     // Abstract API
     virtual std::size_t populate(Node* node) = 0;
-    virtual void copy(Inode* new_parent) = 0;
-    virtual void move(Inode* new_parent) = 0;
+    virtual int remove(const Node *node) = 0;
 };
 
 }

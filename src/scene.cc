@@ -1,5 +1,5 @@
-#include "../inc/scene.h"
 #include <ncurses.h>
+#include "../inc/scene.h"
 
 namespace view
 {

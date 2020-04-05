@@ -1,8 +1,7 @@
 #ifndef QUERY_MANAGER_H
-
-#include "terminal_window.h"
 #include <string>
 #include <vector>
+#include "terminal_window.h"
 
 namespace view
 {

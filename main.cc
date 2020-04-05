@@ -1,12 +1,10 @@
+#include <string>
+#include <cassert>
 #include "inc/scene.h"
 #include "inc/scroll_vector.hpp"
 #include "inc/file.h"
 #include "inc/directory.h"
 #include "inc/node.h"
-#include <algorithm>
-#include <string>
-#include <stack>
-#include <cassert>
 
 enum POSITION
 {
@@ -231,19 +229,12 @@ int main()
             break;
         }
         case 'd':
-//            if (!current->empty() && current->inode()->is_regular_file())
-//            {
-//                std::size_t file_i = sv.real_index(index) - current->dirs().size();
-//                std::string prompt = "Delete " + current->files()[file_i].name() + "?";
-//                bool choice = scene.ask(0.2f, 0.30f, 0.45f, 0.35f, prompt);
-//                if (choice)
-//                {
-//                    current->unlink_file(file_i);
-//                    load_current(current, vec);
-//                    output_lines = calculate_lines(scene[LEFT], vec);
-//                    sv.reset(0, output_lines, vec);
-//                }
-//            }
+            if (current->empty())
+                break;
+            current->remove(selected_element);
+            load_current(current, vec);
+            output_lines = calculate_lines(scene[LEFT], vec);
+            sv.reset(0, output_lines, vec);
             break;
         case 'm':
             if (selection.empty())

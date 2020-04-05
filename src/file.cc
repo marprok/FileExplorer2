@@ -1,4 +1,6 @@
+#include <unistd.h> // unlink
 #include "../inc/file.h"
+#include "../inc/node.h"
 
 namespace fs
 {
@@ -21,14 +23,10 @@ std::size_t File::populate(Node* node)
     return 0;
 }
 
-void File::copy(Inode* new_parent)
-{
-    (void)new_parent;
-}
-
-void File::move(Inode* new_parent)
-{
-    (void)new_parent;
-}
+ int File::remove(const Node *node)
+ {
+     assert(node);
+     return unlink(node->abs_path().c_str());
+ }
 
 }

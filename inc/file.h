@@ -12,8 +12,7 @@ public:
     ~File();
 
     std::size_t populate(Node* node) override;
-    void copy(Inode* new_parent) override;
-    void move(Inode* new_parent) override;
+    int remove(const Node *node) override;
 };
 }
 

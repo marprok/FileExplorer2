@@ -1,6 +1,6 @@
+#include <string>
 #include "../inc/query_manager.h"
 #include "../inc/scroll_vector.hpp"
-#include <string>
 
 namespace view
 {

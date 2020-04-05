@@ -1,6 +1,6 @@
-#include "../inc/terminal_window.h"
 #include <iostream>
 #include <sstream>
+#include "../inc/terminal_window.h"
 
 namespace view
 {
