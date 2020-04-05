@@ -60,39 +60,39 @@ void Node::move(Node *new_parent)
     m_inode->stat(abs_path());
 }
 
-void Node::remove(Node* child)
+void Node::remove()
 {
     Linked_list<Node>::Link *link = nullptr;
-    if (child->m_inode->is_directory())
-        link = m_dirs.unlink(child);
-    else
-        link = m_files.unlink(child);
+    if (m_parent)
+    {
+        if (m_inode->is_directory())
+            link = m_parent->m_dirs.unlink(this);
+        else
+            link = m_parent->m_files.unlink(this);
+    }
 
-    if (!link)
-        return;
+    load();
 
-    child->load();
-
-    Linked_list<Node>::Link *head = child->m_dirs.head();
+    Linked_list<Node>::Link *head = m_dirs.head();
     while (head)
     {
         auto tmp = head->next();
-        child->remove(head->data());
+        head->data()->remove();
         head = tmp;
     }
 
-    head = child->m_files.head();
+    head = m_files.head();
     while (head)
     {
         auto tmp = head->next();
-        child->remove(head->data());
+        head->data()->remove();
         head = tmp;
     }
-    // ugly, but the inode needs a way to get it's full path...
-    child->m_inode->remove(child);
 
-    child->m_parent = nullptr;
-    delete link;
+    m_inode->remove(this);
+    m_parent = nullptr;
+    if (link)
+        delete link;
 }
 
 }

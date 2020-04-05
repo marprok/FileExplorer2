@@ -38,7 +38,7 @@ public:
     std::size_t load();
     void copy(Node* new_parent);
     void move(Node* new_parent);
-    void remove(Node* child);
+    void remove();
 };
 }
 

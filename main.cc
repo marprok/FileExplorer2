@@ -231,7 +231,7 @@ int main()
         case 'd':
             if (current->empty())
                 break;
-            current->remove(selected_element);
+            selected_element->remove();
             load_current(current, vec);
             output_lines = calculate_lines(scene[LEFT], vec);
             sv.reset(0, output_lines, vec);
