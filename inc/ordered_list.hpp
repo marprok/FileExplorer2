@@ -1,11 +1,11 @@
-#ifndef INODE_LIST_HPP
-#define INODE_LIST_HPP
+#ifndef ORDERED_LIST_HPP
+#define ORDERED_LIST_HPP
 #include <cstddef>
 
 namespace fs
 {
 template<typename T>
-class Linked_list
+class Ordered_list
 {
 public:
     class Link
@@ -47,13 +47,13 @@ private:
     Link* m_head;
     std::size_t m_size;
 public:
-    Linked_list()
+    Ordered_list()
         :m_head(nullptr), m_size(0)
     {
 
     }
 
-    ~Linked_list()
+    ~Ordered_list()
     {
         while(m_head)
         {
@@ -98,12 +98,45 @@ public:
         return true;
     }
 
+    bool insert(T* data)
+    {
+        if (!data && get(data))
+            return false;
+
+        link(new Link(data));
+        return true;
+    }
+
     void link(Link* node)
     {
         if (!node)
             return;
-        node->set_next(m_head);
-        m_head = node;
+
+        if (!m_head)
+        {
+            m_head = node;
+            m_head->set_next(nullptr);
+            m_size++;
+            return;
+        }
+
+        if (*m_head->data() >= *node->data())
+        {
+            node->set_next(m_head);
+            m_head = node;
+            m_size++;
+            return;
+        }
+
+        Link* prev = m_head;
+        Link* tmp = m_head->next();
+        while (tmp && (*tmp->data() < *node->data()))
+        {
+            prev = tmp;
+            tmp = tmp->next();
+        }
+        prev->set_next(node);
+        node->set_next(tmp);
         m_size++;
     }
 
@@ -126,13 +159,13 @@ public:
         Link* prev = nullptr;
         Link* temp = m_head;
 
-        while (temp && !(*temp->data() == *data))
+        while (temp && *temp->data() != *data)
         {
             prev = temp;
             temp = temp->next();
         }
 
-        if (*temp->data() == *data)
+        if (temp && *temp->data() == *data)
         {
             m_size--;
             prev->set_next(temp->next());
@@ -143,20 +176,12 @@ public:
         return nullptr;
     }
 
-    void move(Linked_list& to, T* data)
+    void move(Ordered_list& to, T* data)
     {
         auto tmp = unlink(data);
         if (tmp)
             to.link(tmp);
     }
-
-    Link* copy(T* data)
-    {
-        auto tmp = get(data);
-
-        return tmp;
-
-    }
 };
 }
-#endif //INODE_LIST_HPP
+#endif // ORDERED_LIST_HPP

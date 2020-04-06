@@ -62,7 +62,7 @@ void Node::move(Node *new_parent)
 
 void Node::remove()
 {
-    Linked_list<Node>::Link *link = nullptr;
+    Ordered_list<Node>::Link *link = nullptr;
     if (m_parent)
     {
         if (m_inode->is_directory())
@@ -73,7 +73,7 @@ void Node::remove()
 
     load();
 
-    Linked_list<Node>::Link *head = m_dirs.head();
+    Ordered_list<Node>::Link *head = m_dirs.head();
     while (head)
     {
         auto tmp = head->next();
