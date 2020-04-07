@@ -1,25 +1,71 @@
-#include "inc/node.h"
-#include "inc/directory.h"
-#include "inc/linked_list.hpp"
+#include <iostream>
+#include <string>
+#include "inc/ordered_list.hpp"
+
+class Test
+{
+public:
+    int t;
+    Test(int t)
+        :t(t)
+    {
+        std::cout << "constructor: " << this->t << std::endl;
+    }
+
+    Test(const Test& o)
+        :t(o.t)
+    {
+        std::cout << "copy constructor: " << this->t << std::endl;
+    }
+
+    ~Test()
+    {
+        std::cout << "destructor: " << this->t << std::endl;
+    }
+
+    bool operator==(const Test& other) const
+    {
+        return t == other.t;
+    }
+
+    bool operator<(const Test& other) const
+    {
+        return t < other.t;
+    }
+
+    bool operator>(const Test& other) const
+    {
+        return t > other.t;
+    }
+
+    bool operator>=(const Test& other) const
+    {
+        return t >= other.t;
+    }
+
+    bool operator<=(const Test& other) const
+    {
+        return t <= other.t;
+    }
+
+    bool operator!=(const Test& other) const
+    {
+        return t != other.t;
+    }
+
+};
 
 int main()
 {
-    fs::Node* root = new fs::Node(new fs::Directory("/home/void/Desktop/dirs"), nullptr);
+    fs::Ordered_list<Test*> ol;
+    ol.insert(new Test(2));
+    ol.insert(new Test(23));
+    ol.insert(new Test(-23));
 
-    root->load();
-
-    auto head = root->dirs().head();
-    fs::Node* dirs = nullptr;
-    while (head)
+    for (auto tmp = ol.head(); tmp; tmp = tmp->next())
     {
-        if (head->data()->inode()->name() == "dir1")
-            dirs = head->data();
-        head = head->next();
+        std::cout << tmp->data()->t << std::endl;
+        delete tmp->data();
     }
-
-    if (dirs)
-        root->remove(dirs);
-
-    delete root;
     return 0;
 }

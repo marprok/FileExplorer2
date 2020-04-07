@@ -1,6 +1,14 @@
 #ifndef ORDERED_LIST_HPP
 #define ORDERED_LIST_HPP
 #include <cstddef>
+#include <iostream>
+
+// move them somewhere else
+template<typename T>
+T* ptr(T& t) { return &t; }
+
+template<typename T>
+T* ptr(T* t) { return t; }
 
 namespace fs
 {
@@ -11,23 +19,23 @@ public:
     class Link
     {
       private:
-        T* m_data;
+        T m_data;
         Link* m_next;
     public:
-        Link(T* data, Link* next = nullptr)
+        Link(const T& data, Link* next = nullptr)
             :m_data(data), m_next(next)
         {
 
         }
 
-        T* data()
+        T& data()
         {
             return m_data;
         }
 
         bool operator==(const Link& other)
         {
-            return *m_data == *other.m_data;
+            return *ptr(m_data) == *ptr(other.m_data);
         }
 
         Link* next() { return m_next; }
@@ -36,10 +44,7 @@ public:
 
         ~Link()
         {
-            if (m_data)
-            {
-                delete m_data;
-            }
+
         }
     };
 
@@ -66,19 +71,19 @@ public:
 
     Link* head() { return m_head; }
 
-    Link* get(T* data)
+    Link* get(const T& data)
     {
         auto tmp = m_head;
         while (tmp)
         {
-            if (*tmp->data() == *data)
+            if (*ptr(tmp->data()) == *ptr(data))
                 return tmp;
             tmp = tmp->next();
         }
         return nullptr;
     }
 
-    bool insert_front(T* data)
+    bool insert_front(const T& data)
     {
         if (get(data))
             return false;
@@ -98,9 +103,9 @@ public:
         return true;
     }
 
-    bool insert(T* data)
+    bool insert(const T& data)
     {
-        if (!data && get(data))
+        if (get(data))
             return false;
 
         link(new Link(data));
@@ -120,7 +125,7 @@ public:
             return;
         }
 
-        if (*m_head->data() >= *node->data())
+        if (*ptr(m_head->data()) >= *ptr(node->data()))
         {
             node->set_next(m_head);
             m_head = node;
@@ -130,7 +135,7 @@ public:
 
         Link* prev = m_head;
         Link* tmp = m_head->next();
-        while (tmp && (*tmp->data() < *node->data()))
+        while (tmp && (*ptr(tmp->data()) < *ptr(node->data())))
         {
             prev = tmp;
             tmp = tmp->next();
@@ -143,12 +148,12 @@ public:
     std::size_t size() const { return m_size; }
     bool empty() { return m_head == nullptr; }
 
-    Link* unlink(T* data)
+    Link* unlink(const T& data)
     {
-        if (empty() || !data)
+        if (empty())
             return nullptr;
 
-        if (*m_head->data() == *data)
+        if (*ptr(m_head->data()) == *ptr(data))
         {
             auto tmp = m_head;
             m_head = m_head->next();
@@ -159,13 +164,13 @@ public:
         Link* prev = nullptr;
         Link* temp = m_head;
 
-        while (temp && *temp->data() != *data)
+        while (temp && *ptr(temp->data()) != *ptr(data))
         {
             prev = temp;
             temp = temp->next();
         }
 
-        if (temp && *temp->data() == *data)
+        if (temp && *ptr(temp->data()) == *ptr(data))
         {
             m_size--;
             prev->set_next(temp->next());
@@ -176,7 +181,7 @@ public:
         return nullptr;
     }
 
-    void move(Ordered_list& to, T* data)
+    void move(Ordered_list& to, const T& data)
     {
         auto tmp = unlink(data);
         if (tmp)

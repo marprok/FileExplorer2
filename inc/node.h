@@ -10,16 +10,16 @@ class Node
 private:
     Node* m_parent;
     Inode* m_inode;
-    Ordered_list<Node> m_dirs;
-    Ordered_list<Node> m_files;
+    Ordered_list<Node*> m_dirs;
+    Ordered_list<Node*> m_files;
     bool m_loaded;
 public:
     Node(Inode* data, Node* parent);
     ~Node();
     Node* parent() const { return m_parent; }
     Inode* inode() const { return m_inode; }
-    Ordered_list<Node>& dirs() { return m_dirs; }
-    Ordered_list<Node>& files() { return m_files; }
+    Ordered_list<Node*>& dirs() { return m_dirs; }
+    Ordered_list<Node*>& files() { return m_files; }
     std::size_t size() const { return m_dirs.size() + m_files.size(); }
     bool empty() { return size() == 0; }
 

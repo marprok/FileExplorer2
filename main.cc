@@ -183,7 +183,7 @@ int main()
                 sv.selection_append();
             break;
         case KEY_RIGHT:
-            if (selected_element->inode()->is_directory())
+            if (!current->empty() && selected_element->inode()->is_directory())
             {
                 if (sv.selection_in_progress())
                     sv.interupt_selection();

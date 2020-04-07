@@ -14,6 +14,22 @@ Node::~Node()
 {
     if (m_inode)
         delete m_inode;
+
+    auto tmp = m_files.head();
+    while (tmp)
+    {
+        if (tmp->data())
+            delete tmp->data();
+        tmp = tmp->next();
+    }
+
+    tmp = m_dirs.head();
+    while (tmp)
+    {
+        if (tmp->data())
+            delete tmp->data();
+        tmp = tmp->next();
+    }
 }
 
 bool Node::is_ancestor_of(const Node* other) const
@@ -62,7 +78,7 @@ void Node::move(Node *new_parent)
 
 void Node::remove()
 {
-    Ordered_list<Node>::Link *link = nullptr;
+    Ordered_list<Node*>::Link *link = nullptr;
     if (m_parent)
     {
         if (m_inode->is_directory())
@@ -73,7 +89,7 @@ void Node::remove()
 
     load();
 
-    Ordered_list<Node>::Link *head = m_dirs.head();
+    Ordered_list<Node*>::Link *head = m_dirs.head();
     while (head)
     {
         auto tmp = head->next();
@@ -91,6 +107,8 @@ void Node::remove()
 
     m_inode->remove(this);
     m_parent = nullptr;
+    if (link && link->data())
+        delete link->data();
     if (link)
         delete link;
 }
