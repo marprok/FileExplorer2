@@ -53,9 +53,46 @@ std::size_t Node::load()
     return m_inode->populate(this);
 }
 
-void Node::copy(Node *new_parent)
+Node* Node::parent() const { return m_parent; }
+Inode* Node::inode() const { return m_inode; }
+Ordered_list<Node*>& Node::dirs() { return m_dirs; }
+Ordered_list<Node*>& Node::files() { return m_files; }
+std::size_t Node::size() const { return m_dirs.size() + m_files.size(); }
+bool Node::empty() { return size() == 0; }
+
+std::string Node::abs_path() const
 {
-    (void)new_parent;
+    return m_parent == nullptr ? m_inode->name()  : m_parent->abs_path() + "/" + m_inode->name();
+}
+
+bool Node::operator==(const Node& other) const
+{
+    return abs_path() == other.abs_path();
+}
+
+bool Node::operator<(const Node& other) const
+{
+    return abs_path() < other.abs_path();
+}
+
+bool Node::operator>(const Node& other) const
+{
+    return abs_path() > other.abs_path();
+}
+
+bool Node::operator>=(const Node& other) const
+{
+    return abs_path() >= other.abs_path();
+}
+
+bool Node::operator<=(const Node& other) const
+{
+    return abs_path() <= other.abs_path();
+}
+
+bool Node::operator!=(const Node& other) const
+{
+    return abs_path() != other.abs_path();
 }
 
 void Node::move(Node *new_parent)

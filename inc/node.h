@@ -15,54 +15,41 @@ private:
     bool m_loaded;
 public:
     Node(Inode* data, Node* parent);
+
     ~Node();
-    Node* parent() const { return m_parent; }
-    Inode* inode() const { return m_inode; }
-    Ordered_list<Node*>& dirs() { return m_dirs; }
-    Ordered_list<Node*>& files() { return m_files; }
-    std::size_t size() const { return m_dirs.size() + m_files.size(); }
-    bool empty() { return size() == 0; }
 
-    std::string abs_path() const
-    {
-        return m_parent == nullptr ? m_inode->name()  : m_parent->abs_path() + "/" + m_inode->name();
-    }
+    Node* parent() const;
 
-    bool operator==(const Node& other) const
-    {
-        return abs_path() == other.abs_path();
-    }
+    Inode* inode() const;
 
-    bool operator<(const Node& other) const
-    {
-        return abs_path() < other.abs_path();
-    }
+    Ordered_list<Node*>& dirs();
 
-    bool operator>(const Node& other) const
-    {
-        return abs_path() > other.abs_path();
-    }
+    Ordered_list<Node*>& files();
 
-    bool operator>=(const Node& other) const
-    {
-        return abs_path() >= other.abs_path();
-    }
+    std::size_t size() const;
 
-    bool operator<=(const Node& other) const
-    {
-        return abs_path() <= other.abs_path();
-    }
+    bool empty();
 
-    bool operator!=(const Node& other) const
-    {
-        return abs_path() != other.abs_path();
-    }
+    std::string abs_path() const;
+
+    bool operator==(const Node& other) const;
+
+    bool operator<(const Node& other) const;
+
+    bool operator>(const Node& other) const;
+
+    bool operator>=(const Node& other) const;
+
+    bool operator<=(const Node& other) const;
+
+    bool operator!=(const Node& other) const;
 
     bool is_ancestor_of(const Node* other) const;
 
     std::size_t load();
-    void copy(Node* new_parent);
+
     void move(Node* new_parent);
+
     void remove();
 };
 }
