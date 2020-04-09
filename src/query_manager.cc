@@ -149,7 +149,6 @@ std::size_t Query_manager::select(Terminal_window &win, const std::vector<std::s
         }
     }
 
-    /* Bring back the state of the scene */
     win.erase();
     win.refresh();
     return sv.real_index(sv.index());

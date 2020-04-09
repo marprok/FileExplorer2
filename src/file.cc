@@ -23,10 +23,10 @@ std::size_t File::populate(Node* node)
     return 0;
 }
 
- int File::remove(const Node *node)
- {
-     assert(node);
-     return unlink(node->abs_path().c_str());
- }
+int File::remove(const Node *node)
+{
+    assert(node);
+    return unlink(node->abs_path().c_str());
+}
 
 }

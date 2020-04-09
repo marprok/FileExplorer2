@@ -1,7 +1,5 @@
-
 #ifndef TWINDOW_H
 #define TWINDOW_H
-
 #include <ncurses.h>
 #include <string>
 
