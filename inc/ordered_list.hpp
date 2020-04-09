@@ -1,17 +1,16 @@
 #ifndef ORDERED_LIST_HPP
 #define ORDERED_LIST_HPP
 #include <cstddef>
-#include <iostream>
 
-// move them somewhere else
+namespace utils
+{
+
 template<typename T>
 T* ptr(T& t) { return &t; }
 
 template<typename T>
 T* ptr(T* t) { return t; }
 
-namespace fs
-{
 template<typename T>
 class Ordered_list
 {

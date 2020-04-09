@@ -10,8 +10,8 @@ class Node
 private:
     Node* m_parent;
     Inode* m_inode;
-    Ordered_list<Node*> m_dirs;
-    Ordered_list<Node*> m_files;
+    utils::Ordered_list<Node*> m_dirs;
+    utils::Ordered_list<Node*> m_files;
     bool m_loaded;
 public:
     Node(Inode* data, Node* parent);
@@ -22,9 +22,9 @@ public:
 
     Inode* inode() const;
 
-    Ordered_list<Node*>& dirs();
+    utils::Ordered_list<Node*>& dirs();
 
-    Ordered_list<Node*>& files();
+    utils::Ordered_list<Node*>& files();
 
     std::size_t size() const;
 

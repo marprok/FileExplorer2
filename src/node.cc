@@ -55,8 +55,8 @@ std::size_t Node::load()
 
 Node* Node::parent() const { return m_parent; }
 Inode* Node::inode() const { return m_inode; }
-Ordered_list<Node*>& Node::dirs() { return m_dirs; }
-Ordered_list<Node*>& Node::files() { return m_files; }
+utils::Ordered_list<Node*>& Node::dirs() { return m_dirs; }
+utils::Ordered_list<Node*>& Node::files() { return m_files; }
 std::size_t Node::size() const { return m_dirs.size() + m_files.size(); }
 bool Node::empty() { return size() == 0; }
 
@@ -115,7 +115,7 @@ void Node::move(Node *new_parent)
 
 void Node::remove()
 {
-    Ordered_list<Node*>::Link *link = nullptr;
+    utils::Ordered_list<Node*>::Link *link = nullptr;
     if (m_parent)
     {
         if (m_inode->is_directory())
@@ -126,7 +126,7 @@ void Node::remove()
 
     load();
 
-    Ordered_list<Node*>::Link *head = m_dirs.head();
+    utils::Ordered_list<Node*>::Link *head = m_dirs.head();
     while (head)
     {
         auto tmp = head->next();
