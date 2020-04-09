@@ -1,18 +1,19 @@
 # FileExplorer2
 A better version of FileExplorer.
 
-## Have you ever thought that **ls** is useless? No? Neither have I!
+## This project was made for fun and does not aim to be efficient in any way!
 
-This project was not created as a replacement of the ls command. It was built as a way to improve the architecure of the first
-
-FileExplorer. For the most part it works the same way, as it's predecessor.
+It is based on the idea of the first FileExplorer and was created as an improvement uppon it's predecessor.
 
 # Features
 1. Stat information about each file is displayed.
-2. create and delete files by pressing 'c' and 'd' respectively.
+2. move and delete files/directories.
 3. Easier window management through the Scene class.
 4. All windows are resizable.
 5. Priview the contents of a directory.
+6. Custom scrolling of the lines of a window.
+7. Select multiple lines inside of a window.
+8. Dialog windows.
 
 # Requirements
 
