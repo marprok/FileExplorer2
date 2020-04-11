@@ -110,15 +110,7 @@ public:
         if (!node)
             return;
 
-        if (!m_head)
-        {
-            m_head = node;
-            m_head->set_next(nullptr);
-            m_size++;
-            return;
-        }
-
-        if (*ptr(m_head->data()) >= *ptr(node->data()))
+        if (!m_head || !(*ptr(m_head->data()) < *ptr(node->data())))
         {
             node->set_next(m_head);
             m_head = node;
