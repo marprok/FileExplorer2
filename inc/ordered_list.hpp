@@ -84,9 +84,6 @@ public:
 
     bool insert_front(const T& data)
     {
-        if (get(data))
-            return false;
-
         if (!m_head)
         {
             m_head = new Link(data);
@@ -104,9 +101,6 @@ public:
 
     bool insert(const T& data)
     {
-        if (get(data))
-            return false;
-
         link(new Link(data));
         return true;
     }
