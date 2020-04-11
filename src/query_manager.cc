@@ -95,7 +95,7 @@ bool Query_manager::ask(Terminal_window &win,
 std::size_t Query_manager::select(Terminal_window &win, const std::vector<std::string> &choices)
 {
 
-    auto calculate_lines = [win, choices]() -> std::size_t
+    auto calculate_lines = [&]() -> std::size_t
     {
         if (choices.empty())
             return 0;

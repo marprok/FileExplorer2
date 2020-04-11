@@ -137,10 +137,14 @@ public:
      * not copied.
      */
      /* Default copy constructors/assignment operators */
-     Terminal_window(const Terminal_window& other) = default;
-     Terminal_window& operator=(const Terminal_window& other) = default;
+     Terminal_window(const Terminal_window& other) = delete;
+
+     Terminal_window& operator=(const Terminal_window& other) = delete;
+
      Terminal_window(Terminal_window&& other) = default;
+
      Terminal_window& operator=(Terminal_window&& other) = default;
+
 protected:
     Terminal_window(float lines, float cols, float begin_y,
                    float begin_x);

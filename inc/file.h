@@ -9,7 +9,16 @@ class File : public Inode
 {
 public:
     File(const std::string& name);
-    ~File();
+
+    File(const File&) = delete;
+
+    File& operator=(const File&) = delete;
+
+    File& operator=(File&&) = default;
+
+    File(File&&) = default;
+
+    ~File() override;
 
     std::size_t populate(Node* node) override;
     int remove(const Node *node) override;

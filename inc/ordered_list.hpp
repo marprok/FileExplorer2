@@ -57,6 +57,14 @@ public:
 
     }
 
+    Ordered_list(const Ordered_list& other) = delete;
+
+    Ordered_list(Ordered_list&& other) = default;
+
+    Ordered_list& operator=(const Ordered_list& other) = delete;
+
+    Ordered_list& operator=(Ordered_list&& other) = default;
+
     ~Ordered_list()
     {
         while(m_head)
@@ -131,7 +139,7 @@ public:
     }
 
     std::size_t size() const { return m_size; }
-    bool empty() { return m_head == nullptr; }
+    bool empty() const { return m_head == nullptr; }
 
     Link* unlink(const T& data)
     {

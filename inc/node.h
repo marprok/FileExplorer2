@@ -16,6 +16,14 @@ private:
 public:
     Node(Inode* data, Node* parent);
 
+    Node(const Node&) = delete;
+
+    Node& operator=(const Node&) = delete;
+
+    Node(Node&&) = default;
+
+    Node& operator=(Node&&) = default;
+
     ~Node();
 
     Node* parent() const;

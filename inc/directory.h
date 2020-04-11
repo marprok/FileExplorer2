@@ -16,7 +16,16 @@ class Directory : public Inode
 {
 public:
     Directory(const std::string& name);
-    ~Directory();
+
+    Directory(const Directory&) = delete;
+
+    Directory& operator=(const Directory&) = delete;
+
+    Directory& operator=(Directory&&) = default;
+
+    Directory(Directory&&) = default;
+
+    ~Directory() override;
 
     std::size_t populate(Node* node) override;
     int remove(const Node *node) override;
