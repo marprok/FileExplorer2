@@ -10,9 +10,12 @@ class Node
 private:
     Node* m_parent;
     Inode* m_inode;
+    std::string m_abs_path;
     utils::Ordered_list<Node*> m_dirs;
     utils::Ordered_list<Node*> m_files;
     bool m_loaded;
+
+    void _update_abs_path();
 public:
     Node(Inode* data, Node* parent);
 
@@ -38,7 +41,7 @@ public:
 
     bool empty();
 
-    std::string abs_path() const;
+    const std::string& abs_path() const;
 
     bool operator==(const Node& other) const;
 

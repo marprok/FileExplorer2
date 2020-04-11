@@ -7,6 +7,7 @@ namespace fs
 Node::Node(Inode* inode, Node* parent)
     :m_parent(parent), m_inode(inode),m_loaded(false)
 {
+    _update_abs_path();
     m_inode->stat(abs_path());
 }
 
@@ -65,9 +66,31 @@ std::size_t Node::size() const { return m_dirs.size() + m_files.size(); }
 
 bool Node::empty() { return size() == 0; }
 
-std::string Node::abs_path() const
+void Node::_update_abs_path()
 {
-    return m_parent == nullptr ? m_inode->name()  : m_parent->abs_path() + "/" + m_inode->name();
+    m_abs_path = m_parent == nullptr ? m_inode->name()  : m_parent->abs_path() + "/" + m_inode->name();
+
+    if (m_loaded)
+    {
+        utils::Ordered_list<Node*>::Link *head = m_dirs.head();
+        while (head)
+        {
+            head->data()->_update_abs_path();
+            head = head->next();
+        }
+
+        head = m_files.head();
+        while (head)
+        {
+            head->data()->_update_abs_path();
+            head = head->next();
+        }
+    }
+}
+
+const std::string& Node::abs_path() const
+{
+    return m_abs_path;
 }
 
 bool Node::operator==(const Node& other) const
@@ -115,6 +138,7 @@ void Node::move(Node *new_parent)
         m_parent->m_files.move(new_parent->files(), this);
 
     m_parent = new_parent;
+    _update_abs_path();
     m_inode->stat(abs_path());
 }
 
