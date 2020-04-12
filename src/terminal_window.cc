@@ -48,7 +48,7 @@ int Terminal_window::resize()
     ret = this->erase();
     if (ret != OK)
         return ret;
-    ret = this->refresh();
+    ret = this->virtual_refresh();
     if (ret != OK)
         return ret;
     ret = this->_resize();
@@ -82,6 +82,11 @@ WINDOW* Terminal_window::operator*()
 int Terminal_window::refresh()
 {
     return wrefresh(m_window);;
+}
+
+int Terminal_window::virtual_refresh()
+{
+    return wnoutrefresh(m_window);
 }
 
 int Terminal_window::box(chtype ver_ch, chtype hor_ch)

@@ -38,9 +38,11 @@ int Scene::refresh()
     int ret = OK;
     for (auto& window : m_windows)
     {
-        if ((ret = window.refresh()) != OK)
+        if ((ret = window.virtual_refresh()) != OK)
             return ret;
     }
+    // copy the contents of the virtual screen to the physical one
+    doupdate();
     return ret;
 }
 
@@ -64,6 +66,8 @@ int Scene::resize()
         if (ret != OK)
             return ret;
     }
+    // copy the contents of the virtual screen to the physical one
+    doupdate();
     return OK;
 }
 

@@ -39,6 +39,11 @@ public:
      */
     int refresh();
     /**
+     * @brief virtual_refresh copies the window to the virtual screen
+     * @return returns what wnoutrefresh returns
+     */
+    int virtual_refresh();
+    /**
      * @brief box the window
      * @param verch vertical char
      * @param horch horizontal char
