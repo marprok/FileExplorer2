@@ -19,8 +19,7 @@ static std::size_t calculate_lines(const view::Terminal_window& window, const st
         return 0;
     std::size_t output_lines = 0;
     if (window.lines() > 2)
-        output_lines = std::min(static_cast<std::size_t>(window.lines() - 2),
-                                vec.size());
+        output_lines = std::min(static_cast<std::size_t>(window.lines() - 2), vec.size());
     return output_lines;
 }
 
@@ -28,12 +27,12 @@ static void load_current(fs::Node* current, std::vector<fs::Node*> &vec)
 {
     if (!current)
         return;
-    /* Prepare the data structures */
+
     current->load();
     vec.clear();
     if (current->empty())
         return;
-    /* Load the vector */
+
     auto head = current->dirs().head();
     while (head)
     {
@@ -88,9 +87,7 @@ int main()
     fs::Node *root = new fs::Node(new fs::Directory("/home/void"), nullptr);
     fs::Node *current = root;
     load_current(current, vec);
-    /* -2 lines because the window is boxed */
-    output_lines = std::min(static_cast<std::size_t>(scene[LEFT].lines() - 2),
-                            vec.size());
+    output_lines = calculate_lines(scene[LEFT], vec);
     utils::scrollable_vector<fs::Node*> sv(0, output_lines, vec);
     std::vector<fs::Node*> selection;
 
@@ -113,10 +110,15 @@ int main()
                     wattron(*scene[LEFT], COLOR_PAIR(2));
                 else if (sv[i]->inode()->is_directory())
                     wattron(*scene[LEFT], COLOR_PAIR(1));
+
                 if (i == index)
                     wattron(*scene[LEFT], A_REVERSE);
+
                 /* +1 because it is a boxed window */
                 scene[LEFT].print_left(static_cast<int>(i+1), sv[i]->inode()->name());
+                if (!sv[i]->inode()->is_directory())
+                    scene[LEFT].print_right(static_cast<int>(i+1), sv[i]->inode()->formated_size());
+
                 if (i == index)
                     wattroff(*scene[LEFT], A_REVERSE);
 
@@ -126,11 +128,9 @@ int main()
                     wattroff(*scene[LEFT], COLOR_PAIR(1));
             }
             if (selected_element->inode()->is_regular_file() ||
-                selected_element->inode()->is_symbolic_link() )
+                selected_element->inode()->is_symbolic_link())
             {
-                /* Calculate the index of the file */
-                auto tmp = current->files().get(selected_element);
-                display_file_info(scene[RIGHT], tmp->data());
+                display_file_info(scene[RIGHT], selected_element);
             }else if (selected_element->inode()->is_directory())
             {
                 std::size_t node_size = selected_element->load();
@@ -152,17 +152,22 @@ int main()
                     while ( head && i < right_lines)
                     {
                         scene[RIGHT].print_left(static_cast<int>(i+1), head->data()->inode()->name());
+                        scene[RIGHT].print_right(static_cast<int>(i+1), head->data()->inode()->formated_size());
                         i++;
                         head = head->next();
                     }
                 }else
                 {
+                    wattron(*scene[RIGHT], A_REVERSE);
                     scene[RIGHT].print_center(scene[RIGHT].lines()/2, "EMPTY");
+                    wattroff(*scene[RIGHT], A_REVERSE);
                 }
             }
         }else
         {
+            wattron(*scene[LEFT], A_REVERSE);
             scene[LEFT].print_center(scene[LEFT].lines()/2, "EMPTY");
+            wattroff(*scene[LEFT], A_REVERSE);
         }
         scene[BOTTOM].print_left(1, current->abs_path());
         scene[BOTTOM].print_left(2, "Files: " + std::to_string(current->files().size()) + " Directories: " + std::to_string(current->dirs().size()));
@@ -217,15 +222,8 @@ int main()
             std::vector<std::string> temp;
             for (int i = 0; i < 10; ++i)
                 temp.push_back(std::to_string(i));
-            std::size_t choice = scene.select(0.2f, 0.30f, 0.45f, 0.35f, temp);
-//            std::string file_name = scene.take_input(0.2f, 0.30f, 0.45f, 0.35f, "Create file");
-//            if (file_name.size() != 0)
-//            {
-//                current->create_file(file_name);
-//                load_current(current, vec);
-//                output_lines = calculate_lines(scene[LEFT], vec);
-//                sv.reset(0, output_lines, vec);
-//            }
+            scene.select(0.2f, 0.30f, 0.45f, 0.35f, temp);
+            // TODO: create an empty file or an empty directory
             break;
         }
         case 'd':

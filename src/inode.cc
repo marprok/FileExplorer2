@@ -1,4 +1,5 @@
 #include "../inc/inode.h"
+#include <array>
 
 namespace fs
 {
@@ -185,7 +186,7 @@ std::string Inode::real_name(const std::string& abs_path)
     if (!is_symbolic_link())
         return m_real_name;
     /* The following code is taken from the realink man page. */
-    std::size_t size = m_stat.st_size;
+    std::size_t size = static_cast<std::size_t>(m_stat.st_size);
 
     if (size == 0)
     {
@@ -205,8 +206,28 @@ std::string Inode::real_name(const std::string& abs_path)
     return m_real_name;
 }
 
-inline std::string Inode::name() const
+std::string Inode::name() const
 {
     return m_name;
+}
+
+std::string Inode::formated_size()
+{
+    if (!m_formated_size.empty())
+        return m_formated_size;
+
+    std::array<long, 3> sizes = {1024l*1024l*1024l, 1024*1024l, 1024l};
+    std::array<std::string, 3> names = {"GB", "MB", "KB"};
+    m_formated_size = std::to_string(m_stat.st_size) + "B";
+    for (std::size_t i = 0; i < sizes.size(); ++i)
+    {
+        if (m_stat.st_size / sizes[i])
+        {
+            m_formated_size = std::to_string(m_stat.st_size / sizes[i]) + names[i];
+            break;
+        }
+    }
+
+    return m_formated_size;
 }
 }

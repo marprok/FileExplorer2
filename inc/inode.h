@@ -22,6 +22,7 @@ protected:
     std::string m_name;
     std::string m_rights;
     std::string m_real_name;
+    std::string m_formated_size;
     struct stat m_stat;
 public:
 
@@ -76,6 +77,8 @@ public:
     std::string real_name(const std::string& abs_path);
 
     std::string name() const;
+
+    std::string formated_size();
     // Abstract API
     virtual std::size_t populate(Node* node) = 0;
     virtual int remove(const Node *node) = 0;
