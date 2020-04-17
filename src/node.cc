@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstdio> // rename
 #include "../inc/node.h"
 
@@ -16,21 +17,11 @@ Node::~Node()
     if (m_inode)
         delete m_inode;
 
-    auto tmp = m_files.head();
-    while (tmp)
-    {
-        if (tmp->data())
-            delete tmp->data();
-        tmp = tmp->next();
-    }
+    for (auto& dir : m_dirs)
+        delete dir;
 
-    tmp = m_dirs.head();
-    while (tmp)
-    {
-        if (tmp->data())
-            delete tmp->data();
-        tmp = tmp->next();
-    }
+    for (auto& file : m_files)
+        delete file;
 }
 
 bool Node::is_ancestor_of(const Node* other) const
@@ -58,9 +49,9 @@ Node* Node::parent() const { return m_parent; }
 
 Inode* Node::inode() const { return m_inode; }
 
-utils::Ordered_list<Node*>& Node::dirs() { return m_dirs; }
+std::vector<Node*>& Node::dirs() { return m_dirs; }
 
-utils::Ordered_list<Node*>& Node::files() { return m_files; }
+std::vector<Node*>& Node::files() { return m_files; }
 
 std::size_t Node::size() const { return m_dirs.size() + m_files.size(); }
 
@@ -72,19 +63,11 @@ void Node::_update_abs_path()
 
     if (m_loaded)
     {
-        utils::Ordered_list<Node*>::Link *head = m_dirs.head();
-        while (head)
-        {
-            head->data()->_update_abs_path();
-            head = head->next();
-        }
+        for (auto& dir : m_dirs)
+            dir->_update_abs_path();
 
-        head = m_files.head();
-        while (head)
-        {
-            head->data()->_update_abs_path();
-            head = head->next();
-        }
+        for (auto& file : m_files)
+            file->_update_abs_path();
     }
 }
 
@@ -98,31 +81,6 @@ bool Node::operator==(const Node& other) const
     return abs_path() == other.abs_path();
 }
 
-bool Node::operator<(const Node& other) const
-{
-    return abs_path() < other.abs_path();
-}
-
-bool Node::operator>(const Node& other) const
-{
-    return abs_path() > other.abs_path();
-}
-
-bool Node::operator>=(const Node& other) const
-{
-    return abs_path() >= other.abs_path();
-}
-
-bool Node::operator<=(const Node& other) const
-{
-    return abs_path() <= other.abs_path();
-}
-
-bool Node::operator!=(const Node& other) const
-{
-    return abs_path() != other.abs_path();
-}
-
 void Node::move(Node *new_parent)
 {
     if (!new_parent || *this == *new_parent || is_ancestor_of(new_parent))
@@ -133,50 +91,54 @@ void Node::move(Node *new_parent)
         return; // maybe log it
 
     if (m_inode->is_directory())
-        m_parent->m_dirs.move(new_parent->dirs(), this);
-    else
-        m_parent->m_files.move(new_parent->files(), this);
+    {
+        auto this_iter = std::find_if(m_parent->m_dirs.begin(), m_parent->m_dirs.end(), [this] (const auto& other) { return  this->m_abs_path == other->m_abs_path; });
+        if (this_iter != m_parent->m_dirs.end())
+            m_parent->m_dirs.erase(this_iter);
+        new_parent->m_dirs.push_back(this);
+    }else
+    {
+        auto this_iter = std::find_if(m_parent->m_files.begin(), m_parent->m_files.end(), [this] (const auto& other) { return  this->m_abs_path == other->m_abs_path; });
+        if (this_iter != m_parent->m_files.end())
+            m_parent->m_files.erase(this_iter);
+        new_parent->m_files.push_back(this);
+    }
 
     m_parent = new_parent;
     _update_abs_path();
     m_inode->stat(abs_path());
 }
 
-void Node::remove()
+void Node::_remove()
 {
-    utils::Ordered_list<Node*>::Link *link = nullptr;
-    if (m_parent)
-    {
-        if (m_inode->is_directory())
-            link = m_parent->m_dirs.unlink(this);
-        else
-            link = m_parent->m_files.unlink(this);
-    }
-
     load();
+    for (auto& dir : m_dirs)
+        dir->_remove();
 
-    utils::Ordered_list<Node*>::Link *head = m_dirs.head();
-    while (head)
-    {
-        auto tmp = head->next();
-        head->data()->remove();
-        head = tmp;
-    }
-
-    head = m_files.head();
-    while (head)
-    {
-        auto tmp = head->next();
-        head->data()->remove();
-        head = tmp;
-    }
+    for (auto& file : m_files)
+        file->_remove();
 
     m_inode->remove(this);
     m_parent = nullptr;
-    if (link && link->data())
-        delete link->data();
-    if (link)
-        delete link;
+}
+
+void Node::remove()
+{
+    if (m_parent)
+    {
+        if (m_inode->is_directory())
+        {
+            auto this_iter = std::find_if(m_parent->m_dirs.begin(), m_parent->m_dirs.end(), [this] (const auto& other) { return  this->m_abs_path == other->m_abs_path; });
+            if (this_iter != m_parent->m_dirs.end())
+                m_parent->m_dirs.erase(this_iter);
+        }else
+        {
+            auto this_iter = std::find_if(m_parent->m_files.begin(), m_parent->m_files.end(), [this] (const auto& other) { return  this->m_abs_path == other->m_abs_path; });
+            if (this_iter != m_parent->m_files.end())
+                m_parent->m_files.erase(this_iter);
+        }
+    }
+    _remove();
 }
 
 }

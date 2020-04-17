@@ -1,7 +1,7 @@
 #ifndef FS_NODE_H
 #define FS_NODE_H
 #include "inode.h"
-#include "ordered_list.hpp"
+#include <vector>
 
 namespace fs {
 
@@ -11,11 +11,12 @@ private:
     Node* m_parent;
     Inode* m_inode;
     std::string m_abs_path;
-    utils::Ordered_list<Node*> m_dirs;
-    utils::Ordered_list<Node*> m_files;
+    std::vector<Node*> m_dirs;
+    std::vector<Node*> m_files;
     bool m_loaded;
 
     void _update_abs_path();
+    void _remove();
 public:
     Node(Inode* data, Node* parent);
 
@@ -33,9 +34,9 @@ public:
 
     Inode* inode() const;
 
-    utils::Ordered_list<Node*>& dirs();
+    std::vector<Node*>& dirs();
 
-    utils::Ordered_list<Node*>& files();
+    std::vector<Node*>& files();
 
     std::size_t size() const;
 
@@ -44,16 +45,6 @@ public:
     const std::string& abs_path() const;
 
     bool operator==(const Node& other) const;
-
-    bool operator<(const Node& other) const;
-
-    bool operator>(const Node& other) const;
-
-    bool operator>=(const Node& other) const;
-
-    bool operator<=(const Node& other) const;
-
-    bool operator!=(const Node& other) const;
 
     bool is_ancestor_of(const Node* other) const;
 

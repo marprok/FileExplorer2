@@ -36,7 +36,7 @@ std::size_t Directory::populate(Node* node)
         {
             /* This is not a directory. */
             auto file = new File(drt->d_name);
-            node->files().insert(new Node(file, node));
+            node->files().push_back(new Node(file, node));
         }else
         {
             /* In case the m_name is . or .. */
@@ -47,7 +47,7 @@ std::size_t Directory::populate(Node* node)
                 continue;
             }
             auto directory = new Directory(drt->d_name);
-            node->dirs().insert(new Node(directory, node));
+            node->dirs().push_back(new Node(directory, node));
         }
     }
 

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <string>
 #include <cassert>
 #include "inc/scene.h"
@@ -33,19 +34,15 @@ static void load_current(fs::Node* current, std::vector<fs::Node*> &vec)
     if (current->empty())
         return;
 
-    auto head = current->dirs().head();
-    while (head)
-    {
-        vec.push_back(head->data());
-        head = head->next();
-    }
+    // TODO: maybe support sorting by size?
+    std::sort(current->dirs().begin(), current->dirs().end(), [] (const auto& l, const auto& r) { return l->abs_path() < r->abs_path(); });
+    std::sort(current->files().begin(), current->files().end(), [] (const auto& l, const auto& r) { return l->abs_path() < r->abs_path(); });
 
-    head = current->files().head();
-    while (head)
-    {
-        vec.push_back(head->data());
-        head = head->next();
-    }
+    for (auto& dir : current->dirs())
+        vec.push_back(dir);
+
+    for (auto& file : current->files())
+        vec.push_back(file);
 
 }
 
@@ -138,23 +135,19 @@ int main()
                 {
                     std::size_t right_lines = std::min(static_cast<std::size_t>(scene[RIGHT].lines() - 2), node_size);
                     std::size_t i = 0;
-                    auto head = selected_element->dirs().head();
-                    while ( head && i < right_lines)
+
+                    for (; i < selected_element->dirs().size() && i < right_lines; ++i)
                     {
                         wattron(*scene[RIGHT], COLOR_PAIR(1));
-                        scene[RIGHT].print_left(static_cast<int>(i+1), head->data()->inode()->name());
+                        scene[RIGHT].print_left(static_cast<int>(i+1), selected_element->dirs()[i]->inode()->name());
                         wattroff(*scene[RIGHT], COLOR_PAIR(1));
-                        i++;
-                        head = head->next();
                     }
 
-                    head = selected_element->files().head();
-                    while ( head && i < right_lines)
+                    for (std::size_t j = 0; j < selected_element->files().size() && i < right_lines; ++j, ++i)
                     {
-                        scene[RIGHT].print_left(static_cast<int>(i+1), head->data()->inode()->name());
-                        scene[RIGHT].print_right(static_cast<int>(i+1), head->data()->inode()->formated_size());
-                        i++;
-                        head = head->next();
+                        scene[RIGHT].print_left(static_cast<int>(i+1), selected_element->files()[j]->inode()->name());
+                        scene[RIGHT].print_right(static_cast<int>(i+1), selected_element->files()[j]->inode()->formated_size());
+
                     }
                 }else
                 {
@@ -230,6 +223,7 @@ int main()
             if (current->empty())
                 break;
             selected_element->remove();
+            delete selected_element;
             load_current(current, vec);
             output_lines = calculate_lines(scene[LEFT], vec);
             sv.reset(0, output_lines, vec);
