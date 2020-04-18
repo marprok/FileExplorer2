@@ -1,6 +1,8 @@
 #include <algorithm>
 #include <string>
 #include <cassert>
+#include <unistd.h>
+#include <pwd.h>
 #include "inc/scene.h"
 #include "inc/scroll_vector.hpp"
 #include "inc/file.h"
@@ -107,6 +109,15 @@ int main()
     utils::scrollable_vector<fs::Node*> sv(0, output_lines, vec);
     std::vector<fs::Node*> selection;
 
+    // take the name of the current user
+    uid_t uid = getuid();
+    std::string user = "UNKNOWN";
+    struct passwd* pw = getpwuid(uid);
+    if (pw)
+    {
+        user = pw->pw_name;
+    }
+
     while (key != KEY_END)
     {
         index = sv.index();
@@ -178,10 +189,13 @@ int main()
         {
             scene[LEFT].print_center(scene[LEFT].lines()/2, "EMPTY", A_REVERSE);
         }
-        scene[BOTTOM].print_left(1, current->abs_path(), A_UNDERLINE | COLOR_PAIR(3));
-        scene[BOTTOM].print_left(2, std::to_string(current->files().size()), COLOR_PAIR(4));
+
+        scene[BOTTOM].print_center(1, "[" + user + "]", COLOR_PAIR(2));
+        scene[BOTTOM].print_center(2, current->abs_path(), A_UNDERLINE | COLOR_PAIR(3));
+        scene[BOTTOM].print_center(3, std::to_string(current->files().size()), COLOR_PAIR(4));
         scene[BOTTOM].print("/", COLOR_PAIR(3));
         scene[BOTTOM].print(std::to_string(current->dirs().size()), COLOR_PAIR(1));
+
         /* Refresh the windowws and wait for an event */
         scene.refresh();
         if ((scene >> key) == ERR)
