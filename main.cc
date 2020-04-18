@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <string>
+#include <chrono>
 #include <cassert>
 #include <unistd.h>
 #include <pwd.h>
@@ -118,165 +119,186 @@ int main()
         user = pw->pw_name;
     }
 
+    std::time_t time;
+    bool do_update = true;
+    char time_buf[32] = {0};
+
     while (key != KEY_END)
     {
         index = sv.index();
         fs::Node* selected_element = sv[index];
         if (index >= output_lines)
             index = 0;
-        /* Clear the windows and rebox them */
-        scene.erase();
-        scene.rebox();
-        /* Draw things on the windows */
-        if (!current->empty())
+
+        if (do_update)
         {
-            for (std::size_t i = 0; i < output_lines && i < sv.size(); ++i)
-            {
-                // TODO: try to make this a little bit cleaner
-                attr_t attr = 0;
-                if (sv.is_selected(i))
-                    attr = A_BLINK;
+            /* Clear the windows and rebox them */
+            scene.erase();
+            scene.rebox();
 
-                if (sv[i]->inode()->is_directory())
-                    attr |= COLOR_PAIR(1);
-                else if (sv[i]->inode()->is_symbolic_link())
-                    attr |= COLOR_PAIR(2);
-                else
-                    attr |= COLOR_PAIR(4);
-
-                if (i == index)
-                    attr |= A_REVERSE;
-
-                /* +1 because it is a boxed window */
-                scene[LEFT].print_left(static_cast<int>(i+1), sv[i]->inode()->name(), attr);
-                if (!sv[i]->inode()->is_directory())
-                    scene[LEFT].print_right(static_cast<int>(i+1), sv[i]->inode()->formated_size(), COLOR_PAIR(2));
-            }
-            if (selected_element->inode()->is_regular_file() ||
-                selected_element->inode()->is_symbolic_link())
+            /* Draw things on the windows */
+            if (!current->empty())
             {
-                display_file_info(scene[RIGHT], selected_element);
-            }else if (selected_element->inode()->is_directory())
-            {
-                std::size_t node_size = selected_element->load();
-                if (!selected_element->empty())
+                for (std::size_t i = 0; i < output_lines && i < sv.size(); ++i)
                 {
-                    std::size_t right_lines = std::min(static_cast<std::size_t>(scene[RIGHT].lines() - 2), node_size);
-                    std::size_t i = 0;
+                    // TODO: try to make this a little bit cleaner
+                    attr_t attr = 0;
+                    if (sv.is_selected(i))
+                        attr = A_BLINK;
 
-                    for (; i < selected_element->dirs().size() && i < right_lines; ++i)
-                    {
-                        scene[RIGHT].print_left(static_cast<int>(i+1), selected_element->dirs()[i]->inode()->name(), COLOR_PAIR(1));
-                    }
+                    if (sv[i]->inode()->is_directory())
+                        attr |= COLOR_PAIR(1);
+                    else if (sv[i]->inode()->is_symbolic_link())
+                        attr |= COLOR_PAIR(2);
+                    else
+                        attr |= COLOR_PAIR(4);
 
-                    for (std::size_t j = 0; j < selected_element->files().size() && i < right_lines; ++j, ++i)
-                    {
-                        auto inode = selected_element->files()[j]->inode();
-                        if (inode->is_symbolic_link())
-                            scene[RIGHT].print_left(static_cast<int>(i+1), inode->name(), COLOR_PAIR(2));
-                        else
-                            scene[RIGHT].print_left(static_cast<int>(i+1), inode->name(), COLOR_PAIR(4));
+                    if (i == index)
+                        attr |= A_REVERSE;
 
-                        scene[RIGHT].print_right(static_cast<int>(i+1), selected_element->files()[j]->inode()->formated_size(), COLOR_PAIR(2));
-
-                    }
-                }else
-                {
-                    scene[RIGHT].print_center(scene[RIGHT].lines()/2, "EMPTY", A_REVERSE);
+                    /* +1 because it is a boxed window */
+                    scene[LEFT].print_left(static_cast<int>(i+1), sv[i]->inode()->name(), attr);
+                    if (!sv[i]->inode()->is_directory())
+                        scene[LEFT].print_right(static_cast<int>(i+1), sv[i]->inode()->formated_size(), COLOR_PAIR(2));
                 }
+                if (selected_element->inode()->is_regular_file() ||
+                    selected_element->inode()->is_symbolic_link())
+                {
+                    display_file_info(scene[RIGHT], selected_element);
+                }else if (selected_element->inode()->is_directory())
+                {
+                    std::size_t node_size = selected_element->load();
+                    if (!selected_element->empty())
+                    {
+                        std::size_t right_lines = std::min(static_cast<std::size_t>(scene[RIGHT].lines() - 2), node_size);
+                        std::size_t i = 0;
+
+                        for (; i < selected_element->dirs().size() && i < right_lines; ++i)
+                        {
+                            scene[RIGHT].print_left(static_cast<int>(i+1), selected_element->dirs()[i]->inode()->name(), COLOR_PAIR(1));
+                        }
+
+                        for (std::size_t j = 0; j < selected_element->files().size() && i < right_lines; ++j, ++i)
+                        {
+                            auto inode = selected_element->files()[j]->inode();
+                            if (inode->is_symbolic_link())
+                                scene[RIGHT].print_left(static_cast<int>(i+1), inode->name(), COLOR_PAIR(2));
+                            else
+                                scene[RIGHT].print_left(static_cast<int>(i+1), inode->name(), COLOR_PAIR(4));
+
+                            scene[RIGHT].print_right(static_cast<int>(i+1), selected_element->files()[j]->inode()->formated_size(), COLOR_PAIR(2));
+
+                        }
+                    }else
+                    {
+                        scene[RIGHT].print_center(scene[RIGHT].lines()/2, "EMPTY", A_REVERSE);
+                    }
+                }
+            }else
+            {
+                scene[LEFT].print_center(scene[LEFT].lines()/2, "EMPTY", A_REVERSE);
             }
-        }else
-        {
-            scene[LEFT].print_center(scene[LEFT].lines()/2, "EMPTY", A_REVERSE);
         }
 
-        scene[BOTTOM].print_center(1, "[" + user + "]", COLOR_PAIR(2));
-        scene[BOTTOM].print_center(2, current->abs_path(), A_UNDERLINE | COLOR_PAIR(3));
-        scene[BOTTOM].print_center(3, std::to_string(current->files().size()), COLOR_PAIR(4));
+
+        time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        // we use this because std::ctime adds a newline in the end of the string...
+        std::strftime(time_buf, sizeof(time_buf), "%c", std::localtime(&time));
+
+        scene[BOTTOM].print_left(1, "[" + user + "] ", COLOR_PAIR(2));
+        scene[BOTTOM].print(std::string(time_buf) + " ");
+        scene[BOTTOM].print(std::to_string(current->files().size()), COLOR_PAIR(4));
         scene[BOTTOM].print("/", COLOR_PAIR(3));
-        scene[BOTTOM].print(std::to_string(current->dirs().size()), COLOR_PAIR(1));
+        scene[BOTTOM].print(std::to_string(current->dirs().size()) + " ", COLOR_PAIR(1));
+        scene[BOTTOM].print(current->inode()->rights(), COLOR_PAIR(5));
+        scene[BOTTOM].print_left(2, current->abs_path(), A_UNDERLINE | COLOR_PAIR(3));
+
 
         /* Refresh the windowws and wait for an event */
         scene.refresh();
         if ((scene >> key) == ERR)
-            break;
-        switch (key)
+            do_update = false;
+        else
         {
-        case KEY_UP:
-            sv.move_up();
-            if (sv.selection_in_progress())
-                sv.selection_append();
-            break;
-        case KEY_DOWN:
-            sv.move_down();
-            if (sv.selection_in_progress())
-                sv.selection_append();
-            break;
-        case KEY_RIGHT:
-            if (!current->empty() && selected_element->inode()->is_directory())
+            do_update = true;
+            switch (key)
             {
+            case KEY_UP:
+                sv.move_up();
                 if (sv.selection_in_progress())
-                    sv.interupt_selection();
-                current = selected_element;
+                    sv.selection_append();
+                break;
+            case KEY_DOWN:
+                sv.move_down();
+                if (sv.selection_in_progress())
+                    sv.selection_append();
+                break;
+            case KEY_RIGHT:
+                if (!current->empty() && selected_element->inode()->is_directory())
+                {
+                    if (sv.selection_in_progress())
+                        sv.interupt_selection();
+                    current = selected_element;
+                    load_current(current, vec);
+                    output_lines = calculate_lines(scene[LEFT], vec);
+                    sv.reset(0, output_lines, vec);
+                }
+                break;
+            case KEY_LEFT:
+            {
+                if (!current->parent())
+                    break;
+
+               if (sv.selection_in_progress())
+                   sv.interupt_selection();
+
+                current = current->parent();
                 load_current(current, vec);
                 output_lines = calculate_lines(scene[LEFT], vec);
                 sv.reset(0, output_lines, vec);
+                break;
             }
-            break;
-        case KEY_LEFT:
-        {
-            if (!current->parent())
+            case KEY_RESIZE:
+                scene.resize();
+                output_lines = calculate_lines(scene[LEFT], vec);
+                sv.reset(0, output_lines, vec);
                 break;
-
-           if (sv.selection_in_progress())
-               sv.interupt_selection();
-
-            current = current->parent();
-            load_current(current, vec);
-            output_lines = calculate_lines(scene[LEFT], vec);
-            sv.reset(0, output_lines, vec);
-            break;
-        }
-        case KEY_RESIZE:
-            scene.resize();
-            output_lines = calculate_lines(scene[LEFT], vec);
-            sv.reset(0, output_lines, vec);
-            break;
-        case 'c':
-        {
-            std::vector<std::string> temp;
-            for (int i = 0; i < 10; ++i)
-                temp.push_back(std::to_string(i));
-            scene.select(0.2f, 0.30f, 0.45f, 0.35f, temp);
-            // TODO: create an empty file or an empty directory
-            break;
-        }
-        case 'd':
-            if (current->empty())
+            case 'c':
+            {
+                std::vector<std::string> temp;
+                for (int i = 0; i < 10; ++i)
+                    temp.push_back(std::to_string(i));
+                scene.select(0.2f, 0.30f, 0.45f, 0.35f, temp);
+                // TODO: create an empty file or an empty directory
                 break;
-            selected_element->remove();
-            delete selected_element;
-            load_current(current, vec);
-            output_lines = calculate_lines(scene[LEFT], vec);
-            sv.reset(0, output_lines, vec);
-            break;
-        case 'm':
-            if (selection.empty())
+            }
+            case 'd':
+                if (current->empty())
+                    break;
+                selected_element->remove();
+                delete selected_element;
+                load_current(current, vec);
+                output_lines = calculate_lines(scene[LEFT], vec);
+                sv.reset(0, output_lines, vec);
                 break;
+            case 'm':
+                if (selection.empty())
+                    break;
 
-            for (auto& element : selection)
-                element->move(current);
-            //TODO: current should update it's timestamps via stat
-            load_current(current, vec);
-            output_lines = calculate_lines(scene[LEFT], vec);
-            sv.reset(0, output_lines, vec);
-            break;
-        case 's':
-            sv.start_selection();
-            break;
-        case 'e':
-            selection = sv.end_selection();
-            break;
+                for (auto& element : selection)
+                    element->move(current);
+                //TODO: current should update it's timestamps via stat
+                load_current(current, vec);
+                output_lines = calculate_lines(scene[LEFT], vec);
+                sv.reset(0, output_lines, vec);
+                break;
+            case 's':
+                sv.start_selection();
+                break;
+            case 'e':
+                selection = sv.end_selection();
+                break;
+            }
         }
     }
     delete root;

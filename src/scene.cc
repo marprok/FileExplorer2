@@ -20,7 +20,8 @@ void Scene::_init_ncureses()
 {
     /* Global curses initialization */
     initscr();
-    cbreak();
+    // the arg is x where (x/10)*second
+    halfdelay(10);
     noecho();
     curs_set(0); /* Make the cursor invisible. */
     start_color();
@@ -28,6 +29,7 @@ void Scene::_init_ncureses()
     init_pair(2, COLOR_GREEN, COLOR_BLACK);
     init_pair(3, COLOR_YELLOW, COLOR_BLACK);
     init_pair(4, COLOR_MAGENTA, COLOR_BLACK);
+    init_pair(5, COLOR_CYAN, COLOR_BLACK);
 }
 
 Terminal_window& Scene::operator[](size_t i)
