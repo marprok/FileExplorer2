@@ -51,16 +51,35 @@ static void display_file_info(view::Terminal_window& window, fs::Node* node)
     assert(node);
     auto inode = node->inode();
     assert(inode);
-    window.print_left(1, "NAME: " + inode->name());
-    window.print_left(3, "SIZE: " + inode->size() + "[Bytes]");
-    window.print_left(5, "RIGHTS: " + inode->rights());
-    window.print_left(7, "LAST ACCESSED: " + inode->last_accessed());
-    window.print_left(9, "LAST MODIFIED: " + inode->last_modified());
-    window.print_left(11, "LAST CHANGED: " + inode->last_status_changed());
-    window.print_left(13, "INODE: " + inode->inode_number());
-    window.print_left(15, "HARD LINKS: " + inode->hard_link_count());
+    window.print_left(1, "NAME: ", COLOR_PAIR(3));
+    window.print(inode->name(), A_UNDERLINE);
+
+    window.print_left(3, "SIZE: ", COLOR_PAIR(3));
+    window.print(inode->size() + "[Bytes]", A_UNDERLINE);
+
+    window.print_left(5, "RIGHTS: ", COLOR_PAIR(3));
+    window.print( inode->rights(), A_UNDERLINE);
+
+    window.print_left(7, "LAST ACCESSED: ", COLOR_PAIR(3));
+    window.print(inode->last_accessed(), A_UNDERLINE);
+
+    window.print_left(9, "LAST MODIFIED: ", COLOR_PAIR(3));
+    window.print(inode->last_modified(), A_UNDERLINE);
+
+    window.print_left(11, "LAST CHANGED: ", COLOR_PAIR(3));
+    window.print( inode->last_status_changed(), A_UNDERLINE);
+
+    window.print_left(13, "INODE: ", COLOR_PAIR(3));
+    window.print(inode->inode_number(), A_UNDERLINE);
+
+    window.print_left(15, "HARD LINKS: ", COLOR_PAIR(3));
+    window.print(inode->hard_link_count(), A_UNDERLINE);
+
     if (inode->is_symbolic_link())
-        window.print_left(17, "[LINK]->" + inode->real_name(node->abs_path()));
+    {
+        window.print_left(17, "[LINK]-> ", COLOR_PAIR(3));
+        window.print(inode->real_name(node->abs_path()), A_UNDERLINE);
+    }
 }
 
 int main()
@@ -103,26 +122,24 @@ int main()
             for (std::size_t i = 0; i < output_lines && i < sv.size(); ++i)
             {
                 // TODO: try to make this a little bit cleaner
+                attr_t attr = 0;
                 if (sv.is_selected(i))
-                    wattron(*scene[LEFT], COLOR_PAIR(2));
-                else if (sv[i]->inode()->is_directory())
-                    wattron(*scene[LEFT], COLOR_PAIR(1));
+                    attr = A_BLINK;
+
+                if (sv[i]->inode()->is_directory())
+                    attr |= COLOR_PAIR(1);
+                else if (sv[i]->inode()->is_symbolic_link())
+                    attr |= COLOR_PAIR(2);
+                else
+                    attr |= COLOR_PAIR(4);
 
                 if (i == index)
-                    wattron(*scene[LEFT], A_REVERSE);
+                    attr |= A_REVERSE;
 
                 /* +1 because it is a boxed window */
-                scene[LEFT].print_left(static_cast<int>(i+1), sv[i]->inode()->name());
+                scene[LEFT].print_left(static_cast<int>(i+1), sv[i]->inode()->name(), attr);
                 if (!sv[i]->inode()->is_directory())
-                    scene[LEFT].print_right(static_cast<int>(i+1), sv[i]->inode()->formated_size());
-
-                if (i == index)
-                    wattroff(*scene[LEFT], A_REVERSE);
-
-                if (sv.is_selected(i))
-                    wattroff(*scene[LEFT], COLOR_PAIR(2));
-                else if (sv[i]->inode()->is_directory())
-                    wattroff(*scene[LEFT], COLOR_PAIR(1));
+                    scene[LEFT].print_right(static_cast<int>(i+1), sv[i]->inode()->formated_size(), COLOR_PAIR(2));
             }
             if (selected_element->inode()->is_regular_file() ||
                 selected_element->inode()->is_symbolic_link())
@@ -138,32 +155,33 @@ int main()
 
                     for (; i < selected_element->dirs().size() && i < right_lines; ++i)
                     {
-                        wattron(*scene[RIGHT], COLOR_PAIR(1));
-                        scene[RIGHT].print_left(static_cast<int>(i+1), selected_element->dirs()[i]->inode()->name());
-                        wattroff(*scene[RIGHT], COLOR_PAIR(1));
+                        scene[RIGHT].print_left(static_cast<int>(i+1), selected_element->dirs()[i]->inode()->name(), COLOR_PAIR(1));
                     }
 
                     for (std::size_t j = 0; j < selected_element->files().size() && i < right_lines; ++j, ++i)
                     {
-                        scene[RIGHT].print_left(static_cast<int>(i+1), selected_element->files()[j]->inode()->name());
-                        scene[RIGHT].print_right(static_cast<int>(i+1), selected_element->files()[j]->inode()->formated_size());
+                        auto inode = selected_element->files()[j]->inode();
+                        if (inode->is_symbolic_link())
+                            scene[RIGHT].print_left(static_cast<int>(i+1), inode->name(), COLOR_PAIR(2));
+                        else
+                            scene[RIGHT].print_left(static_cast<int>(i+1), inode->name(), COLOR_PAIR(4));
+
+                        scene[RIGHT].print_right(static_cast<int>(i+1), selected_element->files()[j]->inode()->formated_size(), COLOR_PAIR(2));
 
                     }
                 }else
                 {
-                    wattron(*scene[RIGHT], A_REVERSE);
-                    scene[RIGHT].print_center(scene[RIGHT].lines()/2, "EMPTY");
-                    wattroff(*scene[RIGHT], A_REVERSE);
+                    scene[RIGHT].print_center(scene[RIGHT].lines()/2, "EMPTY", A_REVERSE);
                 }
             }
         }else
         {
-            wattron(*scene[LEFT], A_REVERSE);
-            scene[LEFT].print_center(scene[LEFT].lines()/2, "EMPTY");
-            wattroff(*scene[LEFT], A_REVERSE);
+            scene[LEFT].print_center(scene[LEFT].lines()/2, "EMPTY", A_REVERSE);
         }
-        scene[BOTTOM].print_left(1, current->abs_path());
-        scene[BOTTOM].print_left(2, "Files: " + std::to_string(current->files().size()) + " Directories: " + std::to_string(current->dirs().size()));
+        scene[BOTTOM].print_left(1, current->abs_path(), A_UNDERLINE | COLOR_PAIR(3));
+        scene[BOTTOM].print_left(2, std::to_string(current->files().size()), COLOR_PAIR(4));
+        scene[BOTTOM].print("/", COLOR_PAIR(3));
+        scene[BOTTOM].print(std::to_string(current->dirs().size()), COLOR_PAIR(1));
         /* Refresh the windowws and wait for an event */
         scene.refresh();
         if ((scene >> key) == ERR)

@@ -121,10 +121,9 @@ std::size_t Query_manager::select(Terminal_window &win, const std::vector<std::s
         for (std::size_t i = 0; i < visible_lines && i < sv.size(); ++i)
         {
             if (i == sv.index())
-                wattron(*win, A_REVERSE);
-            win.print_left(static_cast<int>(i+1), sv[i]);
-            if (i == sv.index())
-                wattroff(*win, A_REVERSE);
+                win.print_left(static_cast<int>(i+1), sv[i], A_REVERSE);
+            else
+                win.print_left(static_cast<int>(i+1), sv[i]);
         }
 
         key = wgetch(*win);

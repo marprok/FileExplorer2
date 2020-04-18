@@ -6,7 +6,7 @@ namespace view
 Scene::Scene()
     :m_input_window(0)
 {
-    init_ncureses();
+    _init_ncureses();
 }
 
 Scene::~Scene()
@@ -16,7 +16,7 @@ Scene::~Scene()
     endwin();
 }
 
-void Scene::init_ncureses()
+void Scene::_init_ncureses()
 {
     /* Global curses initialization */
     initscr();
@@ -26,6 +26,8 @@ void Scene::init_ncureses()
     start_color();
     init_pair(1, COLOR_BLUE, COLOR_BLACK);
     init_pair(2, COLOR_GREEN, COLOR_BLACK);
+    init_pair(3, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(4, COLOR_MAGENTA, COLOR_BLACK);
 }
 
 Terminal_window& Scene::operator[](size_t i)

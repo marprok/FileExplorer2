@@ -31,7 +31,7 @@ private:
      */
     ~Scene();
 
-    void init_ncureses();
+    void _init_ncureses();
 public:
 
     static Scene& the()
