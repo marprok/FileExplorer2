@@ -75,17 +75,17 @@ namespace fs
         return size();
     }
 
-    Node* Node::parent() { return m_parent; }
-
-    Inode& Node::inode() { return m_inode; }
-
-    std::vector<Node*>& Node::dirs() { return m_dirs; }
-
-    std::vector<Node*>& Node::files() { return m_files; }
-
     std::size_t Node::size() const { return m_dirs.size() + m_files.size(); }
 
     bool Node::empty() { return size() == 0; }
+
+    const Inode& Node::inode() { return m_inode; }
+
+    std::vector<Node*>& Node::files() { return m_files; }
+
+    std::vector<Node*>& Node::dirs() { return m_dirs; }
+
+    Node* Node::parent() { return m_parent; }
 
     void Node::_update_abs_path()
     {

@@ -1,5 +1,5 @@
-#ifndef FS_ENTRY
-#define FS_ENTRY
+#ifndef INODE_H
+#define INODE_H
 
 #include <sys/stat.h>
 #include <time.h>
@@ -11,79 +11,83 @@
 #include <cassert>
 
 namespace fs {
+    class Inode
+    {
+    private:
+        std::string _get_time(const struct timespec* tp) const;
+        void _rights();
+        void _format_size();
+        void _compute_real_name(const std::string& abs_path);
+    protected:
+        std::string m_name;
+        std::string m_rights;
+        std::string m_real_name;
+        std::string m_formated_size;
+        struct stat m_stat;
+    public:
 
-class Node;
+        Inode(const std::string& name);
 
-class Inode
-{
-private:
-    std::string _get_time(const struct timespec* tp) const;
-protected:
-    std::string m_name;
-    std::string m_rights;
-    std::string m_real_name;
-    std::string m_formated_size;
-    struct stat m_stat;
-public:
+        Inode(const Inode& other) = default;
 
-    Inode(const std::string& name);
-    Inode(const Inode& other) = default;
-    Inode& operator=(const Inode& other) = default;
-    Inode(Inode&& other) = default;
-    Inode& operator=(Inode&& other) = default;
+        Inode& operator=(const Inode& other) = default;
 
-    ~Inode();
+        Inode(Inode&& other) = default;
 
-    int stat(const std::string& abs_path);
+        Inode& operator=(Inode&& other) = default;
 
-    //INode data access
-    std::string device_number() const;
+        ~Inode();
 
-    std::string inode_number() const;
+        int stat(const std::string& abs_path);
 
-    //file type and mode
-    bool is_socket() const;
+        //INode data access
+        std::string device_number() const;
 
-    bool is_symbolic_link() const;
+        std::string inode_number() const;
 
-    bool is_regular_file() const;
+        //file type and mode
+        bool is_socket() const;
 
-    bool is_block_device() const;
+        bool is_symbolic_link() const;
 
-    bool is_directory() const;
+        bool is_regular_file() const;
 
-    bool is_character_device() const;
+        bool is_block_device() const;
 
-    std::string hard_link_count() const;
+        bool is_directory() const;
 
-    std::string size() const;
+        bool is_character_device() const;
 
-    std::string uid() const;
+        std::string hard_link_count() const;
 
-    std::string guid() const;
+        std::string size() const;
 
-    std::string device_id() const;
+        std::string uid() const;
 
-    std::string block_size() const;
+        std::string guid() const;
 
-    std::string blocks521B_allocated() const;
+        std::string device_id() const;
 
-    // Timestamps
-    std::string last_accessed() const;
+        std::string block_size() const;
 
-    std::string last_modified() const;
+        std::string blocks521B_allocated() const;
 
-    std::string last_status_changed() const;
+        // Timestamps
+        std::string last_accessed() const;
 
-    // utility methods
-    std::string rights();
+        std::string last_modified() const;
 
-    std::string real_name(const std::string& abs_path);
+        std::string last_status_changed() const;
 
-    std::string name() const;
+        // utility methods
+        std::string rights() const;
 
-    std::string formated_size();
-};
+        std::string real_name() const;
+
+        std::string name() const;
+
+        std::string formated_size() const;
+    };
 
 }
-#endif
+#endif // INODE_H

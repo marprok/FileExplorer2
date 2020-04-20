@@ -79,7 +79,7 @@ static void display_file_info(view::Terminal_window& window, fs::Node* node)
     if (inode.is_symbolic_link())
     {
         window.print_left(17, "[LINK]-> ", COLOR_PAIR(3));
-        window.print(inode.real_name(node->abs_path()), A_UNDERLINE);
+        window.print(inode.real_name(), A_UNDERLINE);
     }
 }
 

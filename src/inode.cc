@@ -26,7 +26,15 @@ namespace fs
 
     int Inode::stat(const std::string& abs_path)
     {
-        return lstat(abs_path.c_str(), &m_stat);
+        if (lstat(abs_path.c_str(), &m_stat) < 0)
+            return -1;
+
+        _rights();
+        _format_size();
+        if (is_symbolic_link())
+            _compute_real_name(abs_path);
+
+        return 0;
     }
 
     std::string Inode::device_number() const
@@ -119,11 +127,8 @@ namespace fs
         return _get_time(&m_stat.st_ctim);
     }
 
-    std::string Inode::rights()
+    void Inode::_rights()
     {
-        if (!m_rights.empty())
-            return m_rights;
-
         /* Owner */
         if (m_stat.st_mode & S_IRUSR)
             m_rights += "r";
@@ -171,17 +176,14 @@ namespace fs
             m_rights += "x";
         else
             m_rights += "-";
-
-        return m_rights;
     }
 
-    std::string Inode::real_name(const std::string& abs_path)
-    {
-        if (!m_real_name.empty())
-            return m_real_name;
+    std::string Inode::rights() const { return m_rights; }
 
+    void Inode::_compute_real_name(const std::string& abs_path)
+    {
         if (!is_symbolic_link())
-            return m_real_name;
+            return;
         /* The following code is taken from the realink man page. */
         std::size_t size = static_cast<std::size_t>(m_stat.st_size);
 
@@ -196,23 +198,21 @@ namespace fs
         if (readlink(abs_path.c_str(), buf, size) < 0)
         {
             std::cerr << "Cannot readlink:" << name() << std::endl;
-            return "";
+            assert(1);
         }
         m_real_name = buf; /* Deep copy */
         delete[] buf;
-        return m_real_name;
     }
+
+    std::string Inode::real_name() const { return m_real_name; }
 
     std::string Inode::name() const
     {
         return m_name;
     }
 
-    std::string Inode::formated_size()
+    void Inode::_format_size()
     {
-        if (!m_formated_size.empty())
-            return m_formated_size;
-
         std::array<long, 3> sizes = {1024l*1024l*1024l, 1024*1024l, 1024l};
         std::array<std::string, 3> names = {"GB", "MB", "KB"};
         m_formated_size = std::to_string(m_stat.st_size) + "B";
@@ -224,7 +224,7 @@ namespace fs
                 break;
             }
         }
-
-        return m_formated_size;
     }
+
+    std::string Inode::formated_size() const { return m_formated_size; }
 }

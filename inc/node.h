@@ -5,55 +5,61 @@
 
 namespace fs {
 
-class Node
-{
-private:
-    Node* m_parent;
-    Inode m_inode;
-    std::string m_abs_path;
-    std::vector<Node*> m_dirs;
-    std::vector<Node*> m_files;
-    bool m_loaded;
+    class Node
+    {
+    private:
+        Node* m_parent;
+        Inode m_inode;
+        std::vector<Node*> m_dirs;
+        std::vector<Node*> m_files;
+        std::string m_abs_path;
+        bool m_loaded;
+    public:
+        Node(const Inode& data, Node* parent);
 
-    void _update_abs_path();
-    bool _remove();
-public:
-    Node(const Inode& data, Node* parent);
+        Node(const Node&) = delete;
 
-    Node(const Node&) = delete;
+        Node& operator=(const Node&) = delete;
 
-    Node& operator=(const Node&) = delete;
+        Node(Node&&) = default;
 
-    Node(Node&&) = default;
+        Node& operator=(Node&&) = default;
 
-    Node& operator=(Node&&) = default;
+        ~Node();
 
-    ~Node();
+        std::size_t size() const;
 
-    Node* parent();
+        bool empty();
 
-    Inode& inode();
+        const std::string& abs_path() const;
 
-    std::vector<Node*>& dirs();
+        bool operator==(const Node& other) const;
 
-    std::vector<Node*>& files();
+        bool is_ancestor_of(const Node* other) const;
 
-    std::size_t size() const;
+        const Inode& inode();
 
-    bool empty();
+        std::vector<Node*>& files();
 
-    const std::string& abs_path() const;
+        std::vector<Node*>& dirs();
 
-    bool operator==(const Node& other) const;
+        Node* parent();
 
-    bool is_ancestor_of(const Node* other) const;
+        std::size_t load();
 
-    std::size_t load();
-    void move(Node *new_parent);
-    bool remove();
-    bool create_dir(const std::string &name);
-    bool create_file(const std::string &name);
-};
+        void move(Node *new_parent);
+
+        bool remove();
+
+        bool create_dir(const std::string &name);
+
+        bool create_file(const std::string &name);
+
+    private:
+        void _update_abs_path();
+
+        bool _remove();
+    };
 }
 
 #endif
