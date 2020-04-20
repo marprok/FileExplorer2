@@ -134,7 +134,6 @@ std::string Scene::take_input(float lines, float cols, float begin_y,
     curs_set(0);
     keypad(*get_input_window(), true);
     this->resize();
-    this->refresh();
     // resume the halfdelay mode
     halfdelay(10);
 
@@ -155,7 +154,6 @@ bool Scene::ask(float lines, float cols, float begin_y,
     win.delwin();
     keypad(*get_input_window(), true);
     this->resize();
-    this->refresh();
     // resume the halfdelay mode
     halfdelay(10);
 
@@ -176,7 +174,6 @@ std::size_t Scene::select(float lines, float cols, float begin_y,
     win.delwin();
     keypad(*get_input_window(), true);
     this->resize();
-    this->refresh();
     // resume the halfdelay mode
     halfdelay(10);
 
