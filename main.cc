@@ -190,14 +190,10 @@ int main()
 
                         }
                     }else
-                    {
                         scene[RIGHT].print_center(scene[RIGHT].lines()/2, "EMPTY", A_REVERSE);
-                    }
                 }
             }else
-            {
                 scene[LEFT].print_center(scene[LEFT].lines()/2, "EMPTY", A_REVERSE);
-            }
         }
 
 
@@ -265,11 +261,20 @@ int main()
                 break;
             case 'c':
             {
-                std::vector<std::string> temp;
-                for (int i = 0; i < 10; ++i)
-                    temp.push_back(std::to_string(i));
-                scene.select(0.2f, 0.30f, 0.45f, 0.35f, temp);
-                // TODO: create an empty file or an empty directory
+                std::vector<std::string> temp = { "File", "Directory" };
+                auto ret = scene.select(0.2f, 0.30f, 0.45f, 0.35f, temp);
+                auto name = scene.take_input(0.2f, 0.30f, 0.45f, 0.35f, "Create " + temp[ret]);
+                auto confirm = scene.ask(0.2f, 0.30f, 0.45f, 0.35f, "Create " + name + "?");
+                if (confirm)
+                {
+                    if (ret == 0)
+                        current->create_file(name);
+                    else
+                        current->create_dir(name);
+                    load_current(current, vec);
+                    output_lines = calculate_lines(scene[LEFT], vec);
+                    sv.reset(0, output_lines, vec);
+                }
                 break;
             }
             case 'd':

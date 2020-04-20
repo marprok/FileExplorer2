@@ -53,6 +53,9 @@ public:
     void move(Node* new_parent);
 
     void remove();
+
+    bool create_dir(const std::string &name);
+    bool create_file(const std::string &name);
 };
 }
 

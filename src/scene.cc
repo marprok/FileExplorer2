@@ -123,6 +123,9 @@ std::string Scene::take_input(float lines, float cols, float begin_y,
 {
     this->erase();
     this->refresh();
+    // exit the halfdelay mode
+    nocbreak();
+    raw();
     curs_set(1);
     Terminal_window win(lines, cols, begin_y, begin_x);
     std::string out = m_query_manager.take_input(win, prompt);
@@ -132,6 +135,8 @@ std::string Scene::take_input(float lines, float cols, float begin_y,
     keypad(*get_input_window(), true);
     this->resize();
     this->refresh();
+    // resume the halfdelay mode
+    halfdelay(10);
 
     return out;
 }
@@ -139,9 +144,11 @@ std::string Scene::take_input(float lines, float cols, float begin_y,
 bool Scene::ask(float lines, float cols, float begin_y,
                 float begin_x, const std::string &question)
 {
-    /* clear the state of the current scene */
     this->erase();
     this->refresh();
+    // exit the halfdelay mode
+    nocbreak();
+    raw();
     Terminal_window win(lines, cols,
                         begin_y, begin_x);
     bool choice = m_query_manager.ask(win, question);
@@ -149,6 +156,8 @@ bool Scene::ask(float lines, float cols, float begin_y,
     keypad(*get_input_window(), true);
     this->resize();
     this->refresh();
+    // resume the halfdelay mode
+    halfdelay(10);
 
     return choice;
 }
@@ -158,6 +167,9 @@ std::size_t Scene::select(float lines, float cols, float begin_y,
 {
     this->erase();
     this->refresh();
+    // exit the halfdelay mode
+    nocbreak();
+    raw();
     Terminal_window win(lines, cols,
                         begin_y, begin_x);
     std::size_t choice = m_query_manager.select(win, choices);
@@ -165,6 +177,8 @@ std::size_t Scene::select(float lines, float cols, float begin_y,
     keypad(*get_input_window(), true);
     this->resize();
     this->refresh();
+    // resume the halfdelay mode
+    halfdelay(10);
 
     return choice;
 }
