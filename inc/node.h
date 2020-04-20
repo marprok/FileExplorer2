@@ -9,16 +9,16 @@ class Node
 {
 private:
     Node* m_parent;
-    Inode* m_inode;
+    Inode m_inode;
     std::string m_abs_path;
     std::vector<Node*> m_dirs;
     std::vector<Node*> m_files;
     bool m_loaded;
 
     void _update_abs_path();
-    void _remove();
+    bool _remove();
 public:
-    Node(Inode* data, Node* parent);
+    Node(const Inode& data, Node* parent);
 
     Node(const Node&) = delete;
 
@@ -30,9 +30,9 @@ public:
 
     ~Node();
 
-    Node* parent() const;
+    Node* parent();
 
-    Inode* inode() const;
+    Inode& inode();
 
     std::vector<Node*>& dirs();
 
@@ -49,11 +49,8 @@ public:
     bool is_ancestor_of(const Node* other) const;
 
     std::size_t load();
-
-    void move(Node* new_parent);
-
-    void remove();
-
+    void move(Node *new_parent);
+    bool remove();
     bool create_dir(const std::string &name);
     bool create_file(const std::string &name);
 };

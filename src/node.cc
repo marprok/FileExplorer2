@@ -1,26 +1,22 @@
 #include <algorithm>
 #include <cstdio> // rename
 #include <sys/stat.h> // mkdir
+#include <dirent.h> // opendir
 #include <fcntl.h> // creat
 #include "../inc/node.h"
-#include "../inc/directory.h"
-#include "../inc/file.h"
 
 namespace fs
 {
 
-    Node::Node(Inode* inode, Node* parent)
-        :m_parent(parent), m_inode(inode),m_loaded(false)
+    Node::Node(const Inode& inode, Node* parent)
+        :m_parent(parent), m_inode(std::move(inode)),m_loaded(false)
     {
         _update_abs_path();
-        m_inode->stat(abs_path());
+        m_inode.stat(abs_path());
     }
 
     Node::~Node()
     {
-        if (m_inode)
-            delete m_inode;
-
         for (auto& dir : m_dirs)
             delete dir;
 
@@ -43,15 +39,45 @@ namespace fs
 
     std::size_t Node::load()
     {
-        if (m_loaded)
+        if (!m_inode.is_directory() || m_loaded)
             return size();
         m_loaded = true;
-        return m_inode->populate(this);
+
+        DIR *dir = dir = opendir(abs_path().c_str());
+        struct dirent *drt;
+
+        if (!dir)
+        {
+            std::cerr << "ERROR: opendir" << std::endl << "Directory abs name: "<< abs_path() << std::endl;
+            return 0;
+        }
+
+        while ((drt = readdir(dir)))
+        {
+            if (drt->d_type != DT_DIR)
+            {
+                /* This is not a directory. */
+                m_files.push_back(new Node({drt->d_name}, this));
+            }else
+            {
+                /* In case the m_name is . or .. */
+                size_t temp = strlen(drt->d_name);
+                if ((temp == 1 && drt->d_name[0] == '.') ||
+                    (temp == 2 && drt->d_name[0] == '.' && drt->d_name[1] == '.'))
+                {
+                    continue;
+                }
+                m_dirs.push_back(new Node({drt->d_name}, this));
+            }
+        }
+
+        closedir(dir);
+        return size();
     }
 
-    Node* Node::parent() const { return m_parent; }
+    Node* Node::parent() { return m_parent; }
 
-    Inode* Node::inode() const { return m_inode; }
+    Inode& Node::inode() { return m_inode; }
 
     std::vector<Node*>& Node::dirs() { return m_dirs; }
 
@@ -63,7 +89,7 @@ namespace fs
 
     void Node::_update_abs_path()
     {
-        m_abs_path = m_parent == nullptr ? m_inode->name()  : m_parent->abs_path() + "/" + m_inode->name();
+        m_abs_path = m_parent == nullptr ? m_inode.name()  : m_parent->abs_path() + "/" + m_inode.name();
 
         if (m_loaded)
         {
@@ -90,11 +116,11 @@ namespace fs
         if (!new_parent || *this == *new_parent || is_ancestor_of(new_parent))
             return;
 
-        std::string new_abs_path = new_parent->abs_path() + "/" + m_inode->name();
+        std::string new_abs_path = new_parent->abs_path() + "/" + m_inode.name();
         if (rename(abs_path().c_str(), new_abs_path.c_str()) < 0 )
             return; // maybe log it
 
-        if (m_inode->is_directory())
+        if (m_inode.is_directory())
         {
             auto this_iter = std::find_if(m_parent->m_dirs.begin(), m_parent->m_dirs.end(), [this] (const auto& other) { return  this->m_abs_path == other->m_abs_path; });
             if (this_iter != m_parent->m_dirs.end())
@@ -110,27 +136,44 @@ namespace fs
 
         m_parent = new_parent;
         _update_abs_path();
-        m_inode->stat(abs_path());
+        m_inode.stat(abs_path());
     }
 
-    void Node::_remove()
+    bool Node::_remove()
     {
         load();
         for (auto& dir : m_dirs)
-            dir->_remove();
+        {
+            if (!dir->_remove())
+                return false;
+        }
 
         for (auto& file : m_files)
-            file->_remove();
+        {
+            if (!file->_remove())
+                return false;
+        }
 
-        m_inode->remove(this);
+        if (m_inode.is_directory())
+        {
+            if (rmdir(abs_path().c_str()) < 0)
+                return false;
+        }
+        else
+        {
+            if (unlink(abs_path().c_str()) < 0)
+                return false;
+        }
+
         m_parent = nullptr;
+        return true;
     }
 
-    void Node::remove()
+    bool Node::remove()
     {
         if (m_parent)
         {
-            if (m_inode->is_directory())
+            if (m_inode.is_directory())
             {
                 auto this_iter = std::find_if(m_parent->m_dirs.begin(), m_parent->m_dirs.end(), [this] (const auto& other) { return  this->m_abs_path == other->m_abs_path; });
                 if (this_iter != m_parent->m_dirs.end())
@@ -142,19 +185,17 @@ namespace fs
                     m_parent->m_files.erase(this_iter);
             }
         }
-        _remove();
+        return _remove();
     }
 
     bool Node::create_dir(const std::string &name)
     {
         std::string path = m_abs_path + "/" + name;
-        Inode *inode = nullptr;
 
         if (mkdir(path.c_str(), 0755) < 0)
             return false;
 
-        inode = new Directory(name);
-        m_dirs.push_back(new Node(inode, this));
+        m_dirs.push_back(new Node({name}, this));
 
         return true;
     }
@@ -162,13 +203,11 @@ namespace fs
     bool Node::create_file(const std::string &name)
     {
         std::string path = m_abs_path + "/" + name;
-        Inode *inode = nullptr;
 
         if (creat(path.c_str(), 0644) < 0)
             return false;
 
-        inode = new File(name);
-        m_files.push_back(new Node(inode, this));
+        m_files.push_back(new Node({name}, this));
 
         return true;
     }

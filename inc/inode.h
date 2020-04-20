@@ -27,8 +27,12 @@ protected:
 public:
 
     Inode(const std::string& name);
+    Inode(const Inode& other) = default;
+    Inode& operator=(const Inode& other) = default;
+    Inode(Inode&& other) = default;
+    Inode& operator=(Inode&& other) = default;
 
-    virtual ~Inode();
+    ~Inode();
 
     int stat(const std::string& abs_path);
 
@@ -79,9 +83,6 @@ public:
     std::string name() const;
 
     std::string formated_size();
-    // Abstract API
-    virtual std::size_t populate(Node* node) = 0;
-    virtual int remove(const Node *node) = 0;
 };
 
 }

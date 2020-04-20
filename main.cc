@@ -6,8 +6,6 @@
 #include <pwd.h>
 #include "inc/scene.h"
 #include "inc/scroll_vector.hpp"
-#include "inc/file.h"
-#include "inc/directory.h"
 #include "inc/node.h"
 
 enum POSITION
@@ -52,36 +50,36 @@ static void load_current(fs::Node* current, std::vector<fs::Node*> &vec)
 static void display_file_info(view::Terminal_window& window, fs::Node* node)
 {
     assert(node);
-    auto inode = node->inode();
-    assert(inode);
+    auto& inode = node->inode();
+
     window.print_left(1, "NAME: ", COLOR_PAIR(3));
-    window.print(inode->name(), A_UNDERLINE);
+    window.print(inode.name(), A_UNDERLINE);
 
     window.print_left(3, "SIZE: ", COLOR_PAIR(3));
-    window.print(inode->size() + "[Bytes]", A_UNDERLINE);
+    window.print(inode.size() + "[Bytes]", A_UNDERLINE);
 
     window.print_left(5, "RIGHTS: ", COLOR_PAIR(3));
-    window.print( inode->rights(), A_UNDERLINE);
+    window.print( inode.rights(), A_UNDERLINE);
 
     window.print_left(7, "LAST ACCESSED: ", COLOR_PAIR(3));
-    window.print(inode->last_accessed(), A_UNDERLINE);
+    window.print(inode.last_accessed(), A_UNDERLINE);
 
     window.print_left(9, "LAST MODIFIED: ", COLOR_PAIR(3));
-    window.print(inode->last_modified(), A_UNDERLINE);
+    window.print(inode.last_modified(), A_UNDERLINE);
 
     window.print_left(11, "LAST CHANGED: ", COLOR_PAIR(3));
-    window.print( inode->last_status_changed(), A_UNDERLINE);
+    window.print( inode.last_status_changed(), A_UNDERLINE);
 
     window.print_left(13, "INODE: ", COLOR_PAIR(3));
-    window.print(inode->inode_number(), A_UNDERLINE);
+    window.print(inode.inode_number(), A_UNDERLINE);
 
     window.print_left(15, "HARD LINKS: ", COLOR_PAIR(3));
-    window.print(inode->hard_link_count(), A_UNDERLINE);
+    window.print(inode.hard_link_count(), A_UNDERLINE);
 
-    if (inode->is_symbolic_link())
+    if (inode.is_symbolic_link())
     {
         window.print_left(17, "[LINK]-> ", COLOR_PAIR(3));
-        window.print(inode->real_name(node->abs_path()), A_UNDERLINE);
+        window.print(inode.real_name(node->abs_path()), A_UNDERLINE);
     }
 }
 
@@ -103,7 +101,7 @@ int main()
     std::vector<fs::Node*> vec;
     int key = 0;
     std::size_t index = 0;
-    fs::Node *root = new fs::Node(new fs::Directory("/home/void"), nullptr);
+    fs::Node *root = new fs::Node({"/home/void"}, nullptr);
     fs::Node *current = root;
     load_current(current, vec);
     output_lines = calculate_lines(scene[LEFT], vec);
@@ -146,9 +144,9 @@ int main()
                     if (sv.is_selected(i))
                         attr = A_BLINK;
 
-                    if (sv[i]->inode()->is_directory())
+                    if (sv[i]->inode().is_directory())
                         attr |= COLOR_PAIR(1);
-                    else if (sv[i]->inode()->is_symbolic_link())
+                    else if (sv[i]->inode().is_symbolic_link())
                         attr |= COLOR_PAIR(2);
                     else
                         attr |= COLOR_PAIR(4);
@@ -157,15 +155,15 @@ int main()
                         attr |= A_REVERSE;
 
                     /* +1 because it is a boxed window */
-                    scene[LEFT].print_left(static_cast<int>(i+1), sv[i]->inode()->name(), attr);
-                    if (!sv[i]->inode()->is_directory())
-                        scene[LEFT].print_right(static_cast<int>(i+1), sv[i]->inode()->formated_size(), COLOR_PAIR(2));
+                    scene[LEFT].print_left(static_cast<int>(i+1), sv[i]->inode().name(), attr);
+                    if (!sv[i]->inode().is_directory())
+                        scene[LEFT].print_right(static_cast<int>(i+1), sv[i]->inode().formated_size(), COLOR_PAIR(2));
                 }
-                if (selected_element->inode()->is_regular_file() ||
-                    selected_element->inode()->is_symbolic_link())
+                if (selected_element->inode().is_regular_file() ||
+                    selected_element->inode().is_symbolic_link())
                 {
                     display_file_info(scene[RIGHT], selected_element);
-                }else if (selected_element->inode()->is_directory())
+                }else if (selected_element->inode().is_directory())
                 {
                     std::size_t node_size = selected_element->load();
                     if (!selected_element->empty())
@@ -175,18 +173,18 @@ int main()
 
                         for (; i < selected_element->dirs().size() && i < right_lines; ++i)
                         {
-                            scene[RIGHT].print_left(static_cast<int>(i+1), selected_element->dirs()[i]->inode()->name(), COLOR_PAIR(1));
+                            scene[RIGHT].print_left(static_cast<int>(i+1), selected_element->dirs()[i]->inode().name(), COLOR_PAIR(1));
                         }
 
                         for (std::size_t j = 0; j < selected_element->files().size() && i < right_lines; ++j, ++i)
                         {
-                            auto inode = selected_element->files()[j]->inode();
-                            if (inode->is_symbolic_link())
-                                scene[RIGHT].print_left(static_cast<int>(i+1), inode->name(), COLOR_PAIR(2));
+                            auto& inode = selected_element->files()[j]->inode();
+                            if (inode.is_symbolic_link())
+                                scene[RIGHT].print_left(static_cast<int>(i+1), inode.name(), COLOR_PAIR(2));
                             else
-                                scene[RIGHT].print_left(static_cast<int>(i+1), inode->name(), COLOR_PAIR(4));
+                                scene[RIGHT].print_left(static_cast<int>(i+1), inode.name(), COLOR_PAIR(4));
 
-                            scene[RIGHT].print_right(static_cast<int>(i+1), selected_element->files()[j]->inode()->formated_size(), COLOR_PAIR(2));
+                            scene[RIGHT].print_right(static_cast<int>(i+1), selected_element->files()[j]->inode().formated_size(), COLOR_PAIR(2));
 
                         }
                     }else
@@ -206,7 +204,7 @@ int main()
         scene[BOTTOM].print(std::to_string(current->files().size()), COLOR_PAIR(4));
         scene[BOTTOM].print("/", COLOR_PAIR(3));
         scene[BOTTOM].print(std::to_string(current->dirs().size()) + " ", COLOR_PAIR(1));
-        scene[BOTTOM].print(current->inode()->rights(), COLOR_PAIR(5));
+        scene[BOTTOM].print(current->inode().rights(), COLOR_PAIR(5));
         scene[BOTTOM].print_left(2, current->abs_path(), A_UNDERLINE | COLOR_PAIR(3));
 
 
@@ -230,7 +228,7 @@ int main()
                     sv.selection_append();
                 break;
             case KEY_RIGHT:
-                if (!current->empty() && selected_element->inode()->is_directory())
+                if (!current->empty() && selected_element->inode().is_directory())
                 {
                     if (sv.selection_in_progress())
                         sv.interupt_selection();

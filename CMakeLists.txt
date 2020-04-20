@@ -11,8 +11,6 @@ include_directories(
 set(SOURCES
     src/terminal_window.cc
     src/scene.cc
-    src/file.cc
-    src/directory.cc
     src/query_manager.cc
     src/node.cc
     src/inode.cc
