@@ -139,25 +139,22 @@ int main()
             {
                 for (std::size_t i = 0; i < output_lines && i < sv.size(); ++i)
                 {
-                    // TODO: try to make this a little bit cleaner
                     attr_t attr = 0;
                     if (sv.is_selected(i))
-                        attr = A_BLINK;
-
-                    if (sv[i]->inode().is_directory())
-                        attr |= COLOR_PAIR(1);
-                    else if (sv[i]->inode().is_symbolic_link())
-                        attr |= COLOR_PAIR(2);
+                        attr = COLOR_PAIR(2);
+                    else if (sv[i]->inode().is_directory())
+                        attr = COLOR_PAIR(1);
                     else
-                        attr |= COLOR_PAIR(4);
+                        attr = COLOR_PAIR(4);
 
                     if (i == index)
                         attr |= A_REVERSE;
 
                     /* +1 because it is a boxed window */
-                    scene[LEFT].print_left(static_cast<int>(i+1), sv[i]->inode().name(), attr);
+                    scene[LEFT].print_left(static_cast<int>(i+1), sv[i]->inode().name() + (sv[i]->inode().is_symbolic_link() ? "*" : ""), attr);
                     if (!sv[i]->inode().is_directory())
-                        scene[LEFT].print_right(static_cast<int>(i+1), sv[i]->inode().formated_size(), COLOR_PAIR(2));
+                        scene[LEFT].print_right(static_cast<int>(i+1), sv[i]->inode().formated_size(), attr);
+
                 }
                 if (selected_element->inode().is_regular_file() ||
                     selected_element->inode().is_symbolic_link())
@@ -170,7 +167,6 @@ int main()
                     {
                         std::size_t right_lines = std::min(static_cast<std::size_t>(scene[RIGHT].lines() - 2), node_size);
                         std::size_t i = 0;
-
                         for (; i < selected_element->dirs().size() && i < right_lines; ++i)
                         {
                             scene[RIGHT].print_left(static_cast<int>(i+1), selected_element->dirs()[i]->inode().name(), COLOR_PAIR(1));
@@ -179,12 +175,8 @@ int main()
                         for (std::size_t j = 0; j < selected_element->files().size() && i < right_lines; ++j, ++i)
                         {
                             auto& inode = selected_element->files()[j]->inode();
-                            if (inode.is_symbolic_link())
-                                scene[RIGHT].print_left(static_cast<int>(i+1), inode.name(), COLOR_PAIR(2));
-                            else
-                                scene[RIGHT].print_left(static_cast<int>(i+1), inode.name(), COLOR_PAIR(4));
-
-                            scene[RIGHT].print_right(static_cast<int>(i+1), selected_element->files()[j]->inode().formated_size(), COLOR_PAIR(2));
+                            scene[RIGHT].print_left(static_cast<int>(i+1), inode.name() + (inode.is_symbolic_link() ? "*" : ""), COLOR_PAIR(4));
+                            scene[RIGHT].print_right(static_cast<int>(i+1), selected_element->files()[j]->inode().formated_size(), COLOR_PAIR(4));
 
                         }
                     }else
