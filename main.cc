@@ -197,8 +197,10 @@ int main()
         scene[BOTTOM].print("/", COLOR_PAIR(3));
         scene[BOTTOM].print(std::to_string(current->dirs().size()) + " ", COLOR_PAIR(1));
         scene[BOTTOM].print(current->inode().rights(), COLOR_PAIR(5));
+        if (!selection.empty())
+            scene[BOTTOM].print(" selection: " + std::to_string(selection.size()));
         scene[BOTTOM].print_left(2, current->abs_path(), A_UNDERLINE | COLOR_PAIR(3));
-
+        scene[BOTTOM].print_center(3, "[c]rate [d]elete [m]ove [s]elect [e]nd");
 
         /* Refresh the windowws and wait for an event */
         scene.refresh();
