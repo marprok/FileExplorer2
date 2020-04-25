@@ -23,5 +23,3 @@ It is based on the idea of the first FileExplorer and was created as an improvem
 
 ![](images/1.png)
 ![](images/2.png)
-![](images/3.png)
-![](images/4.png)
