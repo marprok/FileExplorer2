@@ -200,7 +200,7 @@ int main()
         if (!selection.empty())
             scene[BOTTOM].print(" selection: " + std::to_string(selection.size()));
         scene[BOTTOM].print_left(2, current->abs_path(), A_UNDERLINE | COLOR_PAIR(3));
-        scene[BOTTOM].print_center(3, "[c]rate [d]elete [m]ove [s]elect [e]nd");
+        scene[BOTTOM].print_center(3, "[c]reate [d]elete [m]ove [s]elect [e]nd");
 
         /* Refresh the windowws and wait for an event */
         scene.refresh();
