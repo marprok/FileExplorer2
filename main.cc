@@ -50,7 +50,7 @@ static void load_current(fs::Node* current, std::vector<fs::Node*> &vec)
 static void display_file_info(view::Terminal_window& window, fs::Node* node)
 {
     assert(node);
-    auto& inode = node->inode();
+    const auto& inode = node->inode();
 
     window.print_left(1, "NAME: ", COLOR_PAIR(3));
     window.print(inode.name(), A_UNDERLINE);
@@ -174,7 +174,7 @@ int main()
 
                         for (std::size_t j = 0; j < selected_element->files().size() && i < right_lines; ++j, ++i)
                         {
-                            auto& inode = selected_element->files()[j]->inode();
+                            const auto& inode = selected_element->files()[j]->inode();
                             scene[RIGHT].print_left(static_cast<int>(i+1), inode.name() + (inode.is_symbolic_link() ? "*" : ""), COLOR_PAIR(4));
                             scene[RIGHT].print_right(static_cast<int>(i+1), selected_element->files()[j]->inode().formated_size(), COLOR_PAIR(4));
 

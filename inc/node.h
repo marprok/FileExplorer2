@@ -47,7 +47,7 @@ namespace fs {
 
         std::size_t load();
 
-        void move(Node *new_parent);
+        bool move(Node *new_parent);
 
         bool remove();
 

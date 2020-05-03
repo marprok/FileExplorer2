@@ -111,32 +111,50 @@ namespace fs
         return abs_path() == other.abs_path();
     }
 
-    void Node::move(Node *new_parent)
+    bool Node::move(Node *new_parent)
     {
         if (!new_parent || *this == *new_parent || is_ancestor_of(new_parent))
-            return;
+            return false;
 
         std::string new_abs_path = new_parent->abs_path() + "/" + m_inode.name();
         if (rename(abs_path().c_str(), new_abs_path.c_str()) < 0 )
-            return; // maybe log it
+            return false; // maybe log it
+
+        auto move_this = [this] (std::vector<Node*> &from, std::vector<Node*> &to)
+                            {
+                                auto this_iter = std::find_if(from.begin(), from.end(),
+                                                              [this] (const auto& other)
+                                                              {
+                                                                  return  this->m_abs_path == other->m_abs_path;
+                                                              });
+                                if (this_iter != from.end())
+                                    from.erase(this_iter);
+                                // if a Node with the same name exists already to the destination
+                                // it has already been overridden in the file system, so remove it
+                                // before inserting the new one in the vector.
+                                auto invalid_node = std::find_if(to.begin(), to.end(),
+                                                                 [this] (const auto& other)
+                                                                 {
+                                                                     return this->m_inode.name() == other->m_inode.name();
+                                                                 });
+                                if (invalid_node != to.end())
+                                {
+                                    delete *invalid_node;
+                                    to.erase(invalid_node);
+                                }
+                                to.push_back(this);
+                            };
 
         if (m_inode.is_directory())
-        {
-            auto this_iter = std::find_if(m_parent->m_dirs.begin(), m_parent->m_dirs.end(), [this] (const auto& other) { return  this->m_abs_path == other->m_abs_path; });
-            if (this_iter != m_parent->m_dirs.end())
-                m_parent->m_dirs.erase(this_iter);
-            new_parent->m_dirs.push_back(this);
-        }else
-        {
-            auto this_iter = std::find_if(m_parent->m_files.begin(), m_parent->m_files.end(), [this] (const auto& other) { return  this->m_abs_path == other->m_abs_path; });
-            if (this_iter != m_parent->m_files.end())
-                m_parent->m_files.erase(this_iter);
-            new_parent->m_files.push_back(this);
-        }
+            move_this(m_parent->m_dirs, new_parent->m_dirs);
+        else
+            move_this(m_parent->m_files, new_parent->m_files);
 
         m_parent = new_parent;
         _update_abs_path();
         m_inode.stat(abs_path());
+
+        return true;
     }
 
     bool Node::_remove()

@@ -14,11 +14,6 @@ namespace fs {
     class Inode
     {
     private:
-        std::string _get_time(const struct timespec* tp) const;
-        void _rights();
-        void _format_size();
-        void _compute_real_name(const std::string& abs_path);
-    protected:
         std::string m_name;
         std::string m_rights;
         std::string m_real_name;
@@ -87,6 +82,11 @@ namespace fs {
         std::string name() const;
 
         std::string formated_size() const;
+    private:
+        std::string _get_time(const struct timespec* tp) const;
+        void _rights();
+        void _format_size();
+        void _compute_real_name(const std::string& abs_path);
     };
 
 }

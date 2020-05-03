@@ -129,53 +129,56 @@ namespace fs
 
     void Inode::_rights()
     {
+        std::string temp;
         /* Owner */
         if (m_stat.st_mode & S_IRUSR)
-            m_rights += "r";
+            temp += "r";
         else
-            m_rights += "-";
+            temp += "-";
 
         if (m_stat.st_mode & S_IWUSR)
-            m_rights += "w";
+            temp += "w";
         else
-            m_rights += "-";
+            temp += "-";
 
         if (m_stat.st_mode & S_IXUSR)
-            m_rights += "x";
+            temp += "x";
         else
-            m_rights += "-";
+            temp += "-";
 
         /* Group */
         if (m_stat.st_mode & S_IRGRP)
-            m_rights += "r";
+            temp += "r";
         else
-            m_rights += "-";
+            temp += "-";
 
         if (m_stat.st_mode & S_IWGRP)
-            m_rights += "w";
+            temp += "w";
         else
-            m_rights += "-";
+            temp += "-";
 
         if (m_stat.st_mode & S_IXGRP)
-            m_rights += "x";
+            temp += "x";
         else
-            m_rights += "-";
+            temp += "-";
 
         /* Others */
         if (m_stat.st_mode & S_IROTH)
-            m_rights += "r";
+            temp += "r";
         else
-            m_rights += "-";
+            temp += "-";
 
         if (m_stat.st_mode & S_IWOTH)
-            m_rights += "w";
+            temp += "w";
         else
-            m_rights += "-";
+            temp += "-";
 
         if (m_stat.st_mode & S_IXOTH)
-            m_rights += "x";
+            temp += "x";
         else
-            m_rights += "-";
+            temp += "-";
+
+        m_rights = temp;
     }
 
     std::string Inode::rights() const { return m_rights; }
