@@ -7,6 +7,7 @@
 #include "inc/scene.h"
 #include "inc/scroll_vector.hpp"
 #include "inc/node.h"
+#include "inc/log.h"
 
 enum POSITION
 {
@@ -28,12 +29,18 @@ static std::size_t calculate_lines(const view::Terminal_window& window, const st
 static void load_current(fs::Node* current, std::vector<fs::Node*> &vec)
 {
     if (!current)
+    {
+        utils::Log::the() << "load_current: nullptr current directory!\n";
         return;
+    }
 
     current->load();
     vec.clear();
     if (current->empty())
+    {
+        utils::Log::the() << "load_current: empty current directory!\n";
         return;
+    }
 
     // TODO: maybe support sorting by size?
     std::sort(current->dirs().begin(), current->dirs().end(), [] (const auto& l, const auto& r) { return l->abs_path() < r->abs_path(); });
@@ -49,7 +56,11 @@ static void load_current(fs::Node* current, std::vector<fs::Node*> &vec)
 
 static void display_file_info(view::Terminal_window& window, fs::Node* node)
 {
-    assert(node);
+    if (!node)
+    {
+        utils::Log::the() << "display_file_info: nullptr node!\n";
+        return;
+    }
     const auto& inode = node->inode();
 
     window.print_left(1, "NAME: ", COLOR_PAIR(3));
@@ -86,7 +97,8 @@ static void display_file_info(view::Terminal_window& window, fs::Node* node)
 int main()
 {
     std::size_t output_lines;
-    /* Setup the scene */
+
+    // Setup the scene
     view::Scene &scene = view::Scene::the();
     scene.add_window(0.8f, 0.5f, 0.0f, 0.0f);
     scene.add_window(0.8f, 0.5f, 0.0f, 0.5f);
@@ -94,11 +106,14 @@ int main()
     scene[LEFT].box(0,0);
     scene[RIGHT].box(0, 0);
     scene[BOTTOM].box(0,0);
-    /* Explicitly set the inout window */
+
+    // Explicitly set the inout window
     scene.set_input_window(LEFT);
     keypad(*scene.get_input_window(), true);
-    /* Create the nececary data structures */
+
+    // Create and initialize the nececary data structures
     std::vector<fs::Node*> vec;
+    utils::Log::set_output("/home/void/.felog");
     int key = 0;
     std::size_t index = 0;
     fs::Node *root = new fs::Node({"/home/void"}, nullptr);
@@ -113,10 +128,7 @@ int main()
     std::string user = "UNKNOWN";
     struct passwd* pw = getpwuid(uid);
     if (pw)
-    {
         user = pw->pw_name;
-    }
-
     std::time_t time;
     bool do_update = true;
     char time_buf[32] = {0};
@@ -168,9 +180,7 @@ int main()
                         std::size_t right_lines = std::min(static_cast<std::size_t>(scene[RIGHT].lines() - 2), node_size);
                         std::size_t i = 0;
                         for (; i < selected_element->dirs().size() && i < right_lines; ++i)
-                        {
                             scene[RIGHT].print_left(static_cast<int>(i+1), selected_element->dirs()[i]->inode().name(), COLOR_PAIR(1));
-                        }
 
                         for (std::size_t j = 0; j < selected_element->files().size() && i < right_lines; ++j, ++i)
                         {
@@ -259,10 +269,10 @@ int main()
                 auto confirm = scene.ask(0.2f, 0.30f, 0.45f, 0.35f, "Create " + name + "?");
                 if (confirm)
                 {
-                    if (ret == 0)
-                        current->create_file(name);
-                    else
-                        current->create_dir(name);
+                    if (ret == 0 && !current->create_file(name))
+                        utils::Log::the() << "Failed to create the file: " << name << "\n";
+                    else if (!current->create_dir(name))
+                        utils::Log::the() << "Failed to create the directory: " << name << "\n";
                     load_current(current, vec);
                     output_lines = calculate_lines(scene[LEFT], vec);
                     sv.reset(0, output_lines, vec);
@@ -283,7 +293,11 @@ int main()
                     break;
 
                 for (auto& element : selection)
-                    element->move(current);
+                {
+                    if (!element->move(current))
+                        utils::Log::the() << "Failed to move: " << element->abs_path()
+                                          << " -> " << current->abs_path() << "\n";
+                }
                 //TODO: current should update it's timestamps via stat
                 load_current(current, vec);
                 output_lines = calculate_lines(scene[LEFT], vec);

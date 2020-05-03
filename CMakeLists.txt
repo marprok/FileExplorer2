@@ -14,6 +14,7 @@ set(SOURCES
     src/query_manager.cc
     src/node.cc
     src/inode.cc
+	src/log.cc
 )
 
 find_package(Curses REQUIRED)

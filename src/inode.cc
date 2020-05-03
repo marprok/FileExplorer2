@@ -1,5 +1,5 @@
-#include "../inc/inode.h"
 #include <array>
+#include "../inc/inode.h"
 
 namespace fs
 {
