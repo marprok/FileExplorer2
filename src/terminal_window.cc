@@ -17,12 +17,10 @@ namespace view
          m_cursor_x(0),
          m_cursor_y(0)
     {
-        int scene_lines, scene_cols;
-        getmaxyx(stdscr, scene_lines, scene_cols);
-        m_window = newwin(static_cast<int>(m_per_lines*scene_lines),
-                          static_cast<int>(m_per_cols*scene_cols),
-                          static_cast<int>(m_begin_y*scene_lines),
-                          static_cast<int>(m_begin_x*scene_cols));
+        m_window = newwin(static_cast<int>(m_per_lines*LINES),
+                          static_cast<int>(m_per_cols*COLS),
+                          static_cast<int>(m_begin_y*LINES),
+                          static_cast<int>(m_begin_x*COLS));
     }
 
     Terminal_window::Terminal_window()
@@ -64,11 +62,9 @@ namespace view
 
     int Terminal_window::_resize()
     {
-        int scene_lines, scene_cols;
-        getmaxyx(stdscr, scene_lines, scene_cols);
         return wresize(operator*(),
-                       static_cast<int>(m_per_lines*scene_lines),
-                       static_cast<int>(m_per_cols*scene_cols)
+                       static_cast<int>(m_per_lines*LINES),
+                       static_cast<int>(m_per_cols*COLS)
                        );
     }
 
@@ -192,19 +188,17 @@ namespace view
     {
         m_begin_y = y;
         m_begin_x = x;
-        int scene_lines, scene_cols;
-        getmaxyx(stdscr, scene_lines, scene_cols);
-        if (scene_lines <= 1)
+        if (LINES <= 1)
         {
-            return ::mvwin(m_window, 1, scene_cols);
-        }else if (scene_cols <= 1)
+            return ::mvwin(m_window, 1, COLS);
+        }else if (COLS <= 1)
         {
-            return ::mvwin(m_window, scene_lines, 1);
+            return ::mvwin(m_window, LINES, 1);
         }else
         {
             return ::mvwin(m_window,
-                           static_cast<int>(m_begin_y*scene_lines),
-                           static_cast<int>(m_begin_x*scene_cols));
+                           static_cast<int>(m_begin_y*LINES),
+                           static_cast<int>(m_begin_x*COLS));
         }
 
     }
@@ -234,15 +228,11 @@ namespace view
 
     int Terminal_window::cols() const
     {
-        int scene_lines, scene_cols;
-        getmaxyx(stdscr, scene_lines, scene_cols);
-        return static_cast<int>(m_per_cols*scene_cols);
+        return static_cast<int>(m_per_cols*COLS);
     }
     int Terminal_window::lines() const
     {
-        int scene_lines, scene_cols;
-        getmaxyx(stdscr, scene_lines, scene_cols);
-        return static_cast<int>(m_per_lines*scene_lines);
+        return static_cast<int>(m_per_lines*LINES);
     }
 
     void Terminal_window::set_cols(float cols)
@@ -277,14 +267,13 @@ namespace view
         m_boxed = false;
         m_cursor_x = 0;
         m_cursor_y = 0;
-        int scene_lines, scene_cols;
-        getmaxyx(stdscr, scene_lines, scene_cols);
+
         if (m_window)
             this->delwin();
 
-        m_window = newwin(static_cast<int>(m_per_lines*scene_lines),
-                          static_cast<int>(m_per_cols*scene_cols),
-                          static_cast<int>(m_begin_y*scene_lines),
-                          static_cast<int>(m_begin_x*scene_cols));
+        m_window = newwin(static_cast<int>(m_per_lines*LINES),
+                          static_cast<int>(m_per_cols*COLS),
+                          static_cast<int>(m_begin_y*LINES),
+                          static_cast<int>(m_begin_x*COLS));
     }
 }
