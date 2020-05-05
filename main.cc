@@ -97,7 +97,7 @@ static void display_file_info(view::Terminal_window& window, fs::Node* node)
 int main()
 {
     std::size_t output_lines;
-
+    utils::Log::set_output("/home/void/.felog");
     // Setup the scene
     view::Scene &scene = view::Scene::the();
     scene.add_window(0.8f, 0.5f, 0.0f, 0.0f);
@@ -113,7 +113,6 @@ int main()
 
     // Create and initialize the nececary data structures
     std::vector<fs::Node*> vec;
-    utils::Log::set_output("/home/void/.felog");
     int key = 0;
     std::size_t index = 0;
     fs::Node *root = new fs::Node({"/home/void"}, nullptr);
