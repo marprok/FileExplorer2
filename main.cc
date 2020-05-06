@@ -110,24 +110,23 @@ int main()
     // Explicitly set the inout window
     scene.set_input_window(LEFT);
     keypad(*scene.get_input_window(), true);
+    // take the name of the current user
+    uid_t uid = getuid();
+
+    struct passwd* pw = getpwuid(uid);
+    std::string user = pw->pw_name;
+    std::string home = pw->pw_dir;
 
     // Create and initialize the nececary data structures
     std::vector<fs::Node*> vec;
     int key = 0;
     std::size_t index = 0;
-    fs::Node *root = new fs::Node({"/home/void"}, nullptr);
+    fs::Node *root = new fs::Node(home, nullptr);
     fs::Node *current = root;
     load_current(current, vec);
     output_lines = calculate_lines(scene[LEFT], vec);
     utils::scrollable_vector<fs::Node*> sv(0, output_lines, vec);
     std::vector<fs::Node*> selection;
-
-    // take the name of the current user
-    uid_t uid = getuid();
-    std::string user = "UNKNOWN";
-    struct passwd* pw = getpwuid(uid);
-    if (pw)
-        user = pw->pw_name;
     std::time_t time;
     bool do_update = true;
     char time_buf[32] = {0};
