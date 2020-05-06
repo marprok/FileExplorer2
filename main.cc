@@ -159,7 +159,7 @@ int main()
                         attr = COLOR_PAIR(4);
 
                     if (i == index)
-                        attr |= A_REVERSE;
+                        attr |= A_STANDOUT;
 
                     /* +1 because it is a boxed window */
                     scene[LEFT].print_left(static_cast<int>(i+1), sv[i]->inode().name() + (sv[i]->inode().is_symbolic_link() ? "*" : ""), attr);
