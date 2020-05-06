@@ -77,6 +77,14 @@ namespace fs
         return S_ISCHR(m_stat.st_mode);
     }
 
+    bool Inode::is_executable() const
+    {
+        return (m_stat.st_mode & S_IXUSR)
+               && (m_stat.st_mode & S_IXGRP)
+               && (m_stat.st_mode & S_IXOTH);
+    }
+
+
     std::string Inode::hard_link_count() const
     {
         return std::to_string(m_stat.st_nlink);

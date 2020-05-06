@@ -53,6 +53,8 @@ namespace fs {
 
         bool is_character_device() const;
 
+        bool is_executable() const;
+
         std::string hard_link_count() const;
 
         std::string size() const;
