@@ -13,7 +13,7 @@ namespace view
  */
     class Terminal_window
     {
-    protected:
+    private:
         WINDOW* m_window;
         float   m_per_cols, m_per_lines;
         float   m_begin_x, m_begin_y;
@@ -159,7 +159,7 @@ namespace view
 
         Terminal_window& operator=(Terminal_window&& other) = default;
 
-    protected:
+    private:
         Terminal_window(float lines, float cols, float begin_y,
                         float begin_x);
         Terminal_window();
