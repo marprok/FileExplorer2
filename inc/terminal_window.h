@@ -122,6 +122,15 @@ namespace view
          */
         int lines() const;
 
+        /**
+         * @return the y position of the window
+         */
+        int y() const;
+        /**
+         * @return the x position of the window
+         */
+        int x() const;
+
         void set_cols(float cols);
 
         void set_lines(float lines);

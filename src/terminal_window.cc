@@ -230,9 +230,20 @@ namespace view
     {
         return static_cast<int>(m_per_cols*COLS);
     }
+
     int Terminal_window::lines() const
     {
         return static_cast<int>(m_per_lines*LINES);
+    }
+
+    int Terminal_window::y() const
+    {
+        return static_cast<int>(m_begin_y*LINES);
+    }
+
+    int Terminal_window::x() const
+    {
+        return static_cast<int>(m_begin_x*COLS);
     }
 
     void Terminal_window::set_cols(float cols)
