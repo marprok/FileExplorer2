@@ -1,12 +1,21 @@
 #include <array>
-#include "../inc/inode.h"
+#include <vector>
+#include <dirent.h>
+#include <cassert>
+#include "inode.h"
 
 namespace fs
 {
-    Inode::Inode(const std::string& name)
-        :m_name(name)
+    Inode::Inode(const std::string& parent, const std::string& name)
+        :m_name(name), m_parent(parent)
     {
-
+        if (strstr(m_parent.c_str(), ".") || strstr(m_parent.c_str(), ".."))
+        {
+            char full_path[PATH_MAX] = {0};
+            assert(realpath(m_parent.c_str(), full_path));
+            m_parent = full_path;
+        }
+        stat();
     }
 
     Inode::~Inode()
@@ -24,15 +33,14 @@ namespace fs
         return buf;
     }
 
-    int Inode::stat(const std::string& abs_path)
+    int Inode::stat()
     {
-        if (lstat(abs_path.c_str(), &m_stat) < 0)
-            return -1;
+        assert(!lstat(abs_path().c_str(), &m_stat));
 
         _rights();
         _format_size();
         if (is_symbolic_link())
-            _compute_real_name(abs_path);
+            _compute_real_name();
 
         return 0;
     }
@@ -191,7 +199,7 @@ namespace fs
 
     std::string Inode::rights() const { return m_rights; }
 
-    void Inode::_compute_real_name(const std::string& abs_path)
+    void Inode::_compute_real_name()
     {
         if (!is_symbolic_link())
             return;
@@ -206,7 +214,7 @@ namespace fs
         char *buf = new char[size];
         memset(buf, 0, size);
 
-        if (readlink(abs_path.c_str(), buf, size) < 0)
+        if (readlink(abs_path().c_str(), buf, size) < 0)
         {
             std::cerr << "Cannot readlink:" << name() << std::endl;
             assert(1);
@@ -220,6 +228,16 @@ namespace fs
     std::string Inode::name() const
     {
         return m_name;
+    }
+
+    std::string Inode::abs_path() const
+    {
+        if (m_parent == "")
+            return "/";
+        else if (m_parent == "/")
+            return m_parent + m_name;
+
+        return m_parent + "/" + m_name;
     }
 
     void Inode::_format_size()
@@ -238,4 +256,49 @@ namespace fs
     }
 
     std::string Inode::formated_size() const { return m_formated_size; }
+
+    std::string Inode::parent() const { return m_parent; }
+
+    Inode Inode::parent_node() const
+    {
+        if (m_parent == "/" || m_parent == "")
+            return {"", "/"};
+
+        auto index = m_parent.rfind("/");
+        assert(index != std::string::npos);
+        index++;
+        return {m_parent.substr(0, index-1), m_parent.substr(index)};
+    }
+
+    std::size_t Inode::load(std::vector<Inode> &files, std::vector<Inode> &dirs)
+    {
+        if (!is_directory())
+            return 0;
+
+        DIR *dir = opendir(abs_path().c_str());
+        struct dirent *drt;
+        assert(dir);
+        // TODO: links to directories must go to dirs
+        while ((drt = readdir(dir)))
+        {
+            if (drt->d_type != DT_DIR)
+            {
+                /* This is not a directory. */
+                files.emplace_back(abs_path(), drt->d_name);
+            }else
+            {
+                /* In case the m_name is . or .. */
+                size_t temp = strlen(drt->d_name);
+                if ((temp == 1 && drt->d_name[0] == '.') ||
+                    (temp == 2 && drt->d_name[0] == '.' && drt->d_name[1] == '.'))
+                {
+                    continue;
+                }
+                dirs.emplace_back(abs_path(), drt->d_name);
+            }
+        }
+
+        closedir(dir);
+        return files.size() + dirs.size();
+    }
 }

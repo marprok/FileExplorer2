@@ -7,6 +7,8 @@
 #include <linux/limits.h> // PATH_MAX
 #include <unistd.h> // readlink
 #include <cstring>
+#include <cstdlib>
+#include <vector>
 #include <string>
 #include <cassert>
 
@@ -15,13 +17,14 @@ namespace fs {
     {
     private:
         std::string m_name;
+        std::string m_parent;
         std::string m_rights;
         std::string m_real_name;
         std::string m_formated_size;
         struct stat m_stat;
     public:
 
-        Inode(const std::string& name);
+        Inode(const std::string& parent, const std::string& name);
 
         Inode(const Inode& other) = default;
 
@@ -33,7 +36,7 @@ namespace fs {
 
         ~Inode();
 
-        int stat(const std::string& abs_path);
+        int stat();
 
         //INode data access
         std::string device_number() const;
@@ -83,12 +86,21 @@ namespace fs {
 
         std::string name() const;
 
+        std::string abs_path() const;
+
         std::string formated_size() const;
+
+        std::string parent() const;
+
+        Inode parent_node() const;
+
+        std::size_t load(std::vector<Inode> &files, std::vector<Inode> &dirs);
+
     private:
         std::string _get_time(const struct timespec* tp) const;
         void _rights();
         void _format_size();
-        void _compute_real_name(const std::string& abs_path);
+        void _compute_real_name();
     };
 
 }

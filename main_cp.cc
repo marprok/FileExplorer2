@@ -1,71 +1,24 @@
+#include "inode.h"
+#include <vector>
 #include <iostream>
-#include <string>
-#include "inc/ordered_list.hpp"
 
-class Test
+int main(void)
 {
-public:
-    int t;
-    Test(int t)
-        :t(t)
-    {
-        std::cout << "constructor: " << this->t << std::endl;
-    }
+    fs::Inode inode("", "/");
+    auto parent = inode.parent_node();
+    std::cout << "parent: " << inode.parent() << " name: " << inode.name() << std::endl;
+    std::cout << "parent: " << parent.parent() << " name: " << parent.name() << std::endl;
 
-    Test(const Test& o)
-        :t(o.t)
-    {
-        std::cout << "copy constructor: " << this->t << std::endl;
-    }
+    std::vector<fs::Inode> files, dirs;
 
-    ~Test()
-    {
-        std::cout << "destructor: " << this->t << std::endl;
-    }
+    inode.load(files, dirs);
 
-    bool operator==(const Test& other) const
-    {
-        return t == other.t;
-    }
+    std::cout << "files:" << std::endl;
+    for (auto& file : files)
+        std::cout << "parent: " << file.parent() << " name: " << file.name() << std::endl;
+    std::cout << "dirs:" << std::endl;
+    for (auto& dir : dirs)
+        std::cout << "parent: " << dir.parent() << " name: " << dir.name() << std::endl;
 
-    bool operator<(const Test& other) const
-    {
-        return t < other.t;
-    }
-
-    bool operator>(const Test& other) const
-    {
-        return t > other.t;
-    }
-
-    bool operator>=(const Test& other) const
-    {
-        return t >= other.t;
-    }
-
-    bool operator<=(const Test& other) const
-    {
-        return t <= other.t;
-    }
-
-    bool operator!=(const Test& other) const
-    {
-        return t != other.t;
-    }
-
-};
-
-int main()
-{
-    fs::Ordered_list<Test*> ol;
-    ol.insert(new Test(2));
-    ol.insert(new Test(23));
-    ol.insert(new Test(-23));
-
-    for (auto tmp = ol.head(); tmp; tmp = tmp->next())
-    {
-        std::cout << tmp->data()->t << std::endl;
-        delete tmp->data();
-    }
     return 0;
 }
