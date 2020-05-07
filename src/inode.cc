@@ -266,6 +266,8 @@ namespace fs
 
         auto index = m_parent.rfind("/");
         assert(index != std::string::npos);
+        if (index == 0)
+            return {"/", m_parent.substr(1)};
         index++;
         return {m_parent.substr(0, index-1), m_parent.substr(index)};
     }
