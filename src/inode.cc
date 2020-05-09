@@ -2,13 +2,15 @@
 #include <vector>
 #include <dirent.h>
 #include <cassert>
-#include "inode.h"
+#include <fcntl.h>
+#include "../inc/inode.h"
 
 namespace fs
 {
     Inode::Inode(const std::string& parent, const std::string& name)
         :m_name(name), m_parent(parent)
     {
+        // TODO: what if parent is a hiden direcotiry?
         if (strstr(m_parent.c_str(), ".") || strstr(m_parent.c_str(), ".."))
         {
             char full_path[PATH_MAX] = {0};
@@ -36,7 +38,6 @@ namespace fs
     int Inode::stat()
     {
         assert(!lstat(abs_path().c_str(), &m_stat));
-
         _rights();
         _format_size();
         if (is_symbolic_link())
@@ -213,12 +214,7 @@ namespace fs
         size++;
         char *buf = new char[size];
         memset(buf, 0, size);
-
-        if (readlink(abs_path().c_str(), buf, size) < 0)
-        {
-            std::cerr << "Cannot readlink:" << name() << std::endl;
-            assert(1);
-        }
+        assert(readlink(abs_path().c_str(), buf, size) != 0);
         m_real_name = buf; /* Deep copy */
         delete[] buf;
     }
@@ -272,7 +268,7 @@ namespace fs
         return {m_parent.substr(0, index-1), m_parent.substr(index)};
     }
 
-    std::size_t Inode::load(std::vector<Inode> &files, std::vector<Inode> &dirs)
+    std::size_t Inode::load(std::vector<Inode> &files, std::vector<Inode> &dirs) const
     {
         if (!is_directory())
             return 0;
@@ -302,5 +298,41 @@ namespace fs
 
         closedir(dir);
         return files.size() + dirs.size();
+    }
+
+    bool Inode::move(const Inode& new_parent) const
+    {
+        const std::string new_path = new_parent.abs_path() + "/" + m_name;
+        return !(rename(abs_path().c_str(), new_path.c_str()) < 0);
+    }
+
+    bool Inode::remove() const
+    {
+        std::vector<Inode> files, dirs;
+        load(files, dirs);
+
+        for (auto& dir : dirs)
+            if (!dir.remove())
+                return false;
+
+        for (auto& file : files)
+            if (!file.remove())
+                return false;
+
+        if (is_directory())
+            return !(rmdir(abs_path().c_str()) < 0);
+        return !(unlink(abs_path().c_str()) < 0);
+    }
+
+    bool Inode::create_dir(const std::string &name) const
+    {
+        auto full_path = abs_path() + "/" + name;
+        return !(mkdir(full_path.c_str(), 0755) < 0);
+    }
+
+    bool Inode::create_file(const std::string &name) const
+    {
+        auto full_path = abs_path() + "/" + name;
+        return !(creat(full_path.c_str(), 0644) < 0);
     }
 }

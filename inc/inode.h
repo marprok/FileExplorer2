@@ -94,7 +94,15 @@ namespace fs {
 
         Inode parent_node() const;
 
-        std::size_t load(std::vector<Inode> &files, std::vector<Inode> &dirs);
+        std::size_t load(std::vector<Inode> &files, std::vector<Inode> &dirs) const;
+
+        bool move(const Inode& new_parent) const;
+
+        bool remove() const;
+
+        bool create_dir(const std::string &name) const;
+
+        bool create_file(const std::string &name) const;
 
     private:
         std::string _get_time(const struct timespec* tp) const;
