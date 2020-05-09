@@ -100,6 +100,8 @@ namespace fs {
 
         bool remove() const;
 
+        void copy(const Inode& new_parent) const;
+
         bool create_dir(const std::string &name) const;
 
         bool create_file(const std::string &name) const;

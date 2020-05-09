@@ -3,6 +3,8 @@
 #include <dirent.h>
 #include <cassert>
 #include <fcntl.h>
+#include <unistd.h>
+#include <sys/wait.h>
 #include "../inc/inode.h"
 
 namespace fs
@@ -308,20 +310,44 @@ namespace fs
 
     bool Inode::remove() const
     {
-        std::vector<Inode> files, dirs;
-        load(files, dirs);
+        pid_t pid = fork();
+        if (!pid)
+        {
+            int nothingness = open("/dev/null",O_WRONLY);
+            if (nothingness < 0)
+                exit(1);
+            dup2(nothingness, 1);
+            dup2(nothingness, 3);
+            close(nothingness);
+            execlp("rm", "rm", "-r", "-f", abs_path().c_str(), (char*)NULL);
+            exit(1);
+        }else
+        {
+            int status = 0;
+            waitpid(pid, &status, 0);
+        }
+        return true;
+    }
 
-        for (auto& dir : dirs)
-            if (!dir.remove())
-                return false;
-
-        for (auto& file : files)
-            if (!file.remove())
-                return false;
-
-        if (is_directory())
-            return !(rmdir(abs_path().c_str()) < 0);
-        return !(unlink(abs_path().c_str()) < 0);
+    void Inode::copy(const Inode& new_parent) const
+    {
+        const std::string new_path = new_parent.abs_path() + "/" + m_name;
+        pid_t pid = fork();
+        if (!pid)
+        {
+            int nothingness = open("/dev/null",O_WRONLY);
+            if (nothingness < 0)
+                exit(1);
+            dup2(nothingness, 1);
+            dup2(nothingness, 3);
+            close(nothingness);
+            execlp("cp", "cp", "-r", abs_path().c_str(), new_path.c_str(), (char*)NULL);
+            exit(1);
+        }else
+        {
+            int status = 0;
+            waitpid(pid, &status, 0);
+        }
     }
 
     bool Inode::create_dir(const std::string &name) const
