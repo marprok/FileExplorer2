@@ -47,10 +47,10 @@ static void load_current(fs::Inode &current,
     std::sort(files.begin(), files.end(), [] (const auto& l, const auto& r) { return l.abs_path() < r.abs_path(); });
 
     for (auto& dir : dirs)
-             vec.push_back(dir);
+        vec.push_back(std::move(dir));
 
     for (auto& file : files)
-             vec.push_back(file);
+        vec.push_back(std::move(file));
 }
 
 static void display_file_info(view::Terminal_window& window, const fs::Inode &inode)
@@ -213,98 +213,111 @@ int main()
             do_update = true;
             switch (key)
             {
-            case KEY_UP:
-                sv.move_up();
-                if (sv.selection_in_progress())
-                    sv.selection_append();
-                break;
-            case KEY_DOWN:
-                sv.move_down();
-                if (sv.selection_in_progress())
-                    sv.selection_append();
-                break;
-            case KEY_RIGHT:
-                if (sv.size() != 0 && selected_element.is_directory())
+                case KEY_UP:
+                    sv.move_up();
+                    if (sv.selection_in_progress())
+                        sv.selection_append();
+                    break;
+                case KEY_DOWN:
+                    sv.move_down();
+                    if (sv.selection_in_progress())
+                        sv.selection_append();
+                    break;
+                case KEY_RIGHT:
+                    if (sv.size() != 0 && selected_element.is_directory())
+                    {
+                        if (sv.selection_in_progress())
+                            sv.interupt_selection();
+                        current = selected_element;
+                        load_current(current, vec, &file_count, &dir_count);
+                        output_lines = calculate_lines(scene[LEFT], vec);
+                        sv.reset(0, output_lines, vec);
+                    }
+                    break;
+                case KEY_LEFT:
                 {
+                    if (current.name() == "/" && current.parent() == "")
+                        break;
+
                     if (sv.selection_in_progress())
                         sv.interupt_selection();
-                    current = selected_element;
+
+                    current = current.parent_node();
                     load_current(current, vec, &file_count, &dir_count);
                     output_lines = calculate_lines(scene[LEFT], vec);
                     sv.reset(0, output_lines, vec);
-                }
-                break;
-            case KEY_LEFT:
-            {
-                if (current.name() == "/" && current.parent() == "")
                     break;
-
-               if (sv.selection_in_progress())
-                   sv.interupt_selection();
-
-                current = current.parent_node();
-                load_current(current, vec, &file_count, &dir_count);
-                output_lines = calculate_lines(scene[LEFT], vec);
-                sv.reset(0, output_lines, vec);
-                break;
-            }
-            case KEY_RESIZE:
-                scene.resize();
-                output_lines = calculate_lines(scene[LEFT], vec);
-                sv.reset(0, output_lines, vec);
-                break;
-            case 'c':
-            {
-                std::vector<std::string> temp = { "File", "Directory" };
-                auto ret = scene.select(0.2f, 0.30f, 0.45f, 0.35f, temp);
-                auto name = scene.take_input(0.2f, 0.30f, 0.45f, 0.35f, "Create " + temp[ret]);
-                auto confirm = scene.ask(0.2f, 0.30f, 0.45f, 0.35f, "Create " + name + "?");
-                if (confirm)
+                }
+                case KEY_RESIZE:
+                    scene.resize();
+                    output_lines = calculate_lines(scene[LEFT], vec);
+                    sv.reset(0, output_lines, vec);
+                    break;
+                case 'c':
                 {
-                    if (ret == 0 && !current.create_file(name))
-                        utils::Log::the() << "Failed to create the file: " << name << "\n";
-                    else if (!current.create_dir(name))
-                        utils::Log::the() << "Failed to create the directory: " << name << "\n";
+                    std::vector<std::string> temp = { "File", "Directory" };
+                    auto ret = scene.select(0.2f, 0.30f, 0.45f, 0.35f, temp);
+                    auto name = scene.take_input(0.2f, 0.30f, 0.45f, 0.35f, "Create " + temp[ret]);
+                    auto confirm = scene.ask(0.2f, 0.30f, 0.45f, 0.35f, "Create " + name + "?");
+                    if (confirm)
+                    {
+                        if (ret == 0 && !current.create_file(name))
+                            utils::Log::the() << "Failed to create the file: " << name << "\n";
+                        else if (!current.create_dir(name))
+                            utils::Log::the() << "Failed to create the directory: " << name << "\n";
+                        current.stat();
+                        load_current(current, vec, &file_count, &dir_count);
+                        output_lines = calculate_lines(scene[LEFT], vec);
+                        sv.reset(0, output_lines, vec);
+                    }
+                    break;
+                }
+                case 'd':
+                    if (sv.size() == 0)
+                        break;
+                    selected_element.remove();
                     current.stat();
                     load_current(current, vec, &file_count, &dir_count);
                     output_lines = calculate_lines(scene[LEFT], vec);
                     sv.reset(0, output_lines, vec);
-                }
-                break;
-            }
-            case 'd':
-                if (sv.size() == 0)
                     break;
-                selected_element.remove();
-                current.stat();
-                load_current(current, vec, &file_count, &dir_count);
-                output_lines = calculate_lines(scene[LEFT], vec);
-                sv.reset(0, output_lines, vec);
-                break;
-            case 'm':
-                if (selection.empty())
-                    break;
+                case 'm':
+                    if (selection.empty())
+                        break;
 
-                for (auto& element : selection)
-                {
-                    if (!element.move(current))
-                        utils::Log::the() << "Failed to move: " << element.abs_path()
-                                          << " -> " << current.abs_path() << "\n";
-                }
-                //TODO: current should update it's timestamps via stat
-                current.stat();
-                load_current(current, vec, &file_count, &dir_count);
-                output_lines = calculate_lines(scene[LEFT], vec);
-                sv.reset(0, output_lines, vec);
-                selection.clear();
-                break;
-            case 's':
-                selection.clear();
-                sv.start_selection();
-                break;
-            case 'e':
-                selection = sv.end_selection();
-                break;
+                    for (auto& element : selection)
+                    {
+                        if (!element.move(current))
+                            utils::Log::the() << "Failed to move: " << element.abs_path()
+                                              << " -> " << current.abs_path() << "\n";
+                    }
+                    //TODO: current should update it's timestamps via stat
+                    current.stat();
+                    load_current(current, vec, &file_count, &dir_count);
+                    output_lines = calculate_lines(scene[LEFT], vec);
+                    sv.reset(0, output_lines, vec);
+                    selection.clear();
+                    break;
+                case 'p':
+                    if (selection.empty())
+                        break;
+
+                    for (auto& element : selection)
+                        element.copy(current);
+                    //TODO: current should update it's timestamps via stat
+                    current.stat();
+                    load_current(current, vec, &file_count, &dir_count);
+                    output_lines = calculate_lines(scene[LEFT], vec);
+                    sv.reset(0, output_lines, vec);
+                    selection.clear();
+                    break;
+                case 's':
+                    selection.clear();
+                    sv.start_selection();
+                    break;
+                case 'e':
+                    selection = sv.end_selection();
+                    break;
             }
         }
     }
