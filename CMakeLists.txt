@@ -12,7 +12,7 @@ set(SOURCES
     src/terminal_window.cc
     src/scene.cc
     src/query_manager.cc
-    src/node.cc
+    #src/node.cc
     src/inode.cc
 	src/log.cc
 )
