@@ -88,8 +88,13 @@ static void display_file_info(view::Terminal_window& window, const fs::Inode &in
 
 int main()
 {
-    std::size_t output_lines;
-    utils::Log::set_output("/home/marios/.felog");
+    // take the name of the current user
+    uid_t uid = getuid();
+    struct passwd* pw = getpwuid(uid);
+    std::string user = pw->pw_name;
+    std::string home = pw->pw_dir;
+
+    utils::Log::set_output(home + "/.felog");
     // Setup the scene
     view::Scene &scene = view::Scene::the();
     scene.add_window(0.8f, 0.5f, 0.0f, 0.0f);
@@ -102,16 +107,11 @@ int main()
     // Explicitly set the inout window
     scene.set_input_window(LEFT);
     keypad(*scene.get_input_window(), true);
-    // take the name of the current user
-    uid_t uid = getuid();
-
-    struct passwd* pw = getpwuid(uid);
-    std::string user = pw->pw_name;
-    std::string home = pw->pw_dir;
 
     // Create and initialize the nececary data structures
     std::vector<fs::Inode> vec;
     int key = 0;
+    std::size_t output_lines;
     std::size_t index = 0;
     std::size_t file_count, dir_count;
     fs::Inode current("/home", user);
@@ -263,7 +263,7 @@ int main()
                     {
                         if (ret == 0 && !current.create_file(name))
                             utils::Log::the() << "Failed to create the file: " << name << "\n";
-                        else if (!current.create_dir(name))
+                        else if (ret == 1 && !current.create_dir(name))
                             utils::Log::the() << "Failed to create the directory: " << name << "\n";
                         current.stat();
                         load_current(current, vec, &file_count, &dir_count);
@@ -273,13 +273,20 @@ int main()
                     break;
                 }
                 case 'd':
-                    if (sv.size() == 0)
+                    if (selection.empty())
                         break;
-                    selected_element.remove();
+
+                    for (auto& element : selection)
+                    {
+                        if (!element.remove())
+                            utils::Log::the() << "Failed to delete: " << element.abs_path()
+                                              << " from " << current.abs_path() << "\n";
+                    }
                     current.stat();
                     load_current(current, vec, &file_count, &dir_count);
                     output_lines = calculate_lines(scene[LEFT], vec);
                     sv.reset(0, output_lines, vec);
+                    selection.clear();
                     break;
                 case 'm':
                     if (selection.empty())
@@ -291,7 +298,6 @@ int main()
                             utils::Log::the() << "Failed to move: " << element.abs_path()
                                               << " -> " << current.abs_path() << "\n";
                     }
-                    //TODO: current should update it's timestamps via stat
                     current.stat();
                     load_current(current, vec, &file_count, &dir_count);
                     output_lines = calculate_lines(scene[LEFT], vec);
@@ -303,8 +309,11 @@ int main()
                         break;
 
                     for (auto& element : selection)
-                        element.copy(current);
-                    //TODO: current should update it's timestamps via stat
+                    {
+                        if (!element.copy(current))
+                            utils::Log::the() << "Failed to copy: " << element.abs_path()
+                                              << " -> " << current.abs_path() << "\n";
+                    }
                     current.stat();
                     load_current(current, vec, &file_count, &dir_count);
                     output_lines = calculate_lines(scene[LEFT], vec);

@@ -41,7 +41,8 @@ namespace fs
     {
         assert(!lstat(abs_path().c_str(), &m_stat));
         _rights();
-        _format_size();
+        if (!is_directory())
+            _format_size();
         if (is_symbolic_link())
             _compute_real_name();
 
@@ -276,8 +277,9 @@ namespace fs
             return 0;
 
         DIR *dir = opendir(abs_path().c_str());
+        if (!dir)
+            return 0;
         struct dirent *drt;
-        assert(dir);
         // TODO: links to directories must go to dirs
         while ((drt = readdir(dir)))
         {
@@ -304,8 +306,23 @@ namespace fs
 
     bool Inode::move(const Inode& new_parent) const
     {
-        const std::string new_path = new_parent.abs_path() + "/" + m_name;
-        return !(rename(abs_path().c_str(), new_path.c_str()) < 0);
+        pid_t pid = fork();
+        if (!pid)
+        {
+            int nothingness = open("/dev/null",O_WRONLY);
+            if (nothingness < 0)
+                _exit(127);
+            dup2(nothingness, 1);
+            dup2(nothingness, 2);
+            close(nothingness);
+            execlp("mv", "mv", abs_path().c_str(), new_parent.abs_path().c_str(), (char*)NULL);
+            _exit(127);
+        }
+
+        assert(pid != -1);
+        int status = 0;
+        waitpid(pid, &status, 0);
+        return WIFEXITED(status) && WEXITSTATUS(status) == 0;
     }
 
     bool Inode::remove() const
@@ -315,21 +332,21 @@ namespace fs
         {
             int nothingness = open("/dev/null",O_WRONLY);
             if (nothingness < 0)
-                exit(1);
+                _exit(127);
             dup2(nothingness, 1);
-            dup2(nothingness, 3);
+            dup2(nothingness, 2);
             close(nothingness);
             execlp("rm", "rm", "-r", "-f", abs_path().c_str(), (char*)NULL);
-            exit(1);
-        }else
-        {
-            int status = 0;
-            waitpid(pid, &status, 0);
+            _exit(127);
         }
-        return true;
+
+        assert(pid != -1);
+        int status = 0;
+        waitpid(pid, &status, 0);
+        return WIFEXITED(status) && WEXITSTATUS(status) == 0;
     }
 
-    void Inode::copy(const Inode& new_parent) const
+    bool Inode::copy(const Inode& new_parent) const
     {
         const std::string new_path = new_parent.abs_path() + "/" + m_name;
         pid_t pid = fork();
@@ -337,28 +354,29 @@ namespace fs
         {
             int nothingness = open("/dev/null",O_WRONLY);
             if (nothingness < 0)
-                exit(1);
+                _exit(127);
             dup2(nothingness, 1);
-            dup2(nothingness, 3);
+            dup2(nothingness, 2);
             close(nothingness);
             execlp("cp", "cp", "-r", abs_path().c_str(), new_path.c_str(), (char*)NULL);
-            exit(1);
-        }else
-        {
-            int status = 0;
-            waitpid(pid, &status, 0);
+            _exit(127);
         }
+
+        assert(pid != -1);
+        int status = 0;
+        waitpid(pid, &status, 0);
+        return WIFEXITED(status) && WEXITSTATUS(status) == 0;
     }
 
     bool Inode::create_dir(const std::string &name) const
     {
         auto full_path = abs_path() + "/" + name;
-        return !(mkdir(full_path.c_str(), 0755) < 0);
+        return mkdir(full_path.c_str(), 0755) != -1;
     }
 
     bool Inode::create_file(const std::string &name) const
     {
         auto full_path = abs_path() + "/" + name;
-        return !(creat(full_path.c_str(), 0644) < 0);
+        return creat(full_path.c_str(), 0644) != -1;
     }
 }

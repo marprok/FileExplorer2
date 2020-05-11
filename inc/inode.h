@@ -38,12 +38,11 @@ namespace fs {
 
         int stat();
 
-        //INode data access
+        // INode data access
         std::string device_number() const;
 
         std::string inode_number() const;
 
-        //file type and mode
         bool is_socket() const;
 
         bool is_symbolic_link() const;
@@ -79,7 +78,7 @@ namespace fs {
 
         std::string last_status_changed() const;
 
-        // utility methods
+        // Utility methods
         std::string rights() const;
 
         std::string real_name() const;
@@ -100,7 +99,7 @@ namespace fs {
 
         bool remove() const;
 
-        void copy(const Inode& new_parent) const;
+        bool copy(const Inode& new_parent) const;
 
         bool create_dir(const std::string &name) const;
 
