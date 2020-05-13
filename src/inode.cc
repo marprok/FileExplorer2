@@ -9,16 +9,61 @@
 
 namespace fs
 {
-    Inode::Inode(const std::string& parent, const std::string& name)
-        :m_name(name), m_parent(parent)
+    Inode::Absolute_path::Absolute_path(const std::string &abs_path)
+        :m_abs_path(abs_path)
     {
-        // TODO: what if parent is a hiden direcotiry?
-        if (strstr(m_parent.c_str(), ".") || strstr(m_parent.c_str(), ".."))
-        {
-            char full_path[PATH_MAX] = {0};
-            assert(realpath(m_parent.c_str(), full_path));
-            m_parent = full_path;
-        }
+
+    }
+
+    std::string Inode::Absolute_path::parent_part() const
+    {
+        if (m_abs_path == "/" || m_abs_path == "")
+            return "";
+
+        auto index = m_abs_path.rfind("/");
+        assert(index != std::string::npos);
+
+        if (index == 0)
+            return "/";
+
+        return m_abs_path.substr(0, index);
+    }
+
+    std::string Inode::Absolute_path::name_part() const
+    {
+        if ( m_abs_path == "" )
+            return "";
+        else if ( m_abs_path == "/" )
+            return "/";
+
+        auto index = m_abs_path.rfind("/");
+        assert(index != std::string::npos);
+
+        if (index == 0)
+            return  m_abs_path.substr(1);
+
+        index++;
+        return m_abs_path.substr(index);
+    }
+
+    const std::string& Inode::Absolute_path::path() const
+    {
+        return m_abs_path;
+    }
+
+    std::string Inode::Absolute_path::append(const std::string &part) const
+    {
+        if (m_abs_path == "")
+            return part;
+        else if (m_abs_path == "/")
+            return m_abs_path + part;
+        return m_abs_path + "/" + part;
+    }
+
+    Inode::Inode(const std::string& abs_path)
+        :m_abs_path(abs_path),
+         m_name(m_abs_path.name_part())
+    {
         stat();
     }
 
@@ -39,7 +84,7 @@ namespace fs
 
     int Inode::stat()
     {
-        assert(!lstat(abs_path().c_str(), &m_stat));
+        assert(!lstat(m_abs_path.path().c_str(), &m_stat));
         _rights();
         if (!is_directory())
             _format_size();
@@ -217,7 +262,7 @@ namespace fs
         size++;
         char *buf = new char[size];
         memset(buf, 0, size);
-        assert(readlink(abs_path().c_str(), buf, size) != 0);
+        assert(readlink(m_abs_path.path().c_str(), buf, size) != 0);
         m_real_name = buf; /* Deep copy */
         delete[] buf;
     }
@@ -231,12 +276,7 @@ namespace fs
 
     std::string Inode::abs_path() const
     {
-        if (m_parent == "")
-            return "/";
-        else if (m_parent == "/")
-            return m_parent + m_name;
-
-        return m_parent + "/" + m_name;
+        return m_abs_path.path();
     }
 
     void Inode::_format_size()
@@ -256,19 +296,11 @@ namespace fs
 
     std::string Inode::formated_size() const { return m_formated_size; }
 
-    std::string Inode::parent() const { return m_parent; }
+    std::string Inode::parent() const { return m_abs_path.parent_part(); }
 
     Inode Inode::parent_node() const
     {
-        if (m_parent == "/" || m_parent == "")
-            return {"", "/"};
-
-        auto index = m_parent.rfind("/");
-        assert(index != std::string::npos);
-        if (index == 0)
-            return {"/", m_parent.substr(1)};
-        index++;
-        return {m_parent.substr(0, index-1), m_parent.substr(index)};
+        return {m_abs_path.parent_part()};
     }
 
     std::size_t Inode::load(std::vector<Inode> &files, std::vector<Inode> &dirs) const
@@ -276,17 +308,16 @@ namespace fs
         if (!is_directory())
             return 0;
 
-        DIR *dir = opendir(abs_path().c_str());
+        DIR *dir = opendir(m_abs_path.path().c_str());
         if (!dir)
             return 0;
         struct dirent *drt;
-        // TODO: links to directories must go to dirs
         while ((drt = readdir(dir)))
         {
             if (drt->d_type != DT_DIR)
             {
                 /* This is not a directory. */
-                files.emplace_back(abs_path(), drt->d_name);
+                files.emplace_back(m_abs_path.append(drt->d_name));
             }else
             {
                 /* In case the m_name is . or .. */
@@ -296,7 +327,7 @@ namespace fs
                 {
                     continue;
                 }
-                dirs.emplace_back(abs_path(), drt->d_name);
+                dirs.emplace_back(m_abs_path.append(drt->d_name));
             }
         }
 
@@ -315,7 +346,7 @@ namespace fs
             dup2(nothingness, 1);
             dup2(nothingness, 2);
             close(nothingness);
-            execlp("mv", "mv", abs_path().c_str(), new_parent.abs_path().c_str(), (char*)NULL);
+            execlp("mv", "mv", m_abs_path.path().c_str(), new_parent.m_abs_path.path().c_str(), (char*)NULL);
             _exit(127);
         }
 
@@ -336,7 +367,7 @@ namespace fs
             dup2(nothingness, 1);
             dup2(nothingness, 2);
             close(nothingness);
-            execlp("rm", "rm", "-r", "-f", abs_path().c_str(), (char*)NULL);
+            execlp("rm", "rm", "-r", "-f", m_abs_path.path().c_str(), (char*)NULL);
             _exit(127);
         }
 
@@ -348,7 +379,7 @@ namespace fs
 
     bool Inode::copy(const Inode& new_parent) const
     {
-        const std::string new_path = new_parent.abs_path() + "/" + m_name;
+        const std::string new_path = new_parent.m_abs_path.append(m_name);
         pid_t pid = fork();
         if (!pid)
         {
@@ -358,7 +389,7 @@ namespace fs
             dup2(nothingness, 1);
             dup2(nothingness, 2);
             close(nothingness);
-            execlp("cp", "cp", "-r", abs_path().c_str(), new_path.c_str(), (char*)NULL);
+            execlp("cp", "cp", "-r", m_abs_path.path().c_str(), new_path.c_str(), (char*)NULL);
             _exit(127);
         }
 
@@ -370,13 +401,13 @@ namespace fs
 
     bool Inode::create_dir(const std::string &name) const
     {
-        auto full_path = abs_path() + "/" + name;
+        auto full_path = m_abs_path.append(name);
         return mkdir(full_path.c_str(), 0755) != -1;
     }
 
     bool Inode::create_file(const std::string &name) const
     {
-        auto full_path = abs_path() + "/" + name;
+        auto full_path = m_abs_path.append(name);
         return creat(full_path.c_str(), 0644) != -1;
     }
 }

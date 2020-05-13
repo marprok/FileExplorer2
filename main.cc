@@ -114,7 +114,7 @@ int main()
     std::size_t output_lines;
     std::size_t index = 0;
     std::size_t file_count, dir_count;
-    fs::Inode current("/home", user);
+    fs::Inode current(home);
     load_current(current, vec, &file_count, &dir_count);
     output_lines = calculate_lines(scene[LEFT], vec);
     utils::scrollable_vector<fs::Inode> sv(0, output_lines, vec);

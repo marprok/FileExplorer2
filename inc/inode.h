@@ -16,15 +16,35 @@ namespace fs {
     class Inode
     {
     private:
+
+        class Absolute_path
+        {
+        private:
+            std::string m_abs_path;
+
+        public:
+            Absolute_path(const std::string &abs_path);
+
+            std::string parent_part() const;
+
+            std::string name_part() const;
+
+            const std::string& path() const;
+
+            std::string append(const std::string &part) const;
+
+        };
+
+        Absolute_path m_abs_path;
         std::string m_name;
-        std::string m_parent;
         std::string m_rights;
         std::string m_real_name;
         std::string m_formated_size;
         struct stat m_stat;
+
     public:
 
-        Inode(const std::string& parent, const std::string& name);
+        Inode(const std::string& parent);
 
         Inode(const Inode& other) = default;
 
