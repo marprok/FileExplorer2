@@ -4,10 +4,7 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <iostream>
-#include <linux/limits.h> // PATH_MAX
-#include <unistd.h> // readlink
 #include <cstring>
-#include <cstdlib>
 #include <vector>
 #include <string>
 #include <cassert>
@@ -23,6 +20,7 @@ namespace fs {
             std::string m_abs_path;
 
         public:
+
             Absolute_path(const std::string &abs_path);
 
             std::string parent_part() const;

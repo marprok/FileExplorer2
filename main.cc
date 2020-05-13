@@ -132,10 +132,10 @@ int main()
 
         if (do_update)
         {
-            /* Clear the windows and rebox them */
+            // Clear the windows and rebox them
             scene.erase();
             scene.rebox();
-            /* Draw things on the windows */
+            // Draw things on the windows
             if (sv.size() != 0)
             {
                 for (std::size_t i = 0; i < output_lines && i < sv.size(); ++i)
@@ -151,7 +151,7 @@ int main()
                     if (i == index)
                         attr |= A_STANDOUT;
 
-                    /* +1 because it is a boxed window */
+                    // +1 because it is a boxed window
                     scene[LEFT].print_left(static_cast<int>(i+1), sv[i].name() + (sv[i].is_symbolic_link() ? "*" : ""), attr);
                     if (!sv[i].is_directory())
                         scene[LEFT].print_right(static_cast<int>(i+1), sv[i].formated_size(), attr);
@@ -176,7 +176,7 @@ int main()
                                 attr = COLOR_PAIR(1);
                             else
                                 attr = COLOR_PAIR(4);
-                            /* +1 because it is a boxed window */
+                            // +1 because it is a boxed window
                             scene[RIGHT].print_left(static_cast<int>(i+1), other_vec[i].name() + (other_vec[i].is_symbolic_link() ? "*" : ""), attr);
                             if (!other_vec[i].is_directory())
                                 scene[RIGHT].print_right(static_cast<int>(i+1), other_vec[i].formated_size(), attr);
@@ -204,7 +204,7 @@ int main()
         scene[BOTTOM].print_left(2, current.abs_path(), A_UNDERLINE | COLOR_PAIR(3));
         scene[BOTTOM].print_center(3, "[c]reate [d]elete [m]ove [s]elect [e]nd");
 
-        /* Refresh the windowws and wait for an event */
+        // Refresh the windowws and wait for an event
         scene.refresh();
         if ((scene >> key) == ERR)
             do_update = false;
