@@ -9,55 +9,55 @@
 
 namespace fs
 {
-    Inode::Absolute_path::Absolute_path(const std::string &abs_path)
-        :m_abs_path(abs_path)
+    Inode::Absolute_path::Absolute_path(const std::string &path)
+        :m_path(path)
     {
 
     }
 
     std::string Inode::Absolute_path::parent_part() const
     {
-        if (m_abs_path == "/" || m_abs_path == "")
+        if (m_path == "/" || m_path == "")
             return "";
 
-        auto index = m_abs_path.rfind("/");
+        auto index = m_path.rfind("/");
         assert(index != std::string::npos);
 
         if (index == 0)
             return "/";
 
-        return m_abs_path.substr(0, index);
+        return m_path.substr(0, index);
     }
 
     std::string Inode::Absolute_path::name_part() const
     {
-        if ( m_abs_path == "" )
+        if ( m_path == "" )
             return "";
-        else if ( m_abs_path == "/" )
+        else if ( m_path == "/" )
             return "/";
 
-        auto index = m_abs_path.rfind("/");
+        auto index = m_path.rfind("/");
         assert(index != std::string::npos);
 
         if (index == 0)
-            return  m_abs_path.substr(1);
+            return  m_path.substr(1);
 
         index++;
-        return m_abs_path.substr(index);
+        return m_path.substr(index);
     }
 
     const std::string& Inode::Absolute_path::path() const
     {
-        return m_abs_path;
+        return m_path;
     }
 
     std::string Inode::Absolute_path::append(const std::string &part) const
     {
-        if (m_abs_path == "")
+        if (m_path == "")
             return part;
-        else if (m_abs_path == "/")
-            return m_abs_path + part;
-        return m_abs_path + "/" + part;
+        else if (m_path == "/")
+            return m_path + part;
+        return m_path + "/" + part;
     }
 
     Inode::Inode(const std::string& abs_path)

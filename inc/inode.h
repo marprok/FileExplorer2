@@ -17,11 +17,11 @@ namespace fs {
         class Absolute_path
         {
         private:
-            std::string m_abs_path;
+            std::string m_path;
 
         public:
 
-            Absolute_path(const std::string &abs_path);
+            Absolute_path(const std::string &path);
 
             std::string parent_part() const;
 
