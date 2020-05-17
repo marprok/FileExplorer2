@@ -4,6 +4,7 @@
 #include <cassert>
 #include <unistd.h>
 #include <pwd.h>
+#include <linux/limits.h>
 #include "inc/scene.h"
 #include "inc/scroll_vector.hpp"
 #include "inc/inode.h"
@@ -86,6 +87,17 @@ static void display_file_info(view::Terminal_window& window, const fs::Inode &in
     }
 }
 
+static std::string get_cwd()
+{
+    char buff[PATH_MAX] = {0};
+    std::string cwd = "";
+    if (!getcwd(buff, sizeof(buff)))
+        utils::Log::the() << "Can't get the cwd\n";
+    else
+        cwd = buff;
+    return cwd;
+}
+
 int main()
 {
     // take the name of the current user
@@ -93,8 +105,9 @@ int main()
     struct passwd* pw = getpwuid(uid);
     std::string user = pw->pw_name;
     std::string home = pw->pw_dir;
-
     utils::Log::set_output(home + "/.felog");
+    std::string cwd = get_cwd();
+
     // Setup the scene
     view::Scene &scene = view::Scene::the();
     scene.add_window(0.8f, 0.5f, 0.0f, 0.0f);
@@ -114,14 +127,16 @@ int main()
     std::size_t output_lines;
     std::size_t index = 0;
     std::size_t file_count, dir_count;
-    fs::Inode current(home);
+    bool do_update = true;
+    char time_buf[32] = {0};
+
+    fs::Inode current(cwd);
     load_current(current, vec, &file_count, &dir_count);
     output_lines = calculate_lines(scene[LEFT], vec);
+
     utils::scrollable_vector<fs::Inode> sv(0, output_lines, vec);
     std::vector<fs::Inode> selection;
     std::time_t time;
-    bool do_update = true;
-    char time_buf[32] = {0};
 
     while (key != KEY_END)
     {
