@@ -157,20 +157,23 @@ int main()
                 {
                     attr_t attr = 0;
                     if (sv.is_selected(i))
-                        attr = COLOR_PAIR(2);
+                        attr = COLOR_PAIR(3);
                     else if (sv[i].is_directory())
                         attr = COLOR_PAIR(1);
-                    else
+                    else if (sv[i].is_symbolic_link())
                         attr = COLOR_PAIR(4);
+                    else if (sv[i].is_executable())
+                        attr = COLOR_PAIR(2);
+                    else
+                        attr = COLOR_PAIR(0);
 
                     if (i == index)
                         attr |= A_STANDOUT;
 
                     // +1 because it is a boxed window
-                    scene[LEFT].print_left(static_cast<int>(i+1), sv[i].name() + (sv[i].is_symbolic_link() ? "*" : ""), attr);
+                    scene[LEFT].print_left(static_cast<int>(i+1), sv[i].name(), attr);
                     if (!sv[i].is_directory())
                         scene[LEFT].print_right(static_cast<int>(i+1), sv[i].formated_size(), attr);
-
                 }
                 if (selected_element.is_regular_file() ||
                     selected_element.is_symbolic_link())
@@ -189,10 +192,15 @@ int main()
                             attr_t attr = 0;
                             if (other_vec[i].is_directory())
                                 attr = COLOR_PAIR(1);
-                            else
+                            else if (other_vec[i].is_symbolic_link())
                                 attr = COLOR_PAIR(4);
+                            else if (other_vec[i].is_executable())
+                                attr = COLOR_PAIR(2);
+                            else
+                                attr = COLOR_PAIR(0);
+
                             // +1 because it is a boxed window
-                            scene[RIGHT].print_left(static_cast<int>(i+1), other_vec[i].name() + (other_vec[i].is_symbolic_link() ? "*" : ""), attr);
+                            scene[RIGHT].print_left(static_cast<int>(i+1), other_vec[i].name(), attr);
                             if (!other_vec[i].is_directory())
                                 scene[RIGHT].print_right(static_cast<int>(i+1), other_vec[i].formated_size(), attr);
                         }
@@ -217,7 +225,7 @@ int main()
         if (!selection.empty())
             scene[BOTTOM].print(" selection: " + std::to_string(selection.size()));
         scene[BOTTOM].print_left(2, current.abs_path(), A_UNDERLINE | COLOR_PAIR(3));
-        scene[BOTTOM].print_center(3, "[c]reate [d]elete [m]ove [s]elect [e]nd");
+        scene[BOTTOM].print_center(scene[BOTTOM].lines()-1, "[c]reate [d]elete [m]ove [s]elect [e]nd");
 
         // Refresh the windowws and wait for an event
         scene.refresh();
