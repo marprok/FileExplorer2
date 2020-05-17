@@ -31,6 +31,7 @@ namespace utils
     Log& Log::operator <<(const std::string& text)
     {
         m_log_stream << text;
+        m_log_stream.flush();
         return *this;
     }
 }
