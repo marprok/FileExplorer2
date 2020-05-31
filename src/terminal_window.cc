@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <cmath>
 #include "../inc/terminal_window.h"
 
 namespace view
@@ -17,10 +18,10 @@ namespace view
          m_cursor_x(0),
          m_cursor_y(0)
     {
-        m_window = newwin(static_cast<int>(m_per_lines*LINES),
-                          static_cast<int>(m_per_cols*COLS),
-                          static_cast<int>(m_begin_y*LINES),
-                          static_cast<int>(m_begin_x*COLS));
+        m_window = newwin(this->lines(),
+                          this->cols(),
+                          this->y(),
+                          this->x());
     }
 
     Terminal_window::Terminal_window()
@@ -63,8 +64,8 @@ namespace view
     int Terminal_window::_resize()
     {
         return wresize(operator*(),
-                       static_cast<int>(m_per_lines*LINES),
-                       static_cast<int>(m_per_cols*COLS)
+                       this->lines(),
+                       this->cols()
                        );
     }
 
@@ -197,8 +198,8 @@ namespace view
         }else
         {
             return ::mvwin(m_window,
-                           static_cast<int>(m_begin_y*LINES),
-                           static_cast<int>(m_begin_x*COLS));
+                           this->y(),
+                           this->x());
         }
 
     }
@@ -228,22 +229,22 @@ namespace view
 
     int Terminal_window::cols() const
     {
-        return static_cast<int>(m_per_cols*COLS);
+        return static_cast<int>(std::floor(m_per_cols*COLS));
     }
 
     int Terminal_window::lines() const
     {
-        return static_cast<int>(m_per_lines*LINES);
+        return static_cast<int>(std::floor(m_per_lines*LINES));
     }
 
     int Terminal_window::y() const
     {
-        return static_cast<int>(m_begin_y*LINES);
+        return static_cast<int>(std::ceil(m_begin_y*LINES));
     }
 
     int Terminal_window::x() const
     {
-        return static_cast<int>(m_begin_x*COLS);
+        return static_cast<int>(std::ceil(m_begin_x*COLS));
     }
 
     void Terminal_window::set_cols(float cols)
@@ -282,9 +283,9 @@ namespace view
         if (m_window)
             this->delwin();
 
-        m_window = newwin(static_cast<int>(m_per_lines*LINES),
-                          static_cast<int>(m_per_cols*COLS),
-                          static_cast<int>(m_begin_y*LINES),
-                          static_cast<int>(m_begin_x*COLS));
+        m_window = newwin(this->lines(),
+                          this->cols(),
+                          this->y(),
+                          this->x());
     }
 }
