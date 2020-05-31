@@ -182,7 +182,6 @@ int main()
                 }else if (selected_element.is_directory())
                 {
                     std::vector<fs::Inode> other_vec;
-                    std::size_t fc, dc;
                     load_current(selected_element, other_vec);
                     if (other_vec.size() != 0)
                     {
@@ -216,6 +215,8 @@ int main()
         // we use this because std::ctime adds a newline in the end of the string...
         std::strftime(time_buf, sizeof(time_buf), "%c", std::localtime(&time));
 
+        scene[BOTTOM].erase();
+        scene[BOTTOM].rebox();
         scene[BOTTOM].print_left(1, "[" + user + "] ", COLOR_PAIR(2));
         scene[BOTTOM].print(std::string(time_buf) + " ");
         scene[BOTTOM].print(std::to_string(file_count), COLOR_PAIR(4));
