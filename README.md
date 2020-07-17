@@ -1,5 +1,4 @@
 # FileExplorer2
-A better version of [FileExplorer](https://github.com/marprok/FileExplorer).
 
 ## This project was made for fun and does not aim to be efficient in any way!
 
