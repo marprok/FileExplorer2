@@ -9,60 +9,8 @@
 
 namespace fs
 {
-    Inode::Absolute_path::Absolute_path(const std::string &path)
-        :m_path(path)
-    {
-
-    }
-
-    std::string Inode::Absolute_path::parent_part() const
-    {
-        if (m_path == "/" || m_path == "")
-            return "";
-
-        auto index = m_path.rfind("/");
-        assert(index != std::string::npos);
-
-        if (index == 0)
-            return "/";
-
-        return m_path.substr(0, index);
-    }
-
-    std::string Inode::Absolute_path::name_part() const
-    {
-        if ( m_path == "" )
-            return "";
-        else if ( m_path == "/" )
-            return "/";
-
-        auto index = m_path.rfind("/");
-        assert(index != std::string::npos);
-
-        if (index == 0)
-            return  m_path.substr(1);
-
-        index++;
-        return m_path.substr(index);
-    }
-
-    const std::string& Inode::Absolute_path::path() const
-    {
-        return m_path;
-    }
-
-    std::string Inode::Absolute_path::append(const std::string &part) const
-    {
-        if (m_path == "")
-            return part;
-        else if (m_path == "/")
-            return m_path + part;
-        return m_path + "/" + part;
-    }
-
     Inode::Inode(const std::string& abs_path)
-        :m_abs_path(abs_path),
-         m_name(m_abs_path.name_part())
+        :m_path(abs_path)
     {
         stat();
     }
@@ -82,225 +30,237 @@ namespace fs
         return buf;
     }
 
-    int Inode::stat()
+    void Inode::stat()
     {
-        assert(!lstat(m_abs_path.path().c_str(), &m_stat));
-        _rights();
+        struct stat sstat;
+        assert(!lstat(m_path.string().c_str(), &sstat));
+        _rights(sstat);
+
+        m_name = m_path.filename();
+        m_mode = sstat.st_mode;
+        m_last_accessed = _get_time(&sstat.st_atim);
+        m_last_modified = _get_time(&sstat.st_mtim);
+        m_last_changed = _get_time(&sstat.st_ctim);
+        m_dev_num = std::to_string(sstat.st_dev);
+        m_inode_num = std::to_string(sstat.st_ino);
+        m_hard_links = std::to_string(sstat.st_nlink);
+        m_size = std::to_string(sstat.st_size);
+        m_uid = std::to_string(sstat.st_uid);
+        m_gid = std::to_string(sstat.st_gid);
+        m_dev_id = std::to_string(sstat.st_rdev);
+        m_block_size = std::to_string(sstat.st_blksize);
+        m_blocks = std::to_string(sstat.st_blocks);
+
         if (!is_directory())
-            _format_size();
+            _format_size(sstat);
+
         if (is_symbolic_link())
-            _compute_real_name();
-
-        return 0;
+            _compute_real_name(sstat);
     }
 
-    std::string Inode::device_number() const
+    const std::string& Inode::device_number() const
     {
-        return std::to_string(m_stat.st_dev);
+        return m_dev_num;
     }
 
-    std::string Inode::inode_number() const
+    const std::string& Inode::inode_number() const
     {
-        return std::to_string(m_stat.st_ino);
+        return m_inode_num;
     }
 
     bool Inode::is_socket() const
     {
-        return S_ISSOCK(m_stat.st_mode);
+        return S_ISSOCK(m_mode);
     }
 
     bool Inode::is_symbolic_link() const
     {
-        return S_ISLNK(m_stat.st_mode);
+        return S_ISLNK(m_mode);
     }
 
     bool Inode::is_regular_file() const
     {
-        return S_ISREG(m_stat.st_mode);
+        return S_ISREG(m_mode);
     }
 
     bool Inode::Inode::is_block_device() const
     {
-        return S_ISBLK(m_stat.st_mode);
+        return S_ISBLK(m_mode);
     }
 
     bool Inode::is_directory() const
     {
-        return S_ISDIR(m_stat.st_mode);
+        return S_ISDIR(m_mode);
     }
 
     bool Inode::is_character_device() const
     {
-        return S_ISCHR(m_stat.st_mode);
+        return S_ISCHR(m_mode);
     }
 
     bool Inode::is_executable() const
     {
-        return (m_stat.st_mode & S_IXUSR)
-               && (m_stat.st_mode & S_IXGRP)
-               && (m_stat.st_mode & S_IXOTH);
+        return (m_mode & S_IXUSR)
+               && (m_mode & S_IXGRP)
+               && (m_mode & S_IXOTH);
     }
 
 
-    std::string Inode::hard_link_count() const
+    const std::string& Inode::hard_link_count() const
     {
-        return std::to_string(m_stat.st_nlink);
+        return m_hard_links;
     }
 
-    std::string Inode::size() const
+    const std::string& Inode::size() const
     {
-        return std::to_string(m_stat.st_size);
+        return m_size;
     }
 
-    std::string Inode::uid() const
+    const std::string& Inode::uid() const
     {
-        return std::to_string(m_stat.st_uid);
+        return m_uid;
     }
 
-    std::string Inode::guid() const
+    const std::string& Inode::gid() const
     {
-        return std::to_string(m_stat.st_gid);
+        return m_gid;
     }
 
-    std::string Inode::device_id() const
+    const std::string& Inode::device_id() const
     {
-        return std::to_string(m_stat.st_rdev);
+        return m_dev_id;
     }
 
-    std::string Inode::block_size() const
+    const std::string& Inode::block_size() const
     {
-        return std::to_string(m_stat.st_blksize);
+        return m_block_size;
     }
 
-    std::string Inode::blocks521B_allocated() const
+    const std::string& Inode::blocks521B_allocated() const
     {
-        return std::to_string(m_stat.st_blocks);
+        return m_blocks;
     }
 
-    std::string Inode::last_accessed() const
+    const std::string& Inode::last_accessed() const
     {
-        return _get_time(&m_stat.st_atim);
+        return m_last_accessed;
     }
 
-    std::string Inode::last_modified() const
+    const std::string& Inode::last_modified() const
     {
-        return _get_time(&m_stat.st_mtim);
+        return m_last_modified;
     }
 
-    std::string Inode::last_status_changed() const
+    const std::string& Inode::last_status_changed() const
     {
-        return _get_time(&m_stat.st_ctim);
+        return m_last_changed;
     }
 
-    void Inode::_rights()
+    void Inode::_rights(const struct stat& sstat)
     {
         std::string temp;
         /* Owner */
-        if (m_stat.st_mode & S_IRUSR)
-            temp += "r";
+        if (sstat.st_mode & S_IRUSR)
+            m_rights += "r";
         else
-            temp += "-";
+            m_rights += "-";
 
-        if (m_stat.st_mode & S_IWUSR)
-            temp += "w";
+        if (sstat.st_mode & S_IWUSR)
+            m_rights += "w";
         else
-            temp += "-";
+            m_rights += "-";
 
-        if (m_stat.st_mode & S_IXUSR)
-            temp += "x";
+        if (sstat.st_mode & S_IXUSR)
+            m_rights += "x";
         else
-            temp += "-";
+            m_rights += "-";
 
         /* Group */
-        if (m_stat.st_mode & S_IRGRP)
-            temp += "r";
+        if (sstat.st_mode & S_IRGRP)
+            m_rights += "r";
         else
-            temp += "-";
+            m_rights += "-";
 
-        if (m_stat.st_mode & S_IWGRP)
-            temp += "w";
+        if (sstat.st_mode & S_IWGRP)
+            m_rights += "w";
         else
-            temp += "-";
+            m_rights += "-";
 
-        if (m_stat.st_mode & S_IXGRP)
-            temp += "x";
+        if (sstat.st_mode & S_IXGRP)
+            m_rights += "x";
         else
-            temp += "-";
+            m_rights += "-";
 
         /* Others */
-        if (m_stat.st_mode & S_IROTH)
-            temp += "r";
+        if (sstat.st_mode & S_IROTH)
+            m_rights += "r";
         else
-            temp += "-";
+            m_rights += "-";
 
-        if (m_stat.st_mode & S_IWOTH)
-            temp += "w";
+        if (sstat.st_mode & S_IWOTH)
+            m_rights += "w";
         else
-            temp += "-";
+            m_rights += "-";
 
-        if (m_stat.st_mode & S_IXOTH)
-            temp += "x";
+        if (sstat.st_mode & S_IXOTH)
+            m_rights += "x";
         else
-            temp += "-";
-
-        m_rights = temp;
+            m_rights += "-";
     }
 
-    std::string Inode::rights() const { return m_rights; }
+    const std::string& Inode::rights() const { return m_rights; }
 
-    void Inode::_compute_real_name()
+    void Inode::_compute_real_name(const struct stat& sstat)
     {
         if (!is_symbolic_link())
             return;
         /* The following code is taken from the realink man page. */
-        std::size_t size = static_cast<std::size_t>(m_stat.st_size);
+        std::size_t size = static_cast<std::size_t>(sstat.st_size);
 
         if (size == 0)
-        {
             size = PATH_MAX;
-        }
         size++;
         char *buf = new char[size];
         memset(buf, 0, size);
-        assert(readlink(m_abs_path.path().c_str(), buf, size) != 0);
+        assert(readlink(m_path.string().c_str(), buf, size) != 0);
         m_real_name = buf; /* Deep copy */
         delete[] buf;
     }
 
-    std::string Inode::real_name() const { return m_real_name; }
+    const std::string& Inode::real_name() const { return m_real_name; }
 
-    std::string Inode::name() const
+    const std::string& Inode::name() const
     {
         return m_name;
     }
 
     std::string Inode::abs_path() const
     {
-        return m_abs_path.path();
+        return m_path;
     }
 
-    void Inode::_format_size()
+    void Inode::_format_size(const struct stat& sstat)
     {
         std::array<long, 3> sizes = {1024l*1024l*1024l, 1024*1024l, 1024l};
         std::array<std::string, 3> names = {"GB", "MB", "KB"};
-        m_formated_size = std::to_string(m_stat.st_size) + "B";
+        m_formated_size = std::to_string(sstat.st_size) + "B";
         for (std::size_t i = 0; i < sizes.size(); ++i)
         {
-            if (m_stat.st_size / sizes[i])
+            if (sstat.st_size / sizes[i])
             {
-                m_formated_size = std::to_string(m_stat.st_size / sizes[i]) + names[i];
+                m_formated_size = std::to_string(sstat.st_size / sizes[i]) + names[i];
                 break;
             }
         }
     }
 
-    std::string Inode::formated_size() const { return m_formated_size; }
+    const std::string& Inode::formated_size() const { return m_formated_size; }
 
-    std::string Inode::parent() const { return m_abs_path.parent_part(); }
+    std::string Inode::parent() const { return m_path.parent_path(); }
 
     Inode Inode::parent_node() const
     {
-        return {m_abs_path.parent_part()};
+        return {m_path.parent_path().string()};
     }
 
     std::size_t Inode::load(std::vector<Inode> &files, std::vector<Inode> &dirs) const
@@ -308,7 +268,7 @@ namespace fs
         if (!is_directory())
             return 0;
 
-        DIR *dir = opendir(m_abs_path.path().c_str());
+        DIR *dir = opendir(m_path.string().c_str());
         if (!dir)
             return 0;
         struct dirent *drt;
@@ -317,7 +277,7 @@ namespace fs
             if (drt->d_type != DT_DIR)
             {
                 /* This is not a directory. */
-                files.emplace_back(m_abs_path.append(drt->d_name));
+                files.emplace_back(m_path / drt->d_name);
             }else
             {
                 /* In case the m_name is . or .. */
@@ -327,7 +287,7 @@ namespace fs
                 {
                     continue;
                 }
-                dirs.emplace_back(m_abs_path.append(drt->d_name));
+                dirs.emplace_back(m_path / drt->d_name);
             }
         }
 
@@ -346,7 +306,7 @@ namespace fs
             dup2(nothingness, 1);
             dup2(nothingness, 2);
             close(nothingness);
-            execlp("mv", "mv", m_abs_path.path().c_str(), new_parent.m_abs_path.path().c_str(), (char*)NULL);
+            execlp("mv", "mv", m_path.string().c_str(), new_parent.m_path.string().c_str(), (char*)NULL);
             _exit(127);
         }
 
@@ -367,7 +327,7 @@ namespace fs
             dup2(nothingness, 1);
             dup2(nothingness, 2);
             close(nothingness);
-            execlp("rm", "rm", "-r", "-f", m_abs_path.path().c_str(), (char*)NULL);
+            execlp("rm", "rm", "-r", "-f", m_path.string().c_str(), (char*)NULL);
             _exit(127);
         }
 
@@ -379,7 +339,7 @@ namespace fs
 
     bool Inode::copy(const Inode& new_parent) const
     {
-        const std::string new_path = new_parent.m_abs_path.append(m_name);
+        const std::string new_path = new_parent.m_path / m_name;
         pid_t pid = fork();
         if (!pid)
         {
@@ -389,7 +349,7 @@ namespace fs
             dup2(nothingness, 1);
             dup2(nothingness, 2);
             close(nothingness);
-            execlp("cp", "cp", "-r", m_abs_path.path().c_str(), new_path.c_str(), (char*)NULL);
+            execlp("cp", "cp", "-r", m_path.string().c_str(), new_path.c_str(), (char*)NULL);
             _exit(127);
         }
 
@@ -401,13 +361,13 @@ namespace fs
 
     bool Inode::create_dir(const std::string &name) const
     {
-        auto full_path = m_abs_path.append(name);
+        auto full_path = m_path / name;
         return mkdir(full_path.c_str(), 0755) != -1;
     }
 
     bool Inode::create_file(const std::string &name) const
     {
-        auto full_path = m_abs_path.append(name);
+        auto full_path = m_path / name;
         return creat(full_path.c_str(), 0644) != -1;
     }
 }

@@ -8,37 +8,32 @@
 #include <vector>
 #include <string>
 #include <cassert>
+#include <filesystem>
+
+namespace sfs = std::filesystem;
 
 namespace fs {
     class Inode
     {
-    private:
-
-        class Absolute_path
-        {
-        private:
-            std::string m_path;
-
-        public:
-
-            Absolute_path(const std::string &path);
-
-            std::string parent_part() const;
-
-            std::string name_part() const;
-
-            const std::string& path() const;
-
-            std::string append(const std::string &part) const;
-
-        };
-
-        Absolute_path m_abs_path;
+        sfs::path m_path;
         std::string m_name;
         std::string m_rights;
         std::string m_real_name;
         std::string m_formated_size;
-        struct stat m_stat;
+        std::string m_last_accessed;
+        std::string m_last_modified;
+        std::string m_last_changed;
+        std::string m_dev_num;
+        std::string m_inode_num;
+        std::string m_hard_links;
+        std::string m_size;
+        std::string m_uid;
+        std::string m_gid;
+        std::string m_dev_id;
+        std::string m_block_size;
+        mode_t m_mode;
+        std::string m_blocks;
+
 
     public:
 
@@ -54,12 +49,12 @@ namespace fs {
 
         ~Inode();
 
-        int stat();
+        void stat();
 
         // INode data access
-        std::string device_number() const;
+        const std::string& device_number() const;
 
-        std::string inode_number() const;
+        const std::string& inode_number() const;
 
         bool is_socket() const;
 
@@ -75,37 +70,37 @@ namespace fs {
 
         bool is_executable() const;
 
-        std::string hard_link_count() const;
+        const std::string& hard_link_count() const;
 
-        std::string size() const;
+        const std::string& size() const;
 
-        std::string uid() const;
+        const std::string& uid() const;
 
-        std::string guid() const;
+        const std::string& gid() const;
 
-        std::string device_id() const;
+        const std::string& device_id() const;
 
-        std::string block_size() const;
+        const std::string& block_size() const;
 
-        std::string blocks521B_allocated() const;
+        const std::string& blocks521B_allocated() const;
 
         // Timestamps
-        std::string last_accessed() const;
+        const std::string& last_accessed() const;
 
-        std::string last_modified() const;
+        const std::string& last_modified() const;
 
-        std::string last_status_changed() const;
+        const std::string& last_status_changed() const;
 
         // Utility methods
-        std::string rights() const;
+        const std::string& rights() const;
 
-        std::string real_name() const;
+        const std::string& real_name() const;
 
-        std::string name() const;
+        const std::string& name() const;
 
         std::string abs_path() const;
 
-        std::string formated_size() const;
+        const std::string& formated_size() const;
 
         std::string parent() const;
 
@@ -125,9 +120,9 @@ namespace fs {
 
     private:
         std::string _get_time(const struct timespec* tp) const;
-        void _rights();
-        void _format_size();
-        void _compute_real_name();
+        void _rights(const struct stat& sstat);
+        void _format_size(const struct stat& sstat);
+        void _compute_real_name(const struct stat& sstat);
     };
 
 }

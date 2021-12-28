@@ -121,7 +121,7 @@ int main()
     scene.set_input_window(LEFT);
     keypad(*scene.get_input_window(), true);
 
-    // Create and initialize the nececary data structures
+    // Create and initialize the necessary data structures
     std::vector<fs::Inode> vec;
     int key = 0;
     std::size_t output_lines;
@@ -226,7 +226,7 @@ int main()
         if (!selection.empty())
             scene[BOTTOM].print(" selection: " + std::to_string(selection.size()));
         scene[BOTTOM].print_left(2, current.abs_path(), A_UNDERLINE | COLOR_PAIR(3));
-        scene[BOTTOM].print_center(scene[BOTTOM].lines()-1, "[c]reate [d]elete [m]ove [s]elect [e]nd");
+        scene[BOTTOM].print_center(scene[BOTTOM].lines()-1, "[c]reate [d]elete [m]ove [s]elect [e]nd select");
 
         // Refresh the windowws and wait for an event
         scene.refresh();
