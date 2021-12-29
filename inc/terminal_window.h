@@ -11,7 +11,7 @@ namespace view
  *  The position and size of the window are relative
  *  to the terminal window(0-1.0f).
  */
-    class Terminal_window
+    class TerminalWindow
     {
     private:
         WINDOW* m_window;
@@ -151,18 +151,18 @@ namespace view
          * not copied.
          */
         /* Default copy constructors/assignment operators */
-        Terminal_window(const Terminal_window& other) = delete;
+        TerminalWindow(const TerminalWindow& other) = delete;
 
-        Terminal_window& operator=(const Terminal_window& other) = delete;
+        TerminalWindow& operator=(const TerminalWindow& other) = delete;
 
-        Terminal_window(Terminal_window&& other) = default;
+        TerminalWindow(TerminalWindow&& other) = default;
 
-        Terminal_window& operator=(Terminal_window&& other) = default;
+        TerminalWindow& operator=(TerminalWindow&& other) = default;
 
     private:
-        Terminal_window(float lines, float cols, float begin_y,
+        TerminalWindow(float lines, float cols, float begin_y,
                         float begin_x);
-        Terminal_window();
+        TerminalWindow();
         /**
          * @brief reset the window state to a new one
          * @param lines

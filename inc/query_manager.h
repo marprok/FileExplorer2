@@ -10,11 +10,11 @@ namespace view
     public:
         Query_manager();
 
-        std::string take_input(Terminal_window &win, const std::string &prompt);
+        std::string take_input(TerminalWindow &win, const std::string &prompt);
 
-        bool ask(Terminal_window &win, const std::string &question);
+        bool ask(TerminalWindow &win, const std::string &question);
 
-        std::size_t select(Terminal_window &win, const std::vector<std::string> &choices);
+        std::size_t select(TerminalWindow &win, const std::vector<std::string> &choices);
     };
 }
 #endif

@@ -17,7 +17,7 @@ enum POSITION
     BOTTOM
 };
 
-static std::size_t calculate_lines(const view::Terminal_window& window, const std::vector<fs::Inode> &vec)
+static std::size_t calculate_lines(const view::TerminalWindow& window, const std::vector<fs::Inode> &vec)
 {
     if (vec.empty())
         return 0;
@@ -54,7 +54,7 @@ static void load_current(fs::Inode &current,
         vec.push_back(std::move(file));
 }
 
-static void display_file_info(view::Terminal_window& window, const fs::Inode &inode)
+static void display_file_info(view::TerminalWindow& window, const fs::Inode &inode)
 {
     window.print_left(1, "NAME: ", COLOR_PAIR(3));
     window.print(inode.name(), A_UNDERLINE);

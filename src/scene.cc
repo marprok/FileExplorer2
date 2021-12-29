@@ -32,7 +32,7 @@ namespace view
         init_pair(5, COLOR_CYAN, COLOR_BLACK);
     }
 
-    Terminal_window& Scene::operator[](size_t i)
+    TerminalWindow& Scene::operator[](size_t i)
     {
         return m_windows[i];
     }
@@ -53,7 +53,7 @@ namespace view
     void Scene::add_window(float perlines, float percols, float begin_y,
                            float begin_x)
     {
-        m_windows.push_back(Terminal_window{
+        m_windows.push_back(TerminalWindow{
                 perlines,
                 percols,
                 begin_y,
@@ -105,7 +105,7 @@ namespace view
         return OK;
     }
 
-    Terminal_window& Scene::get_input_window()
+    TerminalWindow& Scene::get_input_window()
     {
         return m_windows[m_input_window];
     }
@@ -127,7 +127,7 @@ namespace view
         nocbreak();
         raw();
         curs_set(1);
-        Terminal_window win(lines, cols, begin_y, begin_x);
+        TerminalWindow win(lines, cols, begin_y, begin_x);
         std::string out = m_query_manager.take_input(win, prompt);
         win.delwin();
         /* reset the state of the current scene */
@@ -148,7 +148,7 @@ namespace view
         // exit the halfdelay mode
         nocbreak();
         raw();
-        Terminal_window win(lines, cols,
+        TerminalWindow win(lines, cols,
                             begin_y, begin_x);
         bool choice = m_query_manager.ask(win, question);
         win.delwin();
@@ -168,7 +168,7 @@ namespace view
         // exit the halfdelay mode
         nocbreak();
         raw();
-        Terminal_window win(lines, cols,
+        TerminalWindow win(lines, cols,
                             begin_y, begin_x);
         std::size_t choice = m_query_manager.select(win, choices);
         win.delwin();

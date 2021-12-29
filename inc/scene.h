@@ -19,7 +19,7 @@ namespace view
     class Scene
     {
     private:
-        std::vector<Terminal_window> m_windows;
+        std::vector<TerminalWindow> m_windows;
         size_t                       m_input_window;
         Query_manager                m_query_manager;
         /**
@@ -44,7 +44,7 @@ namespace view
          * @param i
          * @return the window coresponding to the index i
          */
-        Terminal_window& operator[](size_t i);
+        TerminalWindow& operator[](size_t i);
 
         /**
          * @brief refresh all the windows
@@ -85,7 +85,7 @@ namespace view
          * @brief get_input_window returns the input window
          * @return The input window
          */
-        Terminal_window& get_input_window();
+        TerminalWindow& get_input_window();
         /**
          * @brief operator >>
          * @param key ouputs the key pressed

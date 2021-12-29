@@ -5,7 +5,7 @@
 
 namespace view
 {
-    Terminal_window::Terminal_window(float lines, float cols, float begin_y,
+    TerminalWindow::TerminalWindow(float lines, float cols, float begin_y,
                                      float begin_x)
         :m_window(nullptr),
          m_per_cols(cols),
@@ -24,7 +24,7 @@ namespace view
                           this->x());
     }
 
-    Terminal_window::Terminal_window()
+    TerminalWindow::TerminalWindow()
         :m_window(nullptr),
          m_per_cols(0.0f),
          m_per_lines(0.0f),
@@ -39,7 +39,7 @@ namespace view
 
     }
 
-    int Terminal_window::resize()
+    int TerminalWindow::resize()
     {
         int ret;
         ret = this->erase();
@@ -61,7 +61,7 @@ namespace view
         return OK;
     }
 
-    int Terminal_window::_resize()
+    int TerminalWindow::_resize()
     {
         return wresize(operator*(),
                        this->lines(),
@@ -69,22 +69,22 @@ namespace view
                        );
     }
 
-    WINDOW* Terminal_window::operator*()
+    WINDOW* TerminalWindow::operator*()
     {
         return m_window;
     }
 
-    int Terminal_window::refresh()
+    int TerminalWindow::refresh()
     {
         return wrefresh(m_window);;
     }
 
-    int Terminal_window::virtual_refresh()
+    int TerminalWindow::virtual_refresh()
     {
         return wnoutrefresh(m_window);
     }
 
-    int Terminal_window::box(chtype ver_ch, chtype hor_ch)
+    int TerminalWindow::box(chtype ver_ch, chtype hor_ch)
     {
         m_ver_ch = ver_ch;
         m_hor_ch = hor_ch;
@@ -92,14 +92,14 @@ namespace view
         return ::box(m_window, m_ver_ch, m_hor_ch);
     }
 
-    int Terminal_window::mvwprintw(int y, int x, const std::string &text)
+    int TerminalWindow::mvwprintw(int y, int x, const std::string &text)
     {
         m_cursor_y = y;
         m_cursor_x = x;
         return ::mvwprintw(m_window, y, x, text.c_str());
     }
 
-    int Terminal_window::print(const std::string& text, attr_t attr)
+    int TerminalWindow::print(const std::string& text, attr_t attr)
     {
         int text_len = static_cast<int>(text.size());
         int win_cols = cols();
@@ -113,7 +113,7 @@ namespace view
         return ret;
     }
 
-    int Terminal_window::print_left(int line, const std::string& text, attr_t attr)
+    int TerminalWindow::print_left(int line, const std::string& text, attr_t attr)
     {
         int  col = 0;
         int text_len = static_cast<int>(text.size());
@@ -137,7 +137,7 @@ namespace view
         return ret;
     }
 
-    int Terminal_window::print_right(int line, const std::string& text, attr_t attr)
+    int TerminalWindow::print_right(int line, const std::string& text, attr_t attr)
     {
         int  col = 0;
         int text_len = static_cast<int>(text.size());
@@ -161,7 +161,7 @@ namespace view
         return ret;
     }
 
-    int Terminal_window::print_center(int line, const std::string& text, attr_t attr)
+    int TerminalWindow::print_center(int line, const std::string& text, attr_t attr)
     {
         int  col = 0;
         int text_len = static_cast<int>(text.size());
@@ -185,7 +185,7 @@ namespace view
         return ret;
     }
 
-    int Terminal_window::move(float y, float x)
+    int TerminalWindow::move(float y, float x)
     {
         m_begin_y = y;
         m_begin_x = x;
@@ -204,70 +204,70 @@ namespace view
 
     }
 
-    int Terminal_window::move()
+    int TerminalWindow::move()
     {
-        return Terminal_window::move(m_begin_y,
+        return TerminalWindow::move(m_begin_y,
                                      m_begin_x);
     }
 
-    int Terminal_window::erase()
+    int TerminalWindow::erase()
     {
         return ::werase(m_window);
     }
 
-    int Terminal_window::rebox()
+    int TerminalWindow::rebox()
     {
         if (!m_boxed)
             return OK;
         return this->box(m_ver_ch, m_hor_ch);
     }
 
-    int Terminal_window::move_cursor(int y, int x)
+    int TerminalWindow::move_cursor(int y, int x)
     {
         return wmove(m_window, y, x);
     }
 
-    int Terminal_window::cols() const
+    int TerminalWindow::cols() const
     {
         return static_cast<int>(std::floor(m_per_cols*COLS));
     }
 
-    int Terminal_window::lines() const
+    int TerminalWindow::lines() const
     {
         return static_cast<int>(std::floor(m_per_lines*LINES));
     }
 
-    int Terminal_window::y() const
+    int TerminalWindow::y() const
     {
         return static_cast<int>(std::ceil(m_begin_y*LINES));
     }
 
-    int Terminal_window::x() const
+    int TerminalWindow::x() const
     {
         return static_cast<int>(std::ceil(m_begin_x*COLS));
     }
 
-    void Terminal_window::set_cols(float cols)
+    void TerminalWindow::set_cols(float cols)
     {
         this->m_per_cols = cols;
     }
 
-    void Terminal_window::set_lines(float lines)
+    void TerminalWindow::set_lines(float lines)
     {
         this->m_per_lines = lines;
     }
 
-    bool Terminal_window::boxed() const
+    bool TerminalWindow::boxed() const
     {
         return m_boxed;
     }
 
-    int Terminal_window::delwin()
+    int TerminalWindow::delwin()
     {
         return ::delwin(m_window);
     }
 
-    void Terminal_window::reset(float lines, float cols, float begin_y,
+    void TerminalWindow::reset(float lines, float cols, float begin_y,
                                 float begin_x)
     {
         m_per_lines = lines;
