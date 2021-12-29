@@ -21,7 +21,7 @@ namespace view
     private:
         std::vector<TerminalWindow> m_windows;
         size_t                       m_input_window;
-        Query_manager                m_query_manager;
+        QueryManager                m_query_manager;
         /**
          * @brief Scene constructor
          */

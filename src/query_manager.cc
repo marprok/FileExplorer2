@@ -5,9 +5,9 @@
 namespace view
 {
 
-    Query_manager::Query_manager() {}
+    QueryManager::QueryManager() {}
 
-    std::string Query_manager::take_input(TerminalWindow &win,
+    std::string QueryManager::take_input(TerminalWindow &win,
                                           const std::string &prompt)
     {
         keypad(*win, true);
@@ -47,7 +47,7 @@ namespace view
         return text;
     }
 
-    bool Query_manager::ask(TerminalWindow &win,
+    bool QueryManager::ask(TerminalWindow &win,
                             const std::string &question)
     {
         bool choice = false;
@@ -88,7 +88,7 @@ namespace view
         return choice;
     }
 
-    std::size_t Query_manager::select(TerminalWindow &win, const std::vector<std::string> &choices)
+    std::size_t QueryManager::select(TerminalWindow &win, const std::vector<std::string> &choices)
     {
 
         auto calculate_lines = [&]() -> std::size_t

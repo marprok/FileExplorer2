@@ -5,10 +5,10 @@
 
 namespace view
 {
-    class Query_manager
+    class QueryManager
     {
     public:
-        Query_manager();
+        QueryManager();
 
         std::string take_input(TerminalWindow &win, const std::string &prompt);
 
