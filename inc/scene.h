@@ -3,8 +3,10 @@
 
 #include <ncurses.h>
 #include <vector>
+#include <functional>
 #include "terminal_window.h"
 #include "query_manager.h"
+#include "inode.h"
 
 namespace view
 {
@@ -101,6 +103,11 @@ namespace view
 
         std::size_t select(float lines, float cols, float begin_y,
                            float begin_x, const std::vector<std::string> &choices);
+
+        void wait(float lines, float cols, float begin_y,
+                  float begin_x, const std::string &msg,
+                  const std::vector<fs::Inode> &inodes,
+                  std::function<pid_t(const fs::Inode& inode)> callback);
     };
 }
 #endif

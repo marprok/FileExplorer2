@@ -295,7 +295,7 @@ namespace fs
         return files.size() + dirs.size();
     }
 
-    bool Inode::move(const Inode& new_parent) const
+    pid_t Inode::move(const Inode& new_parent) const
     {
         pid_t pid = fork();
         if (!pid)
@@ -311,12 +311,10 @@ namespace fs
         }
 
         assert(pid != -1);
-        int status = 0;
-        waitpid(pid, &status, 0);
-        return WIFEXITED(status) && WEXITSTATUS(status) == 0;
+        return pid;
     }
 
-    bool Inode::remove() const
+    pid_t Inode::remove() const
     {
         pid_t pid = fork();
         if (!pid)
@@ -332,12 +330,10 @@ namespace fs
         }
 
         assert(pid != -1);
-        int status = 0;
-        waitpid(pid, &status, 0);
-        return WIFEXITED(status) && WEXITSTATUS(status) == 0;
+        return pid;
     }
 
-    bool Inode::copy(const Inode& new_parent) const
+    pid_t Inode::copy(const Inode& new_parent) const
     {
         const std::string new_path = new_parent.m_path / m_name;
         pid_t pid = fork();
@@ -354,9 +350,7 @@ namespace fs
         }
 
         assert(pid != -1);
-        int status = 0;
-        waitpid(pid, &status, 0);
-        return WIFEXITED(status) && WEXITSTATUS(status) == 0;
+        return pid;
     }
 
     bool Inode::create_dir(const std::string &name) const

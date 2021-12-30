@@ -2,6 +2,7 @@
 #define INODE_H
 
 #include <sys/stat.h>
+#include <unistd.h>
 #include <time.h>
 #include <iostream>
 #include <cstring>
@@ -108,11 +109,11 @@ namespace fs {
 
         std::size_t load(std::vector<Inode> &files, std::vector<Inode> &dirs) const;
 
-        bool move(const Inode& new_parent) const;
+        pid_t move(const Inode& new_parent) const;
 
-        bool remove() const;
+        pid_t remove() const;
 
-        bool copy(const Inode& new_parent) const;
+        pid_t copy(const Inode& new_parent) const;
 
         bool create_dir(const std::string &name) const;
 

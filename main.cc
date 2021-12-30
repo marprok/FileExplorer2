@@ -226,7 +226,7 @@ int main()
         if (!selection.empty())
             scene[BOTTOM].print(" selection: " + std::to_string(selection.size()));
         scene[BOTTOM].print_left(2, current.abs_path(), A_UNDERLINE | COLOR_PAIR(3));
-        scene[BOTTOM].print_center(scene[BOTTOM].lines()-1, "[c]reate [d]elete [m]ove [s]elect [e]nd select");
+        scene[BOTTOM].print_center(scene[BOTTOM].lines()-1, "[c]rt [d]el [m]ove [s]el [e]nd-sel [p]aste");
 
         // Refresh the windowws and wait for an event
         scene.refresh();
@@ -300,12 +300,9 @@ int main()
                     if (selection.empty())
                         break;
 
-                    for (auto& element : selection)
-                    {
-                        if (!element.remove())
-                            utils::Log::the() << "Failed to delete: " << element.abs_path()
-                                              << " from " << current.abs_path() << "\n";
-                    }
+                    scene.wait(0.2f, 0.30f, 0.45f, 0.35f, "Deleting", selection,
+                               [](const fs::Inode& inode) ->pid_t{ return inode.remove();});
+
                     current.stat();
                     load_current(current, vec, &file_count, &dir_count);
                     output_lines = calculate_lines(scene[LEFT], vec);
@@ -316,12 +313,8 @@ int main()
                     if (selection.empty())
                         break;
 
-                    for (auto& element : selection)
-                    {
-                        if (!element.move(current))
-                            utils::Log::the() << "Failed to move: " << element.abs_path()
-                                              << " -> " << current.abs_path() << "\n";
-                    }
+                    scene.wait(0.2f, 0.30f, 0.45f, 0.35f, "Moving", selection,
+                               [&current](const fs::Inode& inode) ->pid_t{ return inode.move(current);});
                     current.stat();
                     load_current(current, vec, &file_count, &dir_count);
                     output_lines = calculate_lines(scene[LEFT], vec);
@@ -332,12 +325,8 @@ int main()
                     if (selection.empty())
                         break;
 
-                    for (auto& element : selection)
-                    {
-                        if (!element.copy(current))
-                            utils::Log::the() << "Failed to copy: " << element.abs_path()
-                                              << " -> " << current.abs_path() << "\n";
-                    }
+                    scene.wait(0.2f, 0.30f, 0.45f, 0.35f, "Copying", selection,
+                               [&current](const fs::Inode& inode) ->pid_t{ return inode.copy(current);});
                     current.stat();
                     load_current(current, vec, &file_count, &dir_count);
                     output_lines = calculate_lines(scene[LEFT], vec);

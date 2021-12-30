@@ -1,4 +1,6 @@
 #include <string>
+#include <unistd.h>
+#include <sys/wait.h>
 #include "../inc/query_manager.h"
 #include "../inc/scroll_vector.hpp"
 
@@ -144,5 +146,46 @@ namespace view
         win.erase();
         win.refresh();
         return sv.real_index(sv.index());
+    }
+
+    void QueryManager::wait(TerminalWindow &win, const std::string &msg, pid_t pid)
+    {
+        keypad(*win, true);
+        /* Handle the keyboard input */
+        int key;
+        int dot = 0;
+        bool end = false;
+        while (!end)
+        {
+            int status = 0;
+            pid_t p = waitpid(pid, &status, WNOHANG);
+            if (p > 0)
+            {
+                end = WIFEXITED(status);
+            }
+            win.erase();
+            if (dot == 0)
+                win.print_center(0, msg + ".");
+            else if (dot == 1)
+                win.print_center(0, msg + "..");
+            else if (dot == 2)
+                win.print_center(0, msg + "...");
+
+            dot = (dot+1)%3;
+            win.refresh();
+            key = wgetch(*win);
+            switch (key)
+            {
+                case KEY_RESIZE:
+                    win.resize();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        /* Bring back the state of the scene */
+        win.erase();
+        win.refresh();
     }
 }

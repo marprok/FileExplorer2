@@ -179,4 +179,25 @@ namespace view
 
         return choice;
     }
+
+    void Scene::wait(float lines, float cols, float begin_y,
+                     float begin_x, const std::string &msg,
+                     const std::vector<fs::Inode> &inodes, std::function<pid_t(const fs::Inode& inode)> callback)
+    {
+        this->erase();
+        this->refresh();
+        // exit the halfdelay mode
+
+        TerminalWindow win(lines, cols,
+                           begin_y, begin_x);
+        halfdelay(5);
+        for (const auto &inode : inodes)
+            m_query_manager.wait(win, msg, callback(inode));
+
+        win.delwin();
+        keypad(*get_input_window(), true);
+        this->resize();
+        // resume the halfdelay mode
+        halfdelay(10);
+    }
 }
