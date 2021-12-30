@@ -160,9 +160,8 @@ namespace view
             int status = 0;
             pid_t p = waitpid(pid, &status, WNOHANG);
             if (p > 0)
-            {
                 end = WIFEXITED(status);
-            }
+
             win.erase();
             if (dot == 0)
                 win.print_center(0, msg + ".");
